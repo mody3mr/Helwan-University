@@ -1,80 +1,118 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامعة حلوان - بوابة الطالب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; padding: 30px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; }
+        .header { background: white; padding: 20px 25px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { color: #0f172a; font-size: 22px; font-weight: 700; }
+        .card-box { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 25px; border: 1px solid #e2e8f0; }
+        .card-header { font-weight: 700; font-size: 18px; color: #0f172a; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .notification-item { background: #ffffff; padding: 15px 20px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-right: 4px solid #2563eb; border: 1px solid #e2e8f0; }
+        .no-notifs { text-align: center; color: #94a3b8; padding: 30px; font-size: 14px; }
+    </style>
+</head>
+<body>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
-    authDomain: "helwan-university-3cfd3.firebaseapp.com",
-    projectId: "helwan-university-3cfd3",
-    storageBucket: "helwan-university-3cfd3.firebasestorage.app",
-    messagingSenderId: "649399927965",
-    appId: "1:649399927965:web:87f52cb4eff211595fc074"
-};
+    <div class="container">
+        <div class="header">
+            <h2>بوابة الطالب - لوحة الإشعارات</h2>
+            <span id="studentNameDisplay" style="font-weight: 600; color: #2563eb;">طالب الجامعة</span>
+        </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// افترض أن بيانات الطالب مسجلة في الـ localStorage بعد تسجيل دخوله (الفرقة والرقم التعريفي)
-const studentYear = localStorage.getItem('studentYear') || "1"; // مثال: "1" أو "2" أو "3" أو "4"
-const studentId = localStorage.getItem('studentId') || "";     // مثال: "HU-123456"
-
-// دالة الاستماع اللحظي للإشعارات (تعمل تلقائياً عند أي إضافة أو حذف من لوحة التحكم)
-function initRealtimeNotifications() {
-    const notifsRef = collection(db, "notifications");
-    
-    // مراقبة كوليكشن الإشعارات لحظياً
-    onSnapshot(notifsRef, (snapshot) => {
-        let studentNotifs = [];
-        
-        snapshot.forEach(docSnap => {
-            const n = docSnap.data();
-            
-            // التحقق الشامل لتغطية كافة أنواع الاستهداف (عام، فرقة معينة، أو طالب محدد)
-            const isForEveryone = (n.target_group === 'all');
-            const isForStudentYear = (n.target_year === String(studentYear) || n.target_group === String(studentYear));
-            const isForSpecificStudent = (n.student_id && n.student_id.trim() === studentId.trim());
-
-            if (isForEveryone || isForStudentYear || isForSpecificStudent) {
-                studentNotifs.push({ id: docSnap.id, ...n });
-            }
-        });
-
-        // ترتيب الإشعارات بحيث الأحدث يظهر أولاً
-        studentNotifs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-        // عرض الإشعارات على شاشة الطالب
-        renderNotificationsToUI(studentNotifs);
-    });
-}
-
-// دالة عرض الإشعارات في الـ HTML الخاص بصفحة الطالب
-function renderNotificationsToUI(notificationsList) {
-    // ضع هنا الـ ID الخاص بعنصر الجدول أو القائمة التي تعرض الإشعارات في صفحة الطالب، مثلاً: #studentNotifsContainer
-    const container = document.getElementById('studentNotifsContainer'); 
-    if (!container) return;
-
-    if (notificationsList.length === 0) {
-        container.innerHTML = `<div class="no-notifs">لا توجد إشعارات جديدة حالياً.</div>`;
-        return;
-    }
-
-    let html = '';
-    notificationsList.forEach(n => {
-        const dateFormatted = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-EG') : '';
-        html += `
-            <div class="notification-item" style="background: #ffffff; padding: 15px 20px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-right: 4px solid #2563eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <h4 style="color: #0f172a; font-size: 16px; font-weight: 700; margin: 0;">${n.title}</h4>
-                    <span style="color: #64748b; font-size: 12px;">${dateFormatted}</span>
-                </div>
-                <p style="color: #334155; font-size: 14px; margin: 0; line-height: 1.5;">${n.message || ''}</p>
+        <div class="card-box">
+            <div class="card-header">الإشعارات والتنبيهات الموجهة لك</div>
+            <div id="studentNotifsContainer">
+                <div class="no-notifs">جاري تحميل الإشعارات...</div>
             </div>
-        `;
-    });
+        </div>
+    </div>
 
-    container.innerHTML = html;
-}
+    <!-- كود الجلب والاستماع اللحظي للإشعارات -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// تشغيل النظام بمجرد فتح الصفحة
-window.addEventListener('DOMContentLoaded', () => {
-    initRealtimeNotifications();
-});
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
+            authDomain: "helwan-university-3cfd3.firebaseapp.com",
+            projectId: "helwan-university-3cfd3",
+            storageBucket: "helwan-university-3cfd3.firebasestorage.app",
+            messagingSenderId: "649399927965",
+            appId: "1:649399927965:web:87f52cb4eff211595fc074"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // جلب بيانات الطالب من التخزين المحلي (الفرقة والرقم التعريفي)
+        const studentYear = localStorage.getItem('studentYear') || "1"; 
+        const studentId = localStorage.getItem('studentId'] || ""; 
+        const studentName = localStorage.getItem('studentName') || "طالب الجامعة";
+
+        const nameEl = document.getElementById('studentNameDisplay');
+        if(nameEl) nameEl.innerText = studentName;
+
+        // الاستماع اللحظي للإشعارات (تتحدث وتتحذف فوراً لحظة تفاعل الأدمن)
+        function initRealtimeNotifications() {
+            const notifsRef = collection(db, "notifications");
+            
+            onSnapshot(notifsRef, (snapshot) => {
+                let studentNotifs = [];
+                
+                snapshot.forEach(docSnap => {
+                    const n = docSnap.data();
+                    
+                    const isForEveryone = (n.target_group === 'all');
+                    const isForStudentYear = (n.target_year === String(studentYear) || n.target_group === String(studentYear));
+                    const isForSpecificStudent = (n.student_id && n.student_id.trim() === studentId.trim());
+
+                    if (isForEveryone || isForStudentYear || isForSpecificStudent) {
+                        studentNotifs.push({ id: docSnap.id, ...n });
+                    }
+                });
+
+                // ترتيب الإشعارات تنازلياً (الأحدث أولاً)
+                studentNotifs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+                renderNotificationsToUI(studentNotifs);
+            });
+        }
+
+        function renderNotificationsToUI(notificationsList) {
+            const container = document.getElementById('studentNotifsContainer'); 
+            if (!container) return;
+
+            if (notificationsList.length === 0) {
+                container.innerHTML = `<div class="no-notifs">لا توجد إشعارات جديدة حالياً.</div>`;
+                return;
+            }
+
+            let html = '';
+            notificationsList.forEach(n => {
+                const dateFormatted = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-EG') : '';
+                html += `
+                    <div class="notification-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="color: #0f172a; font-size: 16px; font-weight: 700; margin: 0;">${n.title}</h4>
+                            <span style="color: #64748b; font-size: 12px;">${dateFormatted}</span>
+                        </div>
+                        <p style="color: #334155; font-size: 14px; margin: 0; line-height: 1.5;">${n.message || ''}</p>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initRealtimeNotifications();
+        });
+    </script>
+</body>
+</html>
