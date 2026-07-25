@@ -75,7 +75,6 @@
             border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        /* تنسيق صندوق الصلاحيات الدقيقة للمشرف */
         .permissions-box {
             background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
         }
@@ -533,7 +532,6 @@
                                 </select>
                             </div>
                             
-                            <!-- خيارات الصلاحيات المفصلة للمشرف -->
                             <div class="form-group full-width" id="permissionsGroup" style="display: none;">
                                 <div class="permissions-box">
                                     <label class="main-lbl">حدد الأفعال والصلاحيات المسموح بها لهذا المشرف:</label>
@@ -585,7 +583,7 @@
 
     </div>
 
-    <!-- المنطق البرمجي والتحقق من الصلاحيات الدقيقة -->
+    <!-- المنطق البرمجي والتحقق من الصلاحيات -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -611,11 +609,9 @@
         } else {
             document.getElementById('adminNameDisplay').innerText = currentAdminName;
             
-            // تطبيق إخفاء التابعات بناءً على الصلاحيات الدقيقة
             if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
                 document.getElementById('menuAdmins').style.display = 'none';
 
-                // إخفاء الأقسام التي لا يملك المشرف أي صلاحية فيها
                 const hasMat = adminPermissions.some(p => p.startsWith('materials_'));
                 const hasSec = adminPermissions.some(p => p.startsWith('sections_'));
                 const hasFile = adminPermissions.some(p => p.startsWith('files_'));
@@ -680,7 +676,6 @@
             group.style.display = (role === 'supervisor') ? 'block' : 'none';
         }
 
-        // فحص إمكانية تنفيذ الإجراء حسب صلاحيات المشرف
         function checkPermission(actionKey) {
             if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') return true;
             if (adminPermissions.includes(actionKey)) return true;
@@ -704,7 +699,6 @@
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
                 
-                // إخفاء نموذج الإضافة لو المشرف لا يملك صلاحية الإدارة
                 if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('materials_manage')) {
                     document.getElementById('materialCardBox').style.display = 'none';
                 } else {
