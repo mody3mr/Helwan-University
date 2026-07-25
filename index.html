@@ -140,14 +140,14 @@
         <!-- قسم تسجيل الدخول -->
         <div id="loginSection">
             <h2>تسجيل الدخول - جامعة حلوان</h2>
-            <form id="loginForm">
+            <form id="loginForm" novalidate>
                 <div class="form-group">
                     <label for="loginEmail">البريد الإلكتروني</label>
-                    <input type="email" id="loginEmail" placeholder="example@domain.com" required>
+                    <input type="email" id="loginEmail" placeholder="example@domain.com">
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">كلمة المرور</label>
-                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور">
                 </div>
                 <button type="submit" class="btn-submit">دخول</button>
                 <div class="switch-text">
@@ -156,29 +156,29 @@
             </form>
         </div>
 
-        <!-- قسم إنشاء الحساب (مخفي افتراضياً) -->
+        <!-- قسم إنشاء الحساب -->
         <div id="registerSection" class="hidden">
             <h2>تسجيل طالب جديد</h2>
-            <form id="registerForm">
+            <form id="registerForm" novalidate>
                 <div class="form-group">
                     <label for="fullName">الاسم الرباعي</label>
-                    <input type="text" id="fullName" placeholder="أدخل اسمك الرباعي" required>
+                    <input type="text" id="fullName" placeholder="أدخل اسمك الرباعي">
                 </div>
                 <div class="form-group">
                     <label for="phone">رقم الهاتف</label>
-                    <input type="tel" id="phone" placeholder="أدخل رقم هاتفك المحمول" required>
+                    <input type="tel" id="phone" placeholder="أدخل رقم هاتفك المحمول">
                 </div>
                 <div class="form-group">
                     <label for="email">البريد الإلكتروني</label>
-                    <input type="email" id="email" placeholder="example@domain.com" required>
+                    <input type="email" id="email" placeholder="example@domain.com">
                 </div>
                 <div class="form-group">
                     <label for="password">كلمة المرور</label>
-                    <input type="password" id="password" placeholder="أدخل كلمة مرور قوية" required>
+                    <input type="password" id="password" placeholder="أدخل كلمة مرور قوية">
                 </div>
                 <div class="form-group">
                     <label for="academicYear">السنة الدراسية</label>
-                    <select id="academicYear" required>
+                    <select id="academicYear">
                         <option value="" disabled selected>اختر الفرقة الدراسية...</option>
                         <option value="1">الفرقة الأولى</option>
                         <option value="2">الفرقة الثانية</option>
@@ -188,7 +188,7 @@
                 </div>
                 <div class="form-group">
                     <label for="nationalId">رقم البطاقة (القومي)</label>
-                    <input type="text" id="nationalId" placeholder="أدخل رقم البطاقة المكون من 14 رقماً" maxlength="14" required>
+                    <input type="text" id="nationalId" placeholder="أدخل رقم البطاقة المكون من 14 رقماً" maxlength="14">
                 </div>
                 <button type="submit" class="btn-submit">تسجيل الحساب</button>
                 <div class="switch-text">
@@ -204,7 +204,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // إعدادات فايربيس الخاصة بالمستخدم
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
             authDomain: "helwan-university-3cfd3.firebaseapp.com",
@@ -214,11 +213,9 @@
             appId: "1:649399927965:web:87f52cb4eff211595fc074"
         };
 
-        // تهيئة فايربيس
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // دالة إظهار الـ Toast Messages الاحترافية
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -239,7 +236,6 @@
             }, 4000);
         }
 
-        // دالة التنقل بين الواجهات
         window.switchForm = function(target) {
             const loginSec = document.getElementById('loginSection');
             const regSec = document.getElementById('registerSection');
@@ -264,17 +260,20 @@
             const academicYear = document.getElementById('academicYear').value;
             const nationalId = document.getElementById('nationalId').value.trim();
 
+            // التحقق من الحقول الفارغة برسالة احترافية
+            if (!fullName || !phone || !email || !password || !academicYear || !nationalId) {
+                showToast('يرجى ملء جميع الحقول المطلوبة بدقة!', 'error');
+                return;
+            }
+
             if (nationalId.length !== 14) {
                 showToast('رقم البطاقة يجب أن يكون 14 رقماً صحيحاً!', 'error');
                 return;
             }
 
-            showToast('جاري التحقق من البيانات...', 'warning');
-
             try {
                 const usersRef = collection(db, "users");
 
-                // 1. التحقق مما إذا كان الرقم القومي مسجلاً مسبقاً
                 const qNational = query(usersRef, where("nationalId", "==", nationalId));
                 const snapNational = await getDocs(qNational);
                 if (!snapNational.empty) {
@@ -282,7 +281,6 @@
                     return;
                 }
 
-                // 2. التحقق مما إذا كان رقم الهاتف مسجلاً مسبقاً
                 const qPhone = query(usersRef, where("phone", "==", phone));
                 const snapPhone = await getDocs(qPhone);
                 if (!snapPhone.empty) {
@@ -290,10 +288,8 @@
                     return;
                 }
 
-                // 3. توليد ID عشوائي فريد للطالب
                 const studentId = 'HU-' + Math.floor(100000 + Math.random() * 900000);
 
-                // 4. حفظ البيانات في كوليكشن users مع status pending
                 await addDoc(usersRef, {
                     student_id: studentId,
                     fullName: fullName,
@@ -302,11 +298,11 @@
                     password: password,
                     academicYear: academicYear,
                     nationalId: nationalId,
-                    status: 'pending', // في انتظار موافقة الأدمن
+                    status: 'pending',
                     createdAt: new Date().toISOString()
                 });
 
-                showToast('تم إرسال طلبك بنجاح! رقم الـ ID الخاص بك هو: ' + studentId + ' وحسابك بانتظار موافقة الإدارة.', 'success');
+                showToast('تم إرسال طلبك بنجاح! رقم الـ ID الخاص بك هو: ' + studentId, 'success');
                 document.getElementById('registerForm').reset();
                 
                 setTimeout(() => {
@@ -315,7 +311,7 @@
 
             } catch (error) {
                 console.error("Error adding document: ", error);
-                showToast('حدث خطأ أثناء التسجيل، يجدر المحاولة لاحقاً.', 'error');
+                showToast('حدث خطأ أثناء التسجيل، يرجى المحاولة لاحقاً.', 'error');
             }
         });
 
@@ -326,15 +322,29 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
 
-            showToast('جاري التحقق من بيانات الدخول...', 'warning');
+            if (!email || !password) {
+                showToast('يرجى إدخال البريد الإلكتروني وكلمة المرور!', 'error');
+                return;
+            }
 
             try {
                 const usersRef = collection(db, "users");
+                
+                // 1. فحص هل الإيميل مسجل أساساً في قاعدة البيانات أم لا
+                const qEmailCheck = query(usersRef, where("email", "==", email));
+                const emailSnapshot = await getDocs(qEmailCheck);
+
+                if (emailSnapshot.empty) {
+                    showToast('هذا الحساب غير مسجل في قاعدة البيانات، يرجى إنشاء حساب جديد.', 'error');
+                    return;
+                }
+
+                // 2. فحص مطابقة الإيميل مع الباسورد
                 const qLogin = query(usersRef, where("email", "==", email), where("password", "==", password));
                 const querySnapshot = await getDocs(qLogin);
 
                 if (querySnapshot.empty) {
-                    showToast('البريد الإلكتروني أو كلمة المرور غير صحيحة!', 'error');
+                    showToast('كلمة المرور غير صحيحة!', 'error');
                     return;
                 }
 
@@ -349,7 +359,6 @@
                     showToast('عذراً، تم رفض طلب إنشاء هذا الحساب من الإدارة.', 'error');
                 } else if (userData.status === 'approved') {
                     showToast('تم تسجيل الدخول بنجاح! أهلاً بك يا ' + userData.fullName, 'success');
-                    // هنا ممكن توجهه لصفحة الطالب الرئيسية لاحقاً
                 }
 
             } catch (error) {
