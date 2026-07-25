@@ -295,7 +295,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -350,7 +350,7 @@
             fetchNotifications(student);
         }
 
-        // جلب المواد مع عرض اسم الدكتور والمساعد بدلاً من الجملة القديمة
+        // جلب المواد مع عرض اسم الدكتور والمساعد
         async function fetchMaterials(year) {
             const grid = document.getElementById('materialsGrid');
             try {
@@ -383,12 +383,14 @@
             }
         }
 
-        // جلب الإشعارات التفاعلية (مواد دراسية + حالة تعديل البيانات) وتحديد المقروء عبر LocalStorage
-        async function fetchNotifications(student) {
+        // جلب الإشعارات بـ onSnapshot لتحديث الحذف والتعديل فوراً من قاعدة البيانات
+        function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
             
-            try {
+            const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+            
+            onSnapshot(qEdit, async (snapEdit) => {
                 let allNotifs = [];
 
                 // 1. إشعارات النشر الخاصة بفرقة الطالب
@@ -405,9 +407,7 @@
                     });
                 });
 
-                // 2. إشعارات تعديل البيانات الخاصة بهذا الطالب فقط
-                const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
-                const snapEdit = await getDocs(qEdit);
+                // 2. إشعارات تعديل البيانات (تحديث فوري عند الحذف من الأدمن)
                 snapEdit.forEach(d => {
                     const item = d.data();
                     allNotifs.push({
@@ -425,7 +425,7 @@
                     return;
                 }
 
-                // استرجاع الإشعارات المقروءة سابقاً من الـ LocalStorage
+                // استرجاع الإشعارات المقروءة سابقاً
                 const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
 
                 let html = '';
@@ -451,13 +451,12 @@
                 } else {
                     badge.style.display = 'none';
                 }
-
-            } catch (error) {
-                console.error("Error fetching notifications:", error);
-            }
+            }, (error) => {
+                console.error("Error fetching notifications in real-time:", error);
+            });
         }
 
-        // عند النقر على الإشعار: يتم تعليمه كمقروء وتوجيه الطالب لرابطه
+        // عند النقر على الإشعار: تعليمه كمقروء وتوجيهه
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
