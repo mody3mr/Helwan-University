@@ -110,8 +110,6 @@
         .btn-delete:hover { background: #dc2626; }
         .btn-edit { background: #3b82f6; color: white; }
         .btn-edit:hover { background: #2563eb; }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-warning:hover { background: #d97706; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
         #reportModalOverlay {
@@ -410,12 +408,15 @@
             </div>
         </div>
 
-        <!-- 4. تقارير ونتائج الطلاب (محدثة بالكامل) -->
+        <!-- 4. تقارير ونتائج الطلاب (محدثة بالبحث، الفلترة، زرار الإعادة الملون) -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
-                <div class="card-header">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <span>سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</span>
-                    <button class="btn btn-approve" style="padding: 8px 16px; font-size:13px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل للطلاب</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="reportSearchInput" placeholder="بحث باسم الطالب أو الـ ID..." onkeyup="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -423,9 +424,9 @@
                             <tr>
                                 <th>اسم الطالب (ID)</th>
                                 <th>المادة الدراسية</th>
-                                <th>الجهة (دكتور / معيد)</th>
                                 <th>عنوان الامتحان</th>
                                 <th>الدرجة والنسبة</th>
+                                <th>حالة المحاولة</th>
                                 <th>التاريخ</th>
                                 <th>الإجراءات</th>
                             </tr>
@@ -916,7 +917,9 @@
             list.appendChild(qDiv);
         }
 
-        // --- جلب نتائج الطلاب المطورة مع بيانات المادة والدكتور والمعيد وأزرار الإعادة والحذف والتقرير الشامل ---
+        // --- جلب نتائج الطلاب وتحديثها لدعم البحث والتلوين ---
+        let allQuizResultsCache = [];
+
         async function fetchQuizResults() {
             const tbody = document.getElementById('quizResultsTable');
             try {
@@ -926,53 +929,76 @@
                     return;
                 }
 
-                // جلب المواد لمعرفة اسم الدكتور والمعيد لكل مادة
-                const materialsSnap = await getDocs(collection(db, "materials"));
-                let materialDetails = {};
-                materialsSnap.forEach(mDoc => {
-                    const m = mDoc.data();
-                    materialDetails[m.title] = m;
-                });
-
-                let html = '';
+                allQuizResultsCache = [];
                 snapshot.forEach(d => {
-                    const r = d.data();
-                    const matInfo = materialDetails[r.materialTitle] || {};
-                    const roleText = r.targetRole === 'professor' ? `د. ${matInfo.professorName || 'الدكتور'}` : `م. ${matInfo.assistantName || 'المعيد'}`;
-                    const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
-
-                    html += `
-                        <tr>
-                            <td><b>${r.studentName || 'غير معروف'}</b><br><small style="color:#64748b;">${r.studentId || '-'}</small></td>
-                            <td><b>${r.materialTitle || 'غير محدد'}</b></td>
-                            <td><span style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-weight:600; font-size:12px;">${roleText}</span></td>
-                            <td>${r.quizTitle || 'امتحان'}</td>
-                            <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
-                            <td>${dateFormatted}</td>
-                            <td>
-                                <button class="btn btn-warning" onclick="allowQuizRetake('${d.id}')">إعادة الامتحان</button>
-                                <button class="btn btn-delete" onclick="deleteQuizResult('${d.id}')">حذف الدرجة</button>
-                            </td>
-                        </tr>
-                    `;
+                    allQuizResultsCache.push({ id: d.id, ...d.data() });
                 });
-                tbody.innerHTML = html;
+
+                filterQuizResults();
             } catch (e) {
                 console.error("Error fetching quiz results:", e);
                 tbody.innerHTML = `<tr><td colspan="7" class="no-data" style="color:red;">خطأ في تحميل النتائج.</td></tr>`;
             }
         }
 
-        // السماح للطالب بإعادة الامتحان
+        window.filterQuizResults = function() {
+            const tbody = document.getElementById('quizResultsTable');
+            if (!tbody) return;
+            const searchVal = (document.getElementById('reportSearchInput').value || '').toLowerCase().trim();
+
+            let filtered = allQuizResultsCache.filter(r => {
+                const name = (r.studentName || '').toLowerCase();
+                const sId = (r.studentId || '').toLowerCase();
+                const title = (r.quizTitle || '').toLowerCase();
+                const mat = (r.materialTitle || '').toLowerCase();
+                return !searchVal || name.includes(searchVal) || sId.includes(searchVal) || title.includes(searchVal) || mat.includes(searchVal);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="no-data">لا توجد نتائج مطابقة لبحثك.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(r => {
+                const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
+                
+                let statusBadge = `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600; font-size:12px;">مكتمل (محاولة 1)</span>`;
+                let retakeBtnStyle = `background: #f59e0b; color: white;`;
+                let retakeBtnText = `السماح بإعادة الامتحان`;
+
+                if (r.canRetake) {
+                    statusBadge = `<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:6px; font-weight:600; font-size:12px;">مسموح له بالإعادة</span>`;
+                    retakeBtnStyle = `background: #22c55e; color: white;`;
+                    retakeBtnText = `تم السماح بالاعادة`;
+                }
+
+                html += `
+                    <tr>
+                        <td><b>${r.studentName || 'غير معروف'}</b><br><small style="color:#64748b;">${r.studentId || '-'}</small></td>
+                        <td><b>${r.materialTitle || 'غير محدد'}</b></td>
+                        <td>${r.quizTitle || 'امتحان'}</td>
+                        <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${dateFormatted}</td>
+                        <td>
+                            <button class="btn" style="${retakeBtnStyle}" onclick="allowQuizRetake('${r.id}')">${retakeBtnText}</button>
+                            <button class="btn btn-delete" onclick="deleteQuizResult('${r.id}')">حذف الدرجة</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
         window.allowQuizRetake = async function(resultId) {
             try {
                 await updateDoc(doc(db, "quizResults", resultId), { canRetake: true });
-                showToast('تم السماح للطالب بإعادة الامتحان بنجاح!', 'success');
+                showToast('تم تفعيل زر الإعادة لهذا الطالب (محاولة إضافية واحدة فقط)', 'success');
                 fetchQuizResults();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-        // حذف درجة الطالب
         window.deleteQuizResult = async function(resultId) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
@@ -985,7 +1011,6 @@
             });
         }
 
-        // تقرير الأداء الشامل والنسبة المئوية لكل طالب
         window.openOverallStudentReport = async function() {
             const resultsSnap = await getDocs(collection(db, "quizResults"));
             if(resultsSnap.empty) { alert('لا توجد نتائج مسجلة لعمل تقرير.'); return; }
