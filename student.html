@@ -383,7 +383,7 @@
             }
         }
 
-        // جلب الإشعارات بـ onSnapshot مع الاكتفاء بجدول الإشعارات الأساسي لتجنب أي تكرار
+        // جلب الإشعارات بـ onSnapshot مع قراءة رابط التوجيه (link) بدقة
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
@@ -393,7 +393,6 @@
             onSnapshot(qNotifs, (snapshot) => {
                 let allNotifs = [];
 
-                // الاعتماد على إشعارات جدول notifications المرسلة مباشرة من الإدارة لمنع أي ازدواجية أو تكرار
                 snapshot.forEach(d => {
                     const item = d.data();
                     let isForThisStudent = false;
@@ -456,7 +455,7 @@
             });
         }
 
-        // عند النقر على الإشعار: تعليمه كمقروء وتوجيهه
+        // عند النقر على الإشعار: تعليمه كمقروء وتوجيهه لصفحة المادة مباشرة
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
