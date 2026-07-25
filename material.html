@@ -69,6 +69,7 @@
         .btn-view {
             background: #2563eb; color: white; padding: 8px 16px; border-radius: 8px;
             border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;
+            text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
         }
         .btn-view:hover { background: #1d4ed8; }
         .btn-download {
@@ -242,7 +243,7 @@
                         secSnap.forEach(s => sections.push(s.data()));
 
                         let allFiles = [];
-                        filesSnap.forEach(f => allFiles.push(f.data()));
+                        filesSnap.forEach(f => allFiles.push({ id: f.id, ...f.data() }));
 
                         renderTabContent('professor', sections, allFiles, 'profSectionsContainer');
                         renderTabContent('assistant', sections, allFiles, 'assistSectionsContainer');
@@ -272,6 +273,17 @@
                     let filesHtml = '';
                     matchedFiles.forEach(item => {
                         const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
+                        
+                        let actionButtons = '';
+                        if (item.contentType === 'skill_quiz') {
+                            actionButtons = `<a href="quiz.html?id=${item.id}" class="btn-view" style="background:#f59e0b;">بدء الامتحان</a>`;
+                        } else {
+                            actionButtons = `
+                                <button class="btn-view" onclick="openFileModal('${item.title.replace(/'/g, "\\'")}', '${item.fileUrl}')">عرض الملف</button>
+                                <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">تحميل</a>
+                            `;
+                        }
+
                         filesHtml += `
                             <div class="content-card">
                                 <div class="content-info">
@@ -279,8 +291,7 @@
                                     <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="btn-view" onclick="openFileModal('${item.title.replace(/'/g, "\\'")}', '${item.fileUrl}')">عرض الملف</button>
-                                    <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">تحميل</a>
+                                    ${actionButtons}
                                 </div>
                             </div>
                         `;
