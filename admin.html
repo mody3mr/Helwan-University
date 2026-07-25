@@ -9,23 +9,24 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; width: 100vw; }
         
+        /* القائمة الجانبية بدون أي أسهم أو سكول بار */
         .sidebar {
             width: 280px; background: #0f172a; color: white; display: flex;
-            flex-direction: column; justify-content: flex-start; padding: 25px 20px;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.05); position: sticky; top: 0; height: 100vh; flex-shrink: 0;
+            flex-direction: column; justify-content: flex-start; padding: 20px 15px;
+            position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
         }
         .sidebar-brand {
-            font-size: 22px; font-weight: 700; text-align: center;
-            padding-bottom: 20px; border-bottom: 1px solid #1e293b; color: #38bdf8;
+            font-size: 20px; font-weight: 700; text-align: center;
+            padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8;
         }
-        .sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
         .sidebar-menu li {
-            padding: 13px 16px; border-radius: 10px; background: #1e293b;
+            padding: 12px 15px; border-radius: 10px; background: #1e293b;
             font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease;
         }
         .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
 
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); }
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); height: 100vh; }
         .header-top {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; background: white; padding: 20px 30px;
@@ -96,23 +97,60 @@
         .btn-edit:hover { background: #2563eb; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
+        /* تصميم التوست الاحترافي الجديد */
         #toast-container {
             position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
+            z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
         }
         .toast {
-            padding: 16px 20px; border-radius: 12px; color: white; font-size: 14px; font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px);
+            padding: 16px 22px; border-radius: 14px; color: white; font-size: 14px; font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px);
+            display: flex; align-items: center; justify-content: space-between;
         }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background-color: #22c55e; }
-        .toast.error { background-color: #e74c3c; }
-        .toast.warning { background-color: #f59e0b; }
+        .toast.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        /* نافذة تأكيد الحذف الاحترافية (Modal) */
+        #customModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center; z-index: 99998;
+        }
+        .custom-modal {
+            background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease;
+        }
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .custom-modal h3 { color: #0f172a; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
+        .custom-modal p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
+        .custom-modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
+        .btn-confirm-yes { background: #ef4444; color: white; transition: background 0.2s; }
+        .btn-confirm-yes:hover { background: #dc2626; }
+        .btn-confirm-no { background: #f1f5f9; color: #475569; transition: background 0.2s; }
+        .btn-confirm-no:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+
+    <!-- نافذة تأكيد الحذف العصرية -->
+    <div id="customModalOverlay">
+        <div class="custom-modal">
+            <h3>تأكيد الحذف النهائي</h3>
+            <p>هل أنت متأكد من رغبتك في حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="custom-modal-actions">
+                <button class="btn-confirm-yes" id="modalYesBtn">نعم، حذف</button>
+                <button class="btn-confirm-no" id="modalNoBtn">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
     <div class="sidebar">
         <div>
@@ -508,7 +546,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminsTable">
-                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -537,17 +575,42 @@
         const currentAdminName = localStorage.getItem('currentAdminName') || "مسؤول النظام";
         document.getElementById('adminNameDisplay').innerText = currentAdminName;
 
+        // توست مسج احترافي وعصري
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerText = message;
+            toast.innerHTML = `<span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 100);
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 400);
-            }, 4000);
+            }, 3500);
+        }
+
+        // نافذة تأكيد الحذف العصرية الاحترافية بدلاً من رسالة المتصفح القديمة
+        window.showConfirmModal = function(onConfirm) {
+            const overlay = document.getElementById('customModalOverlay');
+            overlay.style.display = 'flex';
+
+            const yesBtn = document.getElementById('modalYesBtn');
+            const noBtn = document.getElementById('modalNoBtn');
+
+            // إزالة الأحداث القديمة لمنع التكرار
+            const newYesBtn = yesBtn.cloneNode(true);
+            const newNoBtn = noBtn.cloneNode(true);
+            yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+            noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+
+            document.getElementById('modalYesBtn').onclick = function() {
+                overlay.style.display = 'none';
+                onConfirm(true);
+            };
+            document.getElementById('modalNoBtn').onclick = function() {
+                overlay.style.display = 'none';
+                onConfirm(false);
+            };
         }
 
         window.toggleAdminDropdown = function() {
@@ -662,20 +725,21 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- دالة الحذف المباشرة والآمنة 100% ---
+        // --- دالة الحذف الاحترافية بالنافذة العصرية ---
         window.deleteDocItem = async function(collName, docId) {
-            if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
-                try {
-                    await deleteDoc(doc(db, collName, docId));
-                    showToast('تم الحذف بنجاح', 'success');
-                    // إعادة تحميل التاب الحالي فورا لتحديث الجدول
-                    const currentTab = localStorage.getItem('adminActiveTab') || 'materials';
-                    switchTab(currentTab);
-                } catch(e) {
-                    console.error("Delete error:", e);
-                    showToast('حدث خطأ أثناء الحذف', 'error');
+            showConfirmModal(async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await deleteDoc(doc(db, collName, docId));
+                        showToast('تم الحذف بنجاح', 'success');
+                        const currentTab = localStorage.getItem('adminActiveTab') || 'materials';
+                        switchTab(currentTab);
+                    } catch(e) {
+                        console.error("Delete error:", e);
+                        showToast('حدث خطأ أثناء الحذف', 'error');
+                    }
                 }
-            }
+            });
         };
 
         // --- 1. إدارة المواد ---
