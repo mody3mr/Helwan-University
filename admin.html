@@ -75,7 +75,6 @@
             border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        /* تنسيق قسم إضافة الأسئلة للامتحان التفاعلي */
         .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
         .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
         .btn-add-q { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 5px; }
@@ -170,7 +169,8 @@
             <ul class="sidebar-menu">
                 <li id="menuMaterials" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
-                <li id="menuFiles" onclick="switchTab('files')">📑 إدارة الملفات</li>
+                <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
+                <li id="menuReports" onclick="switchTab('reports')">📊 تقارير ونتائج الطلاب</li>
                 <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
                 <li id="menuAdmins" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
@@ -352,7 +352,7 @@
                             </div>
                             <div class="form-group" id="urlInputGroup">
                                 <label for="fileUrl">رابط الملف (Google Drive / PDF / صورة)</label>
-                                <input type="url" id="fileUrl" placeholder="https://..." required>
+                                <input type="url" id="urlInput" placeholder="https://...">
                             </div>
                             <div class="form-group" id="quizDurationGroup" style="display: none;">
                                 <label for="quizDuration">مدة الامتحان (بالدقائق)</label>
@@ -360,7 +360,6 @@
                             </div>
                         </div>
 
-                        <!-- واجهة إدخال الأسئلة لامتحان المهارة -->
                         <div id="quizBuilderContainer" style="display: none;" class="quiz-builder-box">
                             <label style="font-weight: 700; color: #0f172a; margin-bottom: 12px; display: block;">أسئلة امتحان المهارة:</label>
                             <div id="questionsList"></div>
@@ -373,7 +372,7 @@
             </div>
 
             <div class="card-box">
-                <div class="card-header">قائمة الملفات والمحتويات المنشورة</div>
+                <div class="card-header">قائمة المحتويات والملفات المنشورة</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -393,7 +392,30 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات -->
+        <!-- 4. تقارير ونتائج الطلاب -->
+        <div id="sectionReports" class="tab-section">
+            <div class="card-box">
+                <div class="card-header">سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم الطالب</th>
+                                <th>الرقم التعريفي (ID)</th>
+                                <th>عنوان الامتحان</th>
+                                <th>الدرجة الحاصل عليها</th>
+                                <th>التاريخ والوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quizResultsTable">
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -457,7 +479,7 @@
             </div>
         </div>
 
-        <!-- 5. إدارة الطلاب -->
+        <!-- 6. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة</div>
@@ -542,7 +564,7 @@
             </div>
         </div>
 
-        <!-- 6. الأعضاء الإداريين -->
+        <!-- 7. الأعضاء الإداريين -->
         <div id="sectionAdmins" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header" id="adminCardHeader">إنشاء حساب إداري جديد</div>
@@ -607,7 +629,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminsTable">
-                            <tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -720,9 +742,14 @@
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة الملفات والمحتوى';
+                document.getElementById('pageTitle').innerText = 'إدارة المحتوى والملفات';
                 resetFileForm();
                 fetchFilesTable();
+            } else if(tab === 'reports') {
+                document.getElementById('sectionReports').classList.add('active');
+                document.getElementById('menuReports').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'تقارير ونتائج الطلاب';
+                fetchQuizResults();
             } else if(tab === 'notifs') {
                 document.getElementById('sectionNotifs').classList.add('active');
                 document.getElementById('menuNotifs').classList.add('active');
@@ -801,7 +828,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- التحكم بحقول نوع المحتوى (ملف vs امتحان مهارة) ---
         window.toggleContentTypeFields = function() {
             const type = document.getElementById('contentType').value;
             const urlGroup = document.getElementById('urlInputGroup');
@@ -825,7 +851,6 @@
             }
         }
 
-        // إضافة سؤال جديد في نموذج الامتحان التفاعلي
         window.addQuestionField = function() {
             const list = document.getElementById('questionsList');
             const qIndex = list.children.length;
@@ -869,6 +894,36 @@
             list.appendChild(qDiv);
         }
 
+        // جلب نتائج الطلاب في الامتحانات
+        async function fetchQuizResults() {
+            const tbody = document.getElementById('quizResultsTable');
+            try {
+                const snapshot = await getDocs(collection(db, "quizResults"));
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد نتائج مسجلة للطلاب حتى الآن.</td></tr>`;
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(d => {
+                    const r = d.data();
+                    const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
+                    html += `
+                        <tr>
+                            <td><b>${r.studentName}</b></td>
+                            <td>${r.studentId}</td>
+                            <td>${r.quizTitle}</td>
+                            <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
+                            <td>${dateFormatted}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في تحميل النتائج.</td></tr>`;
+            }
+        }
+
         window.deleteDocItem = async function(collName, docId, actionKey) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
@@ -889,7 +944,7 @@
                         }
 
                         await deleteDoc(doc(db, collName, docId));
-                        showToast('تم الحذف بنجاح والإشعار المرتبط اختفى', 'success');
+                        showToast('تم الحذف بنجاح', 'success');
                         const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
                         switchTab(currentTab);
                     } catch(e) {
@@ -903,22 +958,16 @@
         // --- 1. المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const editId = document.getElementById('matEditId').value;
             const academicYear = document.getElementById('matYear').value;
             const title = document.getElementById('matTitle').value.trim();
             const professorName = document.getElementById('matProf').value.trim();
             const assistantName = document.getElementById('matAssist').value.trim();
 
             try {
-                if (editId) {
-                    await updateDoc(doc(db, "materials", editId), { title, academicYear, professorName, assistantName });
-                    showToast('تم تعديل المادة بنجاح!', 'success');
-                } else {
-                    await addDoc(collection(db, "materials"), {
-                        title, academicYear, professorName, assistantName, publisherName: currentAdminName, createdAt: new Date().toISOString()
-                    });
-                    showToast('تمت إضافة المادة بنجاح!', 'success');
-                }
+                await addDoc(collection(db, "materials"), {
+                    title, academicYear, professorName, assistantName, publisherName: currentAdminName, createdAt: new Date().toISOString()
+                });
+                showToast('تمت إضافة المادة بنجاح!', 'success');
                 resetMaterialForm();
                 fetchMaterialsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
@@ -927,23 +976,6 @@
         window.resetMaterialForm = function() {
             document.getElementById('materialForm').reset();
             document.getElementById('matEditId').value = '';
-            document.getElementById('materialCardHeader').innerText = 'إضافة مادة دراسية جديدة';
-            document.getElementById('matSubmitBtn').innerText = 'حفظ وإضافة المادة';
-        };
-
-        window.editMaterial = async function(id) {
-            const snap = await getDoc(doc(db, "materials", id));
-            if(snap.exists()) {
-                const m = snap.data();
-                document.getElementById('matEditId').value = id;
-                document.getElementById('matYear').value = m.academicYear;
-                document.getElementById('matTitle').value = m.title;
-                document.getElementById('matProf').value = m.professorName || '';
-                document.getElementById('matAssist').value = m.assistantName || '';
-                document.getElementById('materialCardHeader').innerText = 'تعديل بيانات المادة';
-                document.getElementById('matSubmitBtn').innerText = 'تعديل المادة';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
         };
 
         async function fetchMaterialsTable() {
@@ -959,7 +991,6 @@
                         <td><b>${m.title}</b></td>
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
-                            <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -971,46 +1002,19 @@
         // --- 2. الأقسام ---
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const editId = document.getElementById('secEditId').value;
             const academicYear = document.getElementById('secYear').value;
             const materialTitle = document.getElementById('secMaterial').value;
             const sectionName = document.getElementById('secName').value.trim();
 
             try {
-                if (editId) {
-                    await updateDoc(doc(db, "materialSections", editId), { academicYear, materialTitle, sectionName });
-                    showToast('تم تعديل القسم بنجاح!', 'success');
-                } else {
-                    await addDoc(collection(db, "materialSections"), {
-                        academicYear, materialTitle, sectionName, createdAt: new Date().toISOString()
-                    });
-                    showToast('تم إنشاء القسم بنجاح!', 'success');
-                }
-                resetSectionForm();
+                await addDoc(collection(db, "materialSections"), {
+                    academicYear, materialTitle, sectionName, createdAt: new Date().toISOString()
+                });
+                showToast('تم إنشاء القسم بنجاح!', 'success');
+                document.getElementById('sectionForm').reset();
                 fetchSectionsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
-
-        window.resetSectionForm = function() {
-            document.getElementById('sectionForm').reset();
-            document.getElementById('secEditId').value = '';
-            document.getElementById('sectionCardHeader').innerText = 'إنشاء قسم جديد للمادة';
-            document.getElementById('secSubmitBtn').innerText = 'إنشاء القسم';
-        };
-
-        window.editSection = async function(id) {
-            const snap = await getDoc(doc(db, "materialSections", id));
-            if(snap.exists()) {
-                const s = snap.data();
-                document.getElementById('secEditId').value = id;
-                document.getElementById('secYear').value = s.academicYear;
-                await populateMaterialsDropdown(s.academicYear, 'secMaterial', s.materialTitle);
-                document.getElementById('secName').value = s.sectionName;
-                document.getElementById('sectionCardHeader').innerText = 'تعديل القسم';
-                document.getElementById('secSubmitBtn').innerText = 'تعديل القسم';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        };
 
         async function fetchSectionsTable() {
             const tbody = document.getElementById('sectionsTable');
@@ -1025,7 +1029,6 @@
                         <td>${s.materialTitle}</td>
                         <td><b>${s.sectionName}</b></td>
                         <td>
-                            <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -1037,7 +1040,6 @@
         // --- 3. الملفات وامتحانات المهارة ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const editId = document.getElementById('fileEditId').value;
             const academicYear = document.getElementById('fileYear').value;
             const materialTitle = document.getElementById('fileMaterial').value;
             const sectionName = document.getElementById('fileSection').value;
@@ -1048,7 +1050,6 @@
 
             let fileData = { academicYear, materialTitle, sectionName, targetRole, contentType, title, fileUrl, publisherName: currentAdminName };
 
-            // لو امتحان مهارة، نقوم بجمع الأسئلة والوقت
             if (contentType === 'skill_quiz') {
                 fileData.durationMinutes = parseInt(document.getElementById('quizDuration').value) || 15;
                 let questions = [];
@@ -1069,26 +1070,20 @@
             }
 
             try {
-                if (editId) {
-                    await updateDoc(doc(db, "materialContents", editId), fileData);
-                    showToast('تم التعديل بنجاح!', 'success');
-                } else {
-                    fileData.createdAt = new Date().toISOString();
-                    await addDoc(collection(db, "materialContents"), fileData);
+                fileData.createdAt = new Date().toISOString();
+                await addDoc(collection(db, "materialContents"), fileData);
 
-                    // إرسال إشعار فوري
-                    let notifTitle = contentType === 'skill_quiz' ? `تم نشر امتحان مهارة جديد: ${title}` : `تم نشر محتوى جديد: ${title}`;
-                    await addDoc(collection(db, "notifications"), {
-                        title: notifTitle,
-                        message: `المادة: ${materialTitle} (${sectionName})`,
-                        type: 'system',
-                        target_group: 'year',
-                        target_year: academicYear,
-                        createdAt: new Date().toISOString()
-                    });
+                let notifTitle = contentType === 'skill_quiz' ? `تم نشر امتحان مهارة جديد: ${title}` : `تم نشر محتوى جديد: ${title}`;
+                await addDoc(collection(db, "notifications"), {
+                    title: notifTitle,
+                    message: `المادة: ${materialTitle} (${sectionName})`,
+                    type: 'system',
+                    target_group: 'year',
+                    target_year: academicYear,
+                    createdAt: new Date().toISOString()
+                });
 
-                    showToast('تم النشر وإرسال الإشعار للطلاب بنجاح!', 'success');
-                }
+                showToast('تم النشر وإرسال الإشعار للطلاب بنجاح!', 'success');
                 resetFileForm();
                 fetchFilesTable();
             } catch(e) { 
@@ -1099,9 +1094,6 @@
 
         window.resetFileForm = function() {
             document.getElementById('fileForm').reset();
-            document.getElementById('fileEditId').value = '';
-            document.getElementById('fileCardHeader').innerText = 'رفع ونشر الملفات والمحتوى';
-            document.getElementById('fileSubmitBtn').innerText = 'نشر المحتوى وإرسال إشعار فوري';
             document.getElementById('questionsList').innerHTML = '';
             toggleContentTypeFields();
         };
@@ -1141,15 +1133,9 @@
             const message = document.getElementById('notifMessage').value.trim();
 
             let notifData = { title, message, type: 'custom_admin', createdAt: new Date().toISOString() };
-            if(targetType === 'all') {
-                notifData.target_group = 'all';
-            } else if(targetType === 'year') {
-                notifData.target_group = 'year';
-                notifData.target_year = document.getElementById('notifYear').value;
-            } else if(targetType === 'student') {
-                notifData.target_group = 'student';
-                notifData.student_id = document.getElementById('notifStudentId').value.trim();
-            }
+            if(targetType === 'all') notifData.target_group = 'all';
+            else if(targetType === 'year') { notifData.target_group = 'year'; notifData.target_year = document.getElementById('notifYear').value; }
+            else if(targetType === 'student') { notifData.target_group = 'student'; notifData.student_id = document.getElementById('notifStudentId').value.trim(); }
 
             try {
                 await addDoc(collection(db, "notifications"), notifData);
