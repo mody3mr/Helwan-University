@@ -9,7 +9,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; width: 100vw; }
         
-        /* القائمة الجانبية بدون أي أسهم أو سكول بار */
         .sidebar {
             width: 280px; background: #0f172a; color: white; display: flex;
             flex-direction: column; justify-content: flex-start; padding: 20px 15px;
@@ -75,6 +74,16 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
+
+        /* تنسيق صندوق الصلاحيات الدقيقة للمشرف */
+        .permissions-box {
+            background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
+        }
+        .permissions-box label.main-lbl { font-weight: 700; color: #0f172a; margin-bottom: 15px; display: block; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .perm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .perm-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; cursor: pointer; }
+        .perm-item input { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
+
         .btn-submit {
             background: #2563eb; color: white; padding: 14px 24px; border: none;
             border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%;
@@ -97,7 +106,6 @@
         .btn-edit:hover { background: #2563eb; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
-        /* تصميم التوست الاحترافي */
         #toast-container {
             position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
             z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
@@ -112,7 +120,6 @@
         .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-        /* نافذة تأكيد الحذف الاحترافية (Modal) */
         #customModalOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -140,7 +147,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- نافذة تأكيد الحذف العصرية -->
     <div id="customModalOverlay">
         <div class="custom-modal">
             <h3>تأكيد الحذف النهائي</h3>
@@ -181,7 +187,7 @@
 
         <!-- 1. إدارة المواد -->
         <div id="sectionMaterials" class="tab-section">
-            <div class="card-box">
+            <div class="card-box" id="materialCardBox">
                 <div class="card-header" id="materialCardHeader">إضافة مادة دراسية جديدة</div>
                 <div class="card-body">
                     <form id="materialForm">
@@ -237,7 +243,7 @@
 
         <!-- 2. إدارة الأقسام -->
         <div id="sectionSections" class="tab-section">
-            <div class="card-box">
+            <div class="card-box" id="sectionCardBox">
                 <div class="card-header" id="sectionCardHeader">إنشاء قسم جديد للمادة</div>
                 <div class="card-body">
                     <form id="sectionForm">
@@ -291,7 +297,7 @@
 
         <!-- 3. إدارة الملفات -->
         <div id="sectionFiles" class="tab-section">
-            <div class="card-box">
+            <div class="card-box" id="fileCardBox">
                 <div class="card-header" id="fileCardHeader">رفع ونشر الملفات والمحتوى</div>
                 <div class="card-body">
                     <form id="fileForm">
@@ -363,7 +369,7 @@
 
         <!-- 4. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
-            <div class="card-box" style="margin-bottom: 25px;">
+            <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
                 <div class="card-body">
                     <form id="customNotifForm">
@@ -521,11 +527,35 @@
                             </div>
                             <div class="form-group">
                                 <label for="admRole">الصلاحية / الدور</label>
-                                <select id="admRole" required>
+                                <select id="admRole" required onchange="toggleRolePermissions()">
                                     <option value="manager">مدير عام (صلاحيات كاملة)</option>
-                                    <option value="supervisor">مشرف (صلاحيات محددة)</option>
+                                    <option value="supervisor">مشرف (صلاحيات دقيقة ومخصصة)</option>
                                 </select>
                             </div>
+                            
+                            <!-- خيارات الصلاحيات المفصلة للمشرف -->
+                            <div class="form-group full-width" id="permissionsGroup" style="display: none;">
+                                <div class="permissions-box">
+                                    <label class="main-lbl">حدد الأفعال والصلاحيات المسموح بها لهذا المشرف:</label>
+                                    <div class="perm-grid">
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="materials_manage"> 📚 إضافة وتعديل المواد</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="materials_delete"> 🗑️ حذف المواد</label>
+                                        
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="sections_manage"> 📂 إضافة وتعديل الأقسام</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="sections_delete"> 🗑️ حذف الأقسام</label>
+                                        
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 نشر وتعديل الملفات</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_delete"> 🗑️ حذف الملفات</label>
+                                        
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="notifs_manage"> 🔔 إرسال وتعديل الإشعارات</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="notifs_delete"> 🗑️ حذف الإشعارات</label>
+                                        
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 قبول طلبات وحظر الطلاب</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_delete"> 🗑️ حذف الطلاب نهائياً</label>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                         <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top: 10px;">إنشاء الحساب الإداري</button>
                     </form>
@@ -555,7 +585,7 @@
 
     </div>
 
-    <!-- المنطق البرمجي والربط المضمون -->
+    <!-- المنطق البرمجي والتحقق من الصلاحيات الدقيقة -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -572,13 +602,32 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- حماية صفحة الإدارة (تحقق من تسجيل الدخول أولاً) ---
         const currentAdminName = localStorage.getItem('currentAdminName');
+        const currentAdminRole = localStorage.getItem('currentAdminRole');
+        const adminPermissions = JSON.parse(localStorage.getItem('adminPermissions') || '[]');
+
         if (!currentAdminName) {
             location.href = 'admin-login.html';
         } else {
-            const nameDisplay = document.getElementById('adminNameDisplay');
-            if(nameDisplay) nameDisplay.innerText = currentAdminName;
+            document.getElementById('adminNameDisplay').innerText = currentAdminName;
+            
+            // تطبيق إخفاء التابعات بناءً على الصلاحيات الدقيقة
+            if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
+                document.getElementById('menuAdmins').style.display = 'none';
+
+                // إخفاء الأقسام التي لا يملك المشرف أي صلاحية فيها
+                const hasMat = adminPermissions.some(p => p.startsWith('materials_'));
+                const hasSec = adminPermissions.some(p => p.startsWith('sections_'));
+                const hasFile = adminPermissions.some(p => p.startsWith('files_'));
+                const hasNotif = adminPermissions.some(p => p.startsWith('notifs_'));
+                const hasStud = adminPermissions.some(p => p.startsWith('students_'));
+
+                if (!hasMat) document.getElementById('menuMaterials').style.display = 'none';
+                if (!hasSec) document.getElementById('menuSections').style.display = 'none';
+                if (!hasFile) document.getElementById('menuFiles').style.display = 'none';
+                if (!hasNotif) document.getElementById('menuNotifs').style.display = 'none';
+                if (!hasStud) document.getElementById('menuStudents').style.display = 'none';
+            }
         }
 
         window.showToast = function(message, type = 'success') {
@@ -594,7 +643,6 @@
             }, 3500);
         }
 
-        // نافذة تأكيد الحذف العصرية الاحترافية
         window.showConfirmModal = function(onConfirm) {
             const overlay = document.getElementById('customModalOverlay');
             overlay.style.display = 'flex';
@@ -622,12 +670,30 @@
         }
 
         window.logoutAdmin = function() {
-            localStorage.removeItem('currentAdminName');
+            localStorage.clear();
             location.href = 'admin-login.html';
         }
 
-        // نظام التبويبات الفوري مع ثبات التاب بعد الريفرش
+        window.toggleRolePermissions = function() {
+            const role = document.getElementById('admRole').value;
+            const group = document.getElementById('permissionsGroup');
+            group.style.display = (role === 'supervisor') ? 'block' : 'none';
+        }
+
+        // فحص إمكانية تنفيذ الإجراء حسب صلاحيات المشرف
+        function checkPermission(actionKey) {
+            if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') return true;
+            if (adminPermissions.includes(actionKey)) return true;
+            showToast('عذراً، ليس لديك صلاحية للقيام بهذا الإجراء', 'error');
+            return false;
+        }
+
         window.switchTab = function(tab) {
+            if (tab === 'admins' && currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
+                showToast('عذراً، ليس لديك صلاحية لدخول قسم الأعضاء الإداريين', 'error');
+                return;
+            }
+
             localStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
@@ -637,24 +703,53 @@
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
+                
+                // إخفاء نموذج الإضافة لو المشرف لا يملك صلاحية الإدارة
+                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('materials_manage')) {
+                    document.getElementById('materialCardBox').style.display = 'none';
+                } else {
+                    document.getElementById('materialCardBox').style.display = 'block';
+                }
+
                 resetMaterialForm();
                 fetchMaterialsTable();
             } else if(tab === 'sections') {
                 document.getElementById('sectionSections').classList.add('active');
                 document.getElementById('menuSections').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الأقسام';
+                
+                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('sections_manage')) {
+                    document.getElementById('sectionCardBox').style.display = 'none';
+                } else {
+                    document.getElementById('sectionCardBox').style.display = 'block';
+                }
+
                 resetSectionForm();
                 fetchSectionsTable();
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الملفات';
+                
+                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('files_manage')) {
+                    document.getElementById('fileCardBox').style.display = 'none';
+                } else {
+                    document.getElementById('fileCardBox').style.display = 'block';
+                }
+
                 resetFileForm();
                 fetchFilesTable();
             } else if(tab === 'notifs') {
                 document.getElementById('sectionNotifs').classList.add('active');
                 document.getElementById('menuNotifs').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الإشعارات';
+                
+                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('notifs_manage')) {
+                    document.getElementById('notifCardBox').style.display = 'none';
+                } else {
+                    document.getElementById('notifCardBox').style.display = 'block';
+                }
+
                 resetNotifForm();
                 fetchNotifsTable();
             } else if(tab === 'students') {
@@ -674,7 +769,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedTab = localStorage.getItem('adminActiveTab') || 'materials';
+            let savedTab = localStorage.getItem('adminActiveTab') || 'materials';
             switchTab(savedTab);
         });
 
@@ -729,8 +824,8 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- دالة الحذف الاحترافية بالنافذة العصرية ---
-        window.deleteDocItem = async function(collName, docId) {
+        window.deleteDocItem = async function(collName, docId, actionKey) {
+            if (!checkPermission(actionKey)) return;
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
@@ -746,9 +841,11 @@
             });
         };
 
-        // --- 1. إدارة المواد ---
+        // --- 1. المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!checkPermission('materials_manage')) return;
+
             const editId = document.getElementById('matEditId').value;
             const academicYear = document.getElementById('matYear').value;
             const title = document.getElementById('matTitle').value.trim();
@@ -778,6 +875,7 @@
         };
 
         window.editMaterial = async function(id) {
+            if (!checkPermission('materials_manage')) return;
             const snap = await getDoc(doc(db, "materials", id));
             if(snap.exists()) {
                 const m = snap.data();
@@ -794,6 +892,9 @@
 
         async function fetchMaterialsTable() {
             const tbody = document.getElementById('materialsTable');
+            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('materials_delete');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('materials_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "materials"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد مواد مسجلة.</td></tr>`; return; }
@@ -805,8 +906,9 @@
                         <td><b>${m.title}</b></td>
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
-                            <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}')">حذف</button>
+                            ${canManage ? `<button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>` : ''}
+                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>` : ''}
+                            ${!canManage && !canDelete ? `<span style="color:#94a3b8; font-size:12px;">للرؤية فقط</span>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -814,9 +916,11 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 2. إدارة الأقسام ---
+        // --- 2. الأقسام ---
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!checkPermission('sections_manage')) return;
+
             const editId = document.getElementById('secEditId').value;
             const academicYear = document.getElementById('secYear').value;
             const materialTitle = document.getElementById('secMaterial').value;
@@ -845,6 +949,7 @@
         };
 
         window.editSection = async function(id) {
+            if (!checkPermission('sections_manage')) return;
             const snap = await getDoc(doc(db, "materialSections", id));
             if(snap.exists()) {
                 const s = snap.data();
@@ -860,6 +965,9 @@
 
         async function fetchSectionsTable() {
             const tbody = document.getElementById('sectionsTable');
+            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('sections_delete');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('sections_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "materialSections"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد أقسام مسجلة.</td></tr>`; return; }
@@ -871,8 +979,8 @@
                         <td>${s.materialTitle}</td>
                         <td><b>${s.sectionName}</b></td>
                         <td>
-                            <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}')">حذف</button>
+                            ${canManage ? `<button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>` : ''}
+                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -880,9 +988,11 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. إدارة الملفات ---
+        // --- 3. الملفات ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!checkPermission('files_manage')) return;
+
             const editId = document.getElementById('fileEditId').value;
             const academicYear = document.getElementById('fileYear').value;
             const materialTitle = document.getElementById('fileMaterial').value;
@@ -921,6 +1031,7 @@
         };
 
         window.editFile = async function(id) {
+            if (!checkPermission('files_manage')) return;
             const snap = await getDoc(doc(db, "materialContents", id));
             if(snap.exists()) {
                 const f = snap.data();
@@ -939,6 +1050,9 @@
 
         async function fetchFilesTable() {
             const tbody = document.getElementById('filesTable');
+            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('files_delete');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('files_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "materialContents"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد ملفات منشورة.</td></tr>`; return; }
@@ -952,8 +1066,8 @@
                         <td>${roleText}</td>
                         <td><a href="${f.fileUrl}" target="_blank">رابط الملف</a></td>
                         <td>
-                            <button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}')">حذف</button>
+                            ${canManage ? `<button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>` : ''}
+                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', 'files_delete')">حذف</button>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -961,9 +1075,11 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. إدارة الإشعارات مع الفلترة التامة ---
+        // --- 4. الإشعارات ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!checkPermission('notifs_manage')) return;
+
             const editId = document.getElementById('notifEditId').value;
             const targetType = document.getElementById('notifTargetType').value;
             const title = document.getElementById('notifTitle').value.trim();
@@ -996,11 +1112,12 @@
         };
 
         window.editNotif = async function(id) {
+            if (!checkPermission('notifs_manage')) return;
             const snap = await getDoc(doc(db, "notifications", id));
             if(snap.exists()) {
                 const n = snap.data();
                 if(n.type !== 'custom_admin') {
-                    showToast('إشعارات النظام التلقائية لا يمكن تعديلها، يمكنك حذفها فقط.', 'warning');
+                    showToast('إشعارات النظام التلقائية لا يمكن تعديلها.', 'warning');
                     return;
                 }
                 document.getElementById('notifEditId').value = id;
@@ -1025,6 +1142,9 @@
         window.fetchNotifsTable = async function() {
             const tbody = document.getElementById('notifsTable');
             const filterVal = document.getElementById('notifFilterSelect').value;
+            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('notifs_delete');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('notifs_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "notifications"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
@@ -1047,8 +1167,8 @@
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
-                            ${n.type === 'custom_admin' ? `<button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>` : ''}
-                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}')">حذف</button>
+                            ${n.type === 'custom_admin' && canManage ? `<button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>` : ''}
+                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', 'notifs_delete')">حذف</button>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -1056,22 +1176,34 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. إدارة الطلاب وحذفهم النهائي ---
+        // --- 5. الطلاب ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
+
             try {
                 const snapshot = await getDocs(query(collection(db, "users"), where("status", "==", "pending")));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const u = d.data();
-                    html += `<tr><td><b>${u.student_id}</b></td><td>${u.fullName}</td><td>${u.email}</td><td>${u.phone}</td><td>الفرقة ${u.academicYear}</td><td><button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button></td></tr>`;
+                    html += `<tr>
+                        <td><b>${u.student_id}</b></td>
+                        <td>${u.fullName}</td>
+                        <td>${u.email}</td>
+                        <td>${u.phone}</td>
+                        <td>الفرقة ${u.academicYear}</td>
+                        <td>
+                            ${canManage ? `<button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
+                        </td>
+                    </tr>`;
                 });
                 tbody.innerHTML = html;
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في الجلب.</td></tr>`; }
         }
 
         window.updateStudentStatus = async function(docId, status) {
+            if (!checkPermission('students_manage')) return;
             try {
                 await updateDoc(doc(db, "users", docId), { status });
                 showToast(status === 'approved' ? 'تمت الموافقة' : 'تم الرفض', status === 'approved' ? 'success' : 'warning');
@@ -1082,19 +1214,31 @@
 
         async function fetchPendingEdits() {
             const tbody = document.getElementById('pendingEditsTable');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "pendingEdits"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const ed = d.data();
-                    html += `<tr><td><b>${ed.student_id}</b></td><td>${ed.fullName}</td><td>${ed.phone}</td><td>${ed.email}</td><td>الفرقة ${ed.academicYear}</td><td><button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button><button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button></td></tr>`;
+                    html += `<tr>
+                        <td><b>${ed.student_id}</b></td>
+                        <td>${ed.fullName}</td>
+                        <td>${ed.phone}</td>
+                        <td>${ed.email}</td>
+                        <td>الفرقة ${ed.academicYear}</td>
+                        <td>
+                            ${canManage ? `<button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button><button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
+                        </td>
+                    </tr>`;
                 });
                 tbody.innerHTML = html;
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في الجلب.</td></tr>`; }
         }
 
         window.approveEdit = async function(editId) {
+            if (!checkPermission('students_manage')) return;
             try {
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(!editSnap.exists()) return;
@@ -1110,6 +1254,7 @@
         }
 
         window.rejectEdit = async function(editId) {
+            if (!checkPermission('students_manage')) return;
             try {
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(editSnap.exists()) {
@@ -1124,6 +1269,9 @@
 
         async function fetchAllStudents() {
             const tbody = document.getElementById('allStudentsTable');
+            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_delete');
+            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
+
             try {
                 const snapshot = await getDocs(collection(db, "users"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا يوجد طلاب مسجلين.</td></tr>`; return; }
@@ -1144,8 +1292,8 @@
                             <td>الفرقة ${u.academicYear || '1'}</td>
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
-                                <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${d.id}', '${newStatus}')">${banBtnText}</button>
-                                <button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}')">حذف</button>
+                                ${canManage ? `<button class="btn ${banBtnClass}" onclick="toggleBanStudent('${d.id}', '${newStatus}')">${banBtnText}</button>` : ''}
+                                ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}', 'students_delete')">حذف</button>` : ''}
                             </td>
                         </tr>
                     `;
@@ -1155,6 +1303,7 @@
         }
 
         window.toggleBanStudent = async function(docId, newStatus) {
+            if (!checkPermission('students_manage')) return;
             try {
                 await updateDoc(doc(db, "users", docId), { status: newStatus });
                 showToast(newStatus === 'banned' ? 'تم حظر الطالب بنجاح' : 'تم إلغاء الحظر عن الطالب', 'warning');
@@ -1172,19 +1321,28 @@
             const password = document.getElementById('admPassword').value.trim();
             const role = document.getElementById('admRole').value;
 
+            let permissions = [];
+            if (role === 'supervisor') {
+                document.querySelectorAll('input[name="perm"]:checked').forEach(el => {
+                    permissions.push(el.value);
+                });
+            } else {
+                permissions = ['materials_manage', 'materials_delete', 'sections_manage', 'sections_delete', 'files_manage', 'files_delete', 'notifs_manage', 'notifs_delete', 'students_manage', 'students_delete'];
+            }
+
             try {
                 if(editId) {
-                    await updateDoc(doc(db, "admins", editId), { name, email, password, role });
-                    showToast('تم تعديل بيانات العضو الإداري بنجاح!', 'success');
+                    await updateDoc(doc(db, "admins", editId), { name, email, password, role, permissions });
+                    showToast('تم تعديل بيانات الصلاحيات بنجاح!', 'success');
                 } else {
                     await addDoc(collection(db, "admins"), {
-                        name, email, password, role, status: 'active', createdAt: new Date().toISOString()
+                        name, email, password, role, permissions, status: 'active', createdAt: new Date().toISOString()
                     });
-                    showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
+                    showToast('تم إنشاء الحساب الإداري وصلاحياته بنجاح!', 'success');
                 }
                 resetAdminForm();
                 fetchAdminsTable();
-            } catch(e) { showToast('حدث خطأ أثناء حفظ العضو الإداري', 'error'); }
+            } catch(e) { showToast('حدث خطأ أثناء الحفظ', 'error'); }
         });
 
         window.resetAdminForm = function() {
@@ -1192,6 +1350,7 @@
             document.getElementById('adminEditId').value = '';
             document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد (مدير أو مشرف)';
             document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري';
+            document.getElementById('permissionsGroup').style.display = 'none';
         };
 
         window.editAdmin = async function(id) {
@@ -1203,7 +1362,16 @@
                 document.getElementById('admEmail').value = adm.email;
                 document.getElementById('admPassword').value = adm.password;
                 document.getElementById('admRole').value = adm.role;
-                document.getElementById('adminCardHeader').innerText = 'تعديل بيانات العضو الإداري';
+                
+                toggleRolePermissions();
+
+                if (adm.role === 'supervisor' && adm.permissions) {
+                    document.querySelectorAll('input[name="perm"]').forEach(el => {
+                        el.checked = adm.permissions.includes(el.value);
+                    });
+                }
+
+                document.getElementById('adminCardHeader').innerText = 'تعديل صلاحيات العضو الإداري';
                 document.getElementById('adminSubmitBtn').innerText = 'تعديل الحساب';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -1233,7 +1401,7 @@
                             <td>
                                 <button class="btn ${actionBtnClass}" onclick="toggleAdminStatus('${d.id}', '${newStatus}')">${actionBtnText}</button>
                                 <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
-                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}', 'admins_delete')">حذف</button>
                             </td>
                         </tr>
                     `;
