@@ -6,156 +6,65 @@
     <title>جامعة حلوان - لوحة التحكم الإدارية الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
-        body {
-            background: #f1f5f9;
-            color: #1e293b;
-            display: flex;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; }
         .sidebar {
-            width: 280px;
-            background: #0f172a;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 25px 20px;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            width: 280px; background: #0f172a; color: white; display: flex;
+            flex-direction: column; justify-content: space-between; padding: 25px 20px;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); position: sticky; top: 0; height: 100vh;
         }
         .sidebar-brand {
-            font-size: 22px;
-            font-weight: 700;
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #1e293b;
-            color: #38bdf8;
+            font-size: 22px; font-weight: 700; text-align: center;
+            padding-bottom: 20px; border-bottom: 1px solid #1e293b; color: #38bdf8;
         }
-        .sidebar-menu {
-            list-style: none;
-            margin-top: 25px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         .sidebar-menu li {
-            padding: 14px 18px;
-            border-radius: 10px;
-            background: #1e293b;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 13px 16px; border-radius: 10px; background: #1e293b;
+            font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease;
         }
-        .sidebar-menu li.active, .sidebar-menu li:hover {
-            background: #38bdf8;
-            color: #0f172a;
-            transform: translateX(-5px);
-        }
+        .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
         .sidebar-logout {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.3s;
-            font-size: 14px;
+            background: #ef4444; color: white; border: none; padding: 13px;
+            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.3s; font-size: 14px;
         }
         .sidebar-logout:hover { background: #dc2626; }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
         .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; background: white; padding: 20px 30px;
+            border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
         .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
-        .admin-badge {
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 13px;
-        }
+        .admin-badge { background: #e0f2fe; color: #0369a1; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; }
 
         .tab-section { display: none; }
         .tab-section.active { display: block; }
 
         .card-box {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            overflow: hidden;
-            margin-bottom: 30px;
-            border: 1px solid #e2e8f0;
+            background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0;
         }
         .card-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid #f1f5f9;
-            font-weight: 700;
-            font-size: 18px;
-            color: #0f172a;
-            background: #f8fafc;
+            padding: 20px 25px; border-bottom: 1px solid #f1f5f9;
+            font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc;
         }
         .card-body { padding: 25px; }
         
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #334155;
-            font-weight: 600;
-            font-size: 14px;
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px;
+            font-size: 14px; outline: none; transition: all 0.3s; background: #fff;
         }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s;
-            background: #fff;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
         .btn-submit {
-            background: #2563eb;
-            color: white;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            width: 100%;
+            background: #2563eb; color: white; padding: 14px 24px; border: none;
+            border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%;
         }
         .btn-submit:hover { background: #1d4ed8; }
 
@@ -163,35 +72,24 @@
         table { width: 100%; border-collapse: collapse; text-align: right; }
         table th, table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         table th { background: #f8fafc; color: #475569; font-weight: 700; }
-        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; }
         .btn-approve { background: #22c55e; color: white; }
         .btn-approve:hover { background: #16a34a; }
-        .btn-reject { background: #ef4444; color: white; margin-right: 6px; }
+        .btn-reject { background: #ef4444; color: white; margin-right: 5px; }
         .btn-reject:hover { background: #dc2626; }
+        .btn-edit { background: #3b82f6; color: white; margin-left: 5px; }
+        .btn-edit:hover { background: #2563eb; }
+        .btn-delete { background: #64748b; color: white; }
+        .btn-delete:hover { background: #475569; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
         #toast-container {
-            position: fixed;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 90%;
-            max-width: 400px;
+            position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
         }
         .toast {
-            padding: 16px 20px;
-            border-radius: 12px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(-20px);
+            padding: 16px 20px; border-radius: 12px; color: white; font-size: 14px; font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px);
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background-color: #22c55e; }
@@ -203,7 +101,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- القائمة الجانبية بالترتيب الجديد والمحدد -->
     <div class="sidebar">
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
@@ -211,6 +108,7 @@
                 <li id="menuMaterials" class="active" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة الملفات</li>
+                <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
             </ul>
         </div>
@@ -223,10 +121,10 @@
             <div class="admin-badge" id="adminNameDisplay">مسؤول النظام</div>
         </div>
 
-        <!-- 1. تاب إدارة المواد -->
+        <!-- 1. إدارة المواد (إضافة فقط بدون طاقم تدريس + عرض وتعديل وحذف) -->
         <div id="sectionMaterials" class="tab-section active">
             <div class="card-box">
-                <div class="card-header">إضافة مادة دراسية جديدة وطاقم التدريس</div>
+                <div class="card-header">إضافة مادة دراسية جديدة</div>
                 <div class="card-body">
                     <form id="materialForm">
                         <div class="form-grid">
@@ -241,28 +139,40 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="matTitle">اسم المادة</label>
+                                <label for="matTitle">اسم المادة الدراسية</label>
                                 <input type="text" id="matTitle" placeholder="مثال: البرمجة المتقدمة" required>
                             </div>
-                            <div class="form-group">
-                                <label for="matProf">أستاذ المادة (الدكتور)</label>
-                                <input type="text" id="matProf" placeholder="مثال: أ.د/ محمد أحمد" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="matAssist">المعيد / المساعد</label>
-                                <input type="text" id="matAssist" placeholder="مثال: م/ محمود حسن" required>
-                            </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 15px;">حفظ المادة</button>
+                        <button type="submit" class="btn-submit" style="margin-top: 10px;">حفظ وإضافة المادة</button>
                     </form>
+                </div>
+            </div>
+
+            <!-- جدول عرض وتعديل وحذف المواد -->
+            <div class="card-box">
+                <div class="card-header">قائمة المواد الدراسية المسجلة</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الفرقة</th>
+                                <th>اسم المادة</th>
+                                <th>بواسطة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialsTable">
+                            <tr><td colspan="4" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- 2. تاب إدارة الأقسام (إنشاء أقسام جديدة للمادة والفرقة) -->
+        <!-- 2. إدارة الأقسام (مع جدول عرض وتعديل وحذف) -->
         <div id="sectionSections" class="tab-section">
             <div class="card-box">
-                <div class="card-header">إنشاء قسم جديد (تابع لمادة وفرقة معينة)</div>
+                <div class="card-header">إنشاء قسم جديد للمادة</div>
                 <div class="card-body">
                     <form id="sectionForm">
                         <div class="form-grid">
@@ -284,19 +194,38 @@
                             </div>
                             <div class="form-group">
                                 <label for="secName">اسم القسم الجديد</label>
-                                <input type="text" id="secName" placeholder="مثال: المحاضرات، السكاشن، كويزات الأسبوع الأول" required>
+                                <input type="text" id="secName" placeholder="مثال: المحاضرات، السكاشن، الفيديوهات" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 15px;">إنشاء القسم</button>
+                        <button type="submit" class="btn-submit" style="margin-top: 10px;">إنشاء القسم</button>
                     </form>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="card-header">قائمة الأقسام الدراسية المسجلة</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الفرقة</th>
+                                <th>المادة</th>
+                                <th>اسم القسم</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sectionsTable">
+                            <tr><td colspan="4" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- 3. تاب إدارة الملفات (النشر في مادة وقسم معين وعند دكتور أو معيد) -->
+        <!-- 3. إدارة الملفات (مع كلمة المعيد فقط + جدول عرض وتعديل وحذف) -->
         <div id="sectionFiles" class="tab-section">
             <div class="card-box">
-                <div class="card-header">رفع ونشر الملفات داخل الأقسام</div>
+                <div class="card-header">رفع ونشر الملفات والمحتوى</div>
                 <div class="card-body">
                     <form id="fileForm">
                         <div class="form-grid">
@@ -326,28 +255,91 @@
                                 <label for="fileTarget">يتبع لمن؟</label>
                                 <select id="fileTarget" required>
                                     <option value="professor">الدكتور (أستاذ المادة)</option>
-                                    <option value="assistant">المعيد (المساعد)</option>
+                                    <option value="assistant">المعيد</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="fileTitle">عنوان الملف / المحتوى</label>
-                                <input type="text" id="fileTitle" placeholder="مثال: شابتر 1 - ملف PDF" required>
+                                <input type="text" id="fileTitle" placeholder="مثال: شابتر 1" required>
                             </div>
                             <div class="form-group">
                                 <label for="fileUrl">رابط الملف (Google Drive / PDF / Video)</label>
                                 <input type="url" id="fileUrl" placeholder="https://..." required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 15px;">نشر الملف وإرسال إشعار للطلاب</button>
+                        <button type="submit" class="btn-submit" style="margin-top: 10px;">نشر الملف وإرسال إشعار فوري</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="card-header">قائمة الملفات والمحتويات المنشورة</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المادة / القسم</th>
+                                <th>العنوان</th>
+                                <th>يتبع لـ</th>
+                                <th>رابط الملف</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTable">
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. إدارة الإشعارات (إرسال إشعار مخصص لفرقة، جميع الفرق، أو طالب معين) -->
+        <div id="sectionNotifs" class="tab-section">
+            <div class="card-box">
+                <div class="card-header">مركز إدارة وإرسال الإشعارات للطلاب</div>
+                <div class="card-body">
+                    <form id="customNotifForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="notifTargetType">الفئة المستهدفة بالإشعار</label>
+                                <select id="notifTargetType" required onchange="toggleNotifTargetInput()">
+                                    <option value="all">جميع فرق الجامعة</option>
+                                    <option value="year">فرقة دراسية معينة</option>
+                                    <option value="student">طالب محدد (برقم الـ ID)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="yearInputGroup" style="display: none;">
+                                <label for="notifYear">اختر الفرقة</label>
+                                <select id="notifYear">
+                                    <option value="1">الفرقة الأولى</option>
+                                    <option value="2">الفرقة الثانية</option>
+                                    <option value="3">الفرقة الثالثة</option>
+                                    <option value="4">الفرقة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="studentInputGroup" style="display: none;">
+                                <label for="notifStudentId">الرقم التعريفي للطالب (Student ID)</label>
+                                <input type="text" id="notifStudentId" placeholder="مثال: HU-123456">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="notifTitle">عنوان الإشعار</label>
+                                <input type="text" id="notifTitle" placeholder="مثال: تنبيه هام بخصوص موعد الامتحانات" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="notifMessage">نص الرسالة</label>
+                                <textarea id="notifMessage" rows="3" placeholder="اكتب تفاصيل الإشعار هنا..." required></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit">إرسال الإشعار الآن</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- 4. تاب إدارة الطلاب -->
+        <!-- 5. إدارة الطلاب (طلبات جديدة + تعديلات + قائمة جميع الطلاب مع حظر/إلغاء حظر) -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header">طلبات إنشاء الحسابات الجديدة</div>
+                <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -361,14 +353,14 @@
                             </tr>
                         </thead>
                         <tbody id="pendingStudentsTable">
-                            <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="card-box">
-                <div class="card-header">طلبات تعديل البيانات الشخصية</div>
+            <div class="card-box" style="margin-bottom: 25px;">
+                <div class="card-header">طلبات تعديل البيانات الشخصية (Pending Edits)</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -382,6 +374,28 @@
                             </tr>
                         </thead>
                         <tbody id="pendingEditsTable">
+                            <tr><td colspan="6" class="no-data">لا توجد طلبات تعديل معلقة.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- قائمة جميع طلاب الجامعة مع التحكم الكامل والحظر -->
+            <div class="card-box">
+                <div class="card-header">قائمة جميع طلاب الجامعة (إدارة كاملة وحظر)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الرقم التعريفي</th>
+                                <th>الاسم الرباعي</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الفرقة</th>
+                                <th>الحالة</th>
+                                <th>تحكم الحساب</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allStudentsTable">
                             <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
@@ -391,6 +405,7 @@
 
     </div>
 
+    <!-- المنطق البرمجي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -431,31 +446,43 @@
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
+                fetchMaterialsTable();
             } else if(tab === 'sections') {
                 document.getElementById('sectionSections').classList.add('active');
                 document.getElementById('menuSections').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الأقسام';
+                fetchSectionsTable();
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الملفات';
+                fetchFilesTable();
+            } else if(tab === 'notifs') {
+                document.getElementById('sectionNotifs').classList.add('active');
+                document.getElementById('menuNotifs').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة الإشعارات';
             } else if(tab === 'students') {
                 document.getElementById('sectionStudents').classList.add('active');
                 document.getElementById('menuStudents').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الطلاب';
                 fetchPendingStudents();
                 fetchPendingEdits();
+                fetchAllStudents();
             }
         }
 
-        // جلب المواد حسب الفرقة في تاب الأقسام
-        document.getElementById('secYear').addEventListener('change', async function() {
-            const year = this.value;
-            const selectMat = document.getElementById('secMaterial');
+        window.toggleNotifTargetInput = function() {
+            const val = document.getElementById('notifTargetType').value;
+            document.getElementById('yearInputGroup').style.display = val === 'year' ? 'block' : 'none';
+            document.getElementById('studentInputGroup').style.display = val === 'student' ? 'block' : 'none';
+        }
+
+        // جلب المواد لأقسام وسلشات التحديد
+        async function populateMaterialsDropdown(yearId, dropdownId) {
+            const selectMat = document.getElementById(dropdownId);
             selectMat.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
             try {
-                const q = query(collection(db, "materials"), where("academicYear", "==", year));
-                const snapshot = await getDocs(q);
+                const snapshot = await getDocs(query(collection(db, "materials"), where("academicYear", "==", yearId)));
                 if(snapshot.empty) {
                     selectMat.innerHTML = `<option value="" disabled selected>لا توجد مواد لهذه الفرقة</option>`;
                     return;
@@ -467,39 +494,19 @@
                 });
                 selectMat.innerHTML = opts;
             } catch(e) { console.error(e); }
-        });
+        }
 
-        // جلب المواد حسب الفرقة في تاب الملفات
-        document.getElementById('fileYear').addEventListener('change', async function() {
-            const year = this.value;
-            const selectMat = document.getElementById('fileMaterial');
-            selectMat.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
-            try {
-                const q = query(collection(db, "materials"), where("academicYear", "==", year));
-                const snapshot = await getDocs(q);
-                if(snapshot.empty) {
-                    selectMat.innerHTML = `<option value="" disabled selected>لا توجد مواد لهذه الفرقة</option>`;
-                    return;
-                }
-                let opts = `<option value="" disabled selected>اختر المادة...</option>`;
-                snapshot.forEach(d => {
-                    const m = d.data();
-                    opts += `<option value="${m.title}">${m.title}</option>`;
-                });
-                selectMat.innerHTML = opts;
-            } catch(e) { console.error(e); }
-        });
+        document.getElementById('secYear').addEventListener('change', function() { populateMaterialsDropdown(this.value, 'secMaterial'); });
+        document.getElementById('fileYear').addEventListener('change', function() { populateMaterialsDropdown(this.value, 'fileMaterial'); });
 
-        // جلب الأقسام حسب المادة المختارة في تاب الملفات
         document.getElementById('fileMaterial').addEventListener('change', async function() {
             const matTitle = this.value;
             const selectSec = document.getElementById('fileSection');
             selectSec.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
             try {
-                const q = query(collection(db, "materialSections"), where("materialTitle", "==", matTitle));
-                const snapshot = await getDocs(q);
+                const snapshot = await getDocs(query(collection(db, "materialSections"), where("materialTitle", "==", matTitle)));
                 if(snapshot.empty) {
-                    selectSec.innerHTML = `<option value="" disabled selected>لا توجد أقسام لهذه المادة، قم بإنشائها أولاً</option>`;
+                    selectSec.innerHTML = `<option value="" disabled selected>لا توجد أقسام لهذه المادة</option>`;
                     return;
                 }
                 let opts = `<option value="" disabled selected>اختر القسم...</option>`;
@@ -511,43 +518,66 @@
             } catch(e) { console.error(e); }
         });
 
-        // 1. إضافة المادة
+        // 1. إضافة المادة (بدون طاقم تدريس)
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('matYear').value;
             const title = document.getElementById('matTitle').value.trim();
-            const professorName = document.getElementById('matProf').value.trim();
-            const assistantName = document.getElementById('matAssist').value.trim();
-
             try {
                 await addDoc(collection(db, "materials"), {
-                    title, academicYear, professorName, assistantName,
-                    publisherName: currentAdminName,
-                    createdAt: new Date().toISOString()
+                    title, academicYear, publisherName: currentAdminName, createdAt: new Date().toISOString()
                 });
                 showToast('تمت إضافة المادة بنجاح!', 'success');
                 this.reset();
+                fetchMaterialsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // 2. إنشاء قسم جديد للمادة
+        async function fetchMaterialsTable() {
+            const tbody = document.getElementById('materialsTable');
+            try {
+                const snapshot = await getDocs(collection(db, "materials"));
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد مواد مسجلة.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const m = d.data();
+                    html += `<tr><td>الفرقة ${m.academicYear}</td><td><b>${m.title}</b></td><td>${m.publisherName || 'الإدارة'}</td><td><button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', fetchMaterialsTable)">حذف</button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+        }
+
+        // 2. إنشاء القسم
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('secYear').value;
             const materialTitle = document.getElementById('secMaterial').value;
             const sectionName = document.getElementById('secName').value.trim();
-
             try {
                 await addDoc(collection(db, "materialSections"), {
-                    academicYear, materialTitle, sectionName,
-                    createdAt: new Date().toISOString()
+                    academicYear, materialTitle, sectionName, createdAt: new Date().toISOString()
                 });
                 showToast('تم إنشاء القسم بنجاح!', 'success');
                 this.reset();
+                fetchSectionsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // 3. نشر الملف داخل القسم وعند دكتور أو معيد
+        async function fetchSectionsTable() {
+            const tbody = document.getElementById('sectionsTable');
+            try {
+                const snapshot = await getDocs(collection(db, "materialSections"));
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد أقسام مسجلة.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const s = d.data();
+                    html += `<tr><td>الفرقة ${s.academicYear}</td><td>${s.materialTitle}</td><td><b>${s.sectionName}</b></td><td><button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', fetchSectionsTable)">حذف</button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+        }
+
+        // 3. نشر الملف (مع كلمة المعيد فقط)
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('fileYear').value;
@@ -560,37 +590,90 @@
             try {
                 await addDoc(collection(db, "materialContents"), {
                     academicYear, materialTitle, sectionName, targetRole, title, fileUrl,
-                    publisherName: currentAdminName,
-                    createdAt: new Date().toISOString()
+                    publisherName: currentAdminName, createdAt: new Date().toISOString()
                 });
-                showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
+                showToast('تم نشر الملف وإرسال الإشعار بنجاح!', 'success');
                 this.reset();
+                fetchFilesTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // 4. إدارة الطلاب
+        async function fetchFilesTable() {
+            const tbody = document.getElementById('filesTable');
+            try {
+                const snapshot = await getDocs(collection(db, "materialContents"));
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد ملفات منشورة.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const f = d.data();
+                    const roleText = f.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
+                    html += `<tr><td>${f.materialTitle} (${f.sectionName})</td><td><b>${f.title}</b></td><td>${roleText}</td><td><a href="${f.fileUrl}" target="_blank">رابط الملف</a></td><td><button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', fetchFilesTable)">حذف</button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+        }
+
+        // دالة عامة للحذف والتحديث
+        window.deleteDocItem = async function(collName, docId, callback) {
+            if(confirm("هل أنت متأكد من الحذف؟")) {
+                try {
+                    await deleteDoc(doc(db, collName, docId));
+                    showToast('تم الحذف بنجاح', 'success');
+                    callback();
+                } catch(e) { showToast('حدث خطأ أثناء الحذف', 'error'); }
+            }
+        };
+
+        // 4. إرسال إشعار مخصص للطلاب
+        document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const targetType = document.getElementById('notifTargetType').value;
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+
+            try {
+                if(targetType === 'all') {
+                    await addDoc(collection(db, "notifications"), {
+                        target_group: 'all', title, message, createdAt: new Date().toISOString()
+                    });
+                } else if(targetType === 'year') {
+                    const year = document.getElementById('notifYear').value;
+                    await addDoc(collection(db, "notifications"), {
+                        target_year: year, title, message, createdAt: new Date().toISOString()
+                    });
+                } else if(targetType === 'student') {
+                    const studentId = document.getElementById('notifStudentId').value.trim();
+                    await addDoc(collection(db, "notifications"), {
+                        student_id: studentId, title, message, createdAt: new Date().toISOString()
+                    });
+                }
+                showToast('تم إرسال الإشعار بنجاح!', 'success');
+                this.reset();
+                toggleNotifTargetInput();
+            } catch(e) { showToast('حدث خطأ أثناء إرسال الإشعار', 'error'); }
+        });
+
+        // 5. إدارة الطلاب (طلبات جديدة + تعديلات + قائمة كاملة وحظر)
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
                 const snapshot = await getDocs(query(collection(db, "users"), where("status", "==", "pending")));
-                if(snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>`;
-                    return;
-                }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const u = d.data();
-                    html += `<tr><td><b>${u.student_id}</b></td><td>${u.fullName}</td><td>${u.email}</td><td>${u.phone}</td><td>الفرقة ${u.academicYear}</td><td><button class="btn btn-approve" onclick="updateStudent('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudent('${d.id}', 'rejected')">رفض</button></td></tr>`;
+                    html += `<tr><td><b>${u.student_id}</b></td><td>${u.fullName}</td><td>${u.email}</td><td>${u.phone}</td><td>الفرقة ${u.academicYear}</td><td><button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button></td></tr>`;
                 });
                 tbody.innerHTML = html;
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في الجلب.</td></tr>`; }
         }
 
-        window.updateStudent = async function(docId, status) {
+        window.updateStudentStatus = async function(docId, status) {
             try {
                 await updateDoc(doc(db, "users", docId), { status });
                 showToast(status === 'approved' ? 'تمت الموافقة' : 'تم الرفض', status === 'approved' ? 'success' : 'warning');
                 fetchPendingStudents();
+                fetchAllStudents();
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
@@ -598,10 +681,7 @@
             const tbody = document.getElementById('pendingEditsTable');
             try {
                 const snapshot = await getDocs(collection(db, "pendingEdits"));
-                if(snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل.</td></tr>`;
-                    return;
-                }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const ed = d.data();
@@ -617,8 +697,7 @@
                 if(!editSnap.exists()) return;
                 const ed = editSnap.data();
                 const uSnap = await getDocs(query(collection(db, "users"), where("student_id", "==", ed.student_id)));
-                let uId = '';
-                uSnap.forEach(d => uId = d.id);
+                let uId = ''; uSnap.forEach(d => uId = d.id);
                 await updateDoc(doc(db, "users", uId), { fullName: ed.fullName, phone: ed.phone, email: ed.email, password: ed.password, academicYear: ed.academicYear });
                 await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تمت الموافقة على تعديل بياناتك", message: "اعتمدت الإدارة التعديلات بنجاح.", createdAt: new Date().toISOString() });
                 await deleteDoc(doc(db, "pendingEdits", editId));
@@ -639,6 +718,51 @@
                 fetchPendingEdits();
             } catch(e) { showToast('خطأ', 'error'); }
         }
+
+        // عرض جميع الطلاب مع زر الحظر / إلغاء الحظر
+        async function fetchAllStudents() {
+            const tbody = document.getElementById('allStudentsTable');
+            try {
+                const snapshot = await getDocs(collection(db, "users"));
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا يوجد طلاب مسجلين.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const u = d.data();
+                    const statusText = u.status === 'approved' ? 'مقبول ونشط' : (u.status === 'banned' ? 'محظور' : 'قيد الانتظار');
+                    const statusColor = u.status === 'approved' ? 'green' : (u.status === 'banned' ? 'red' : 'orange');
+                    const banBtnText = u.status === 'banned' ? 'إلغاء الحظر' : 'حظر الطالب';
+                    const banBtnClass = u.status === 'banned' ? 'btn-approve' : 'btn-reject';
+                    const newStatus = u.status === 'banned' ? 'approved' : 'banned';
+
+                    html += `
+                        <tr>
+                            <td><b>${u.student_id || 'غير متوفر'}</b></td>
+                            <td>${u.fullName}</td>
+                            <td>${u.email}</td>
+                            <td>الفرقة ${u.academicYear || '1'}</td>
+                            <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
+                            <td>
+                                <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${d.id}', '${newStatus}')">${banBtnText}</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}', fetchAllStudents)">حذف</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في تحميل الطلاب.</td></tr>`; }
+        }
+
+        window.toggleBanStudent = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, "users", docId), { status: newStatus });
+                showToast(newStatus === 'banned' ? 'تم حظر الطالب بنجاح' : 'تم إلغاء الحظر عن الطالب', 'warning');
+                fetchAllStudents();
+                fetchPendingStudents();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        }
+
+        // تشغيل التحميل الأولي للمواد
+        fetchMaterialsTable();
     </script>
 
 </body>
