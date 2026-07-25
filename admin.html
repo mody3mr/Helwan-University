@@ -97,7 +97,7 @@
         .btn-edit:hover { background: #2563eb; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
-        /* تصميم التوست الاحترافي الجديد */
+        /* تصميم التوست الاحترافي */
         #toast-container {
             position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
             z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
@@ -546,7 +546,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminsTable">
-                            <tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -572,10 +572,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const currentAdminName = localStorage.getItem('currentAdminName') || "مسؤول النظام";
-        document.getElementById('adminNameDisplay').innerText = currentAdminName;
+        // --- حماية صفحة الإدارة (تحقق من تسجيل الدخول أولاً) ---
+        const currentAdminName = localStorage.getItem('currentAdminName');
+        if (!currentAdminName) {
+            location.href = 'admin-login.html';
+        } else {
+            const nameDisplay = document.getElementById('adminNameDisplay');
+            if(nameDisplay) nameDisplay.innerText = currentAdminName;
+        }
 
-        // توست مسج احترافي وعصري
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -589,7 +594,7 @@
             }, 3500);
         }
 
-        // نافذة تأكيد الحذف العصرية الاحترافية بدلاً من رسالة المتصفح القديمة
+        // نافذة تأكيد الحذف العصرية الاحترافية
         window.showConfirmModal = function(onConfirm) {
             const overlay = document.getElementById('customModalOverlay');
             overlay.style.display = 'flex';
@@ -597,7 +602,6 @@
             const yesBtn = document.getElementById('modalYesBtn');
             const noBtn = document.getElementById('modalNoBtn');
 
-            // إزالة الأحداث القديمة لمنع التكرار
             const newYesBtn = yesBtn.cloneNode(true);
             const newNoBtn = noBtn.cloneNode(true);
             yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
@@ -619,7 +623,7 @@
 
         window.logoutAdmin = function() {
             localStorage.removeItem('currentAdminName');
-            location.href = 'index.html';
+            location.href = 'admin-login.html';
         }
 
         // نظام التبويبات الفوري مع ثبات التاب بعد الريفرش
@@ -1159,7 +1163,7 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين (الموظفين والحظر والحذف وإنشاء الحساب) ---
+        // --- 6. الأعضاء الإداريين ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('adminEditId').value;
