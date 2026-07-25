@@ -43,7 +43,6 @@
             gap: 25px;
         }
         
-        /* الإشعارات */
         .notification-container {
             position: relative;
         }
@@ -116,7 +115,6 @@
         .notif-item p { margin-bottom: 3px; font-weight: 600; }
         .notif-item span { font-size: 11px; color: #94a3b8; }
 
-        /* بروفايل المستخدم */
         .user-menu-container {
             position: relative;
             cursor: pointer;
@@ -252,7 +250,6 @@
     <header>
         <div class="logo-area">جامعة <span>حلوان</span></div>
         <div class="header-right">
-            <!-- الجرس والإشعارات -->
             <div class="notification-container">
                 <button class="bell-btn" onclick="toggleNotifications()">
                     🔔
@@ -266,7 +263,6 @@
                 </div>
             </div>
 
-            <!-- بروفايل المستخدم -->
             <div class="user-menu-container" onclick="toggleUserDropdown()">
                 <div class="user-profile">
                     <span id="studentNameDisplay">جاري التحميل...</span> ▾
@@ -295,7 +291,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -346,17 +342,18 @@
             document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + student.fullName;
             document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
 
-            fetchMaterials(student.academicYear);
-            fetchNotifications(student);
+            // تفعيل الاستماع الفوري واللحظي (Real-time) للمواد والإشعارات
+            initRealtimeListeners(student);
         }
 
-        // جلب المواد مع عرض اسم الدكتور والمساعد بدلاً من الجملة القديمة
-        async function fetchMaterials(year) {
+        function initRealtimeListeners(student) {
             const grid = document.getElementById('materialsGrid');
-            try {
-                const q = query(collection(db, "materials"), where("academicYear", "==", year));
-                const querySnapshot = await getDocs(q);
+            const notifList = document.getElementById('notifList');
+            const badge = document.getElementById('notifBadge');
 
+            // 1. استماع فوري للمواد الدراسية
+            const qMaterials = query(collection(db, "materials"), where("academicYear", "==", student.academicYear));
+            onSnapshot(qMaterials, (querySnapshot) => {
                 if (querySnapshot.empty) {
                     grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; background:white; border-radius:14px; border: 1px solid #e2e8f0;">لا توجد مواد منشورة لهذه الفرقة حتى الآن.</div>`;
                     return;
@@ -376,28 +373,24 @@
                     `;
                 });
                 grid.innerHTML = html;
+            });
 
-            } catch (error) {
-                console.error("Error fetching materials: ", error);
-                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: red; padding: 40px;">حدث خطأ أثناء تحميل المواد الدراسية.</div>`;
-            }
-        }
-
-        // جلب الإشعارات التفاعلية (مواد دراسية + حالة تعديل البيانات) وتحديد المقروء عبر LocalStorage
-        async function fetchNotifications(student) {
-            const notifList = document.getElementById('notifList');
-            const badge = document.getElementById('notifBadge');
+            // 2. استماع فوري لمحتويات المواد (الإشعارات الخاصة بالنشر)
+            const qContents = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
             
-            try {
+            // 3. استماع فوري لإشعارات تعديل البيانات الخاصة بالطالب
+            const qEdits = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+
+            // دمج وتحديث الإشعارات لحظياً عند تغيير أي بيانات في القاعدة
+            let latestContents = [];
+            let latestEdits = [];
+
+            function updateNotificationsUI() {
                 let allNotifs = [];
 
-                // 1. إشعارات النشر الخاصة بفرقة الطالب
-                const qMat = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
-                const snapMat = await getDocs(qMat);
-                snapMat.forEach(d => {
-                    const item = d.data();
+                latestContents.forEach(item => {
                     allNotifs.push({
-                        id: d.id,
+                        id: item.id,
                         title: `تم نشر ${item.type === 'book' ? 'كتاب' : 'امتحان'}: ${item.title}`,
                         subtitle: `المادة: ${item.materialTitle} | بواسطة: ${item.publisherName || 'الإدارة'}`,
                         link: `material.html?title=${encodeURIComponent(item.materialTitle)}`,
@@ -405,13 +398,9 @@
                     });
                 });
 
-                // 2. إشعارات تعديل البيانات الخاصة بهذا الطالب فقط
-                const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
-                const snapEdit = await getDocs(qEdit);
-                snapEdit.forEach(d => {
-                    const item = d.data();
+                latestEdits.forEach(item => {
                     allNotifs.push({
-                        id: d.id,
+                        id: item.id,
                         title: item.title,
                         subtitle: item.message,
                         link: '#',
@@ -425,9 +414,7 @@
                     return;
                 }
 
-                // استرجاع الإشعارات المقروءة سابقاً من الـ LocalStorage
                 const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
-
                 let html = '';
                 let unreadCount = 0;
 
@@ -451,13 +438,25 @@
                 } else {
                     badge.style.display = 'none';
                 }
-
-            } catch (error) {
-                console.error("Error fetching notifications:", error);
             }
+
+            onSnapshot(qContents, (snapshot) => {
+                latestContents = [];
+                snapshot.forEach(doc => {
+                    latestContents.push({ id: doc.id, ...doc.data() });
+                });
+                updateNotificationsUI();
+            });
+
+            onSnapshot(qEdits, (snapshot) => {
+                latestEdits = [];
+                snapshot.forEach(doc => {
+                    latestEdits.push({ id: doc.id, ...doc.data() });
+                });
+                updateNotificationsUI();
+            });
         }
 
-        // عند النقر على الإشعار: يتم تعليمه كمقروء وتوجيه الطالب لرابطه
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
