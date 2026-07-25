@@ -60,6 +60,7 @@
         .card-header {
             padding: 20px 25px; border-bottom: 1px solid #f1f5f9;
             font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
         }
         .card-body { padding: 25px; }
         
@@ -109,7 +110,16 @@
         .btn-delete:hover { background: #dc2626; }
         .btn-edit { background: #3b82f6; color: white; }
         .btn-edit:hover { background: #2563eb; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
+
+        #reportModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px;
+        }
+        .report-modal {
+            background: white; width: 100%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
 
         #toast-container {
             position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
@@ -151,6 +161,14 @@
 <body>
 
     <div id="toast-container"></div>
+
+    <div id="reportModalOverlay">
+        <div class="report-modal">
+            <h3 id="reportStudentName" style="color:#0f172a; margin-bottom:15px; font-size:20px;">تقرير أداء الطالب</h3>
+            <div id="reportModalBody" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; font-size: 14px; color: #334155;"></div>
+            <button class="btn-submit" onclick="document.getElementById('reportModalOverlay').style.display='none'">إغلاق التقرير</button>
+        </div>
+    </div>
 
     <div id="customModalOverlay">
         <div class="custom-modal">
@@ -392,23 +410,28 @@
             </div>
         </div>
 
-        <!-- 4. تقارير ونتائج الطلاب -->
+        <!-- 4. تقارير ونتائج الطلاب (محدثة بالكامل) -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
-                <div class="card-header">سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</div>
+                <div class="card-header">
+                    <span>سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</span>
+                    <button class="btn btn-approve" style="padding: 8px 16px; font-size:13px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل للطلاب</button>
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>اسم الطالب</th>
-                                <th>الرقم التعريفي (ID)</th>
+                                <th>اسم الطالب (ID)</th>
+                                <th>المادة الدراسية</th>
+                                <th>الجهة (دكتور / معيد)</th>
                                 <th>عنوان الامتحان</th>
-                                <th>الدرجة الحاصل عليها</th>
-                                <th>التاريخ والوقت</th>
+                                <th>الدرجة والنسبة</th>
+                                <th>التاريخ</th>
+                                <th>الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="quizResultsTable">
-                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="7" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -629,7 +652,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminsTable">
-                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="5" class="no-data">لا توجد حسابات إدارية.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -893,34 +916,108 @@
             list.appendChild(qDiv);
         }
 
-        // جلب نتائج الطلاب في تاب "تقارير ونتائج الطلاب"
+        // --- جلب نتائج الطلاب المطورة مع بيانات المادة والدكتور والمعيد وأزرار الإعادة والحذف والتقرير الشامل ---
         async function fetchQuizResults() {
             const tbody = document.getElementById('quizResultsTable');
             try {
                 const snapshot = await getDocs(collection(db, "quizResults"));
                 if (snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد نتائج مسجلة للطلاب حتى الآن.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="no-data">لا توجد نتائج مسجلة للطلاب حتى الآن.</td></tr>`;
                     return;
                 }
+
+                // جلب المواد لمعرفة اسم الدكتور والمعيد لكل مادة
+                const materialsSnap = await getDocs(collection(db, "materials"));
+                let materialDetails = {};
+                materialsSnap.forEach(mDoc => {
+                    const m = mDoc.data();
+                    materialDetails[m.title] = m;
+                });
+
                 let html = '';
                 snapshot.forEach(d => {
                     const r = d.data();
+                    const matInfo = materialDetails[r.materialTitle] || {};
+                    const roleText = r.targetRole === 'professor' ? `د. ${matInfo.professorName || 'الدكتور'}` : `م. ${matInfo.assistantName || 'المعيد'}`;
                     const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
+
                     html += `
                         <tr>
-                            <td><b>${r.studentName || 'غير معروف'}</b></td>
-                            <td>${r.studentId || '-'}</td>
+                            <td><b>${r.studentName || 'غير معروف'}</b><br><small style="color:#64748b;">${r.studentId || '-'}</small></td>
+                            <td><b>${r.materialTitle || 'غير محدد'}</b></td>
+                            <td><span style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-weight:600; font-size:12px;">${roleText}</span></td>
                             <td>${r.quizTitle || 'امتحان'}</td>
                             <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
                             <td>${dateFormatted}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="allowQuizRetake('${d.id}')">إعادة الامتحان</button>
+                                <button class="btn btn-delete" onclick="deleteQuizResult('${d.id}')">حذف الدرجة</button>
+                            </td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = html;
             } catch (e) {
                 console.error("Error fetching quiz results:", e);
-                tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في تحميل النتائج.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="no-data" style="color:red;">خطأ في تحميل النتائج.</td></tr>`;
             }
+        }
+
+        // السماح للطالب بإعادة الامتحان
+        window.allowQuizRetake = async function(resultId) {
+            try {
+                await updateDoc(doc(db, "quizResults", resultId), { canRetake: true });
+                showToast('تم السماح للطالب بإعادة الامتحان بنجاح!', 'success');
+                fetchQuizResults();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        }
+
+        // حذف درجة الطالب
+        window.deleteQuizResult = async function(resultId) {
+            showConfirmModal(async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await deleteDoc(doc(db, "quizResults", resultId));
+                        showToast('تم حذف الدرجة بنجاح', 'success');
+                        fetchQuizResults();
+                    } catch(e) { showToast('حدث خطأ', 'error'); }
+                }
+            });
+        }
+
+        // تقرير الأداء الشامل والنسبة المئوية لكل طالب
+        window.openOverallStudentReport = async function() {
+            const resultsSnap = await getDocs(collection(db, "quizResults"));
+            if(resultsSnap.empty) { alert('لا توجد نتائج مسجلة لعمل تقرير.'); return; }
+
+            let studentMap = {};
+            resultsSnap.forEach(d => {
+                const r = d.data();
+                if(!studentMap[r.studentId]) {
+                    studentMap[r.studentId] = { name: r.studentName, totalScore: 0, totalMax: 0, examsCount: 0 };
+                }
+                studentMap[r.studentId].totalScore += r.score;
+                studentMap[r.studentId].totalMax += r.total;
+                studentMap[r.studentId].examsCount += 1;
+            });
+
+            let reportHtml = `<table style="width:100%; border-collapse:collapse; text-align:right;">
+                <thead><tr style="background:#f8fafc;"><th style="padding:10px; border-bottom:1px solid #cbd5e1;">اسم الطالب</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">الامتحانات</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">النسبة العامة</th></tr></thead><tbody>`;
+
+            for(let id in studentMap) {
+                let st = studentMap[id];
+                let overallPercent = st.totalMax > 0 ? Math.round((st.totalScore / st.totalMax) * 100) : 0;
+                reportHtml += `<tr>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;"><b>${st.name}</b><br><small>${id}</small></td>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${st.examsCount} امتحان</td>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;"><span style="color:#2563eb; font-weight:700;">${overallPercent}%</span></td>
+                </tr>`;
+            }
+            reportHtml += `</tbody></table>`;
+
+            document.getElementById('reportStudentName').innerText = "تقرير أداء الطلاب الشامل والنسب العامة";
+            document.getElementById('reportModalBody').innerHTML = reportHtml;
+            document.getElementById('reportModalOverlay').style.display = 'flex';
         }
 
         window.deleteDocItem = async function(collName, docId, actionKey) {
@@ -957,16 +1054,22 @@
         // --- 1. المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const editId = document.getElementById('matEditId').value;
             const academicYear = document.getElementById('matYear').value;
             const title = document.getElementById('matTitle').value.trim();
             const professorName = document.getElementById('matProf').value.trim();
             const assistantName = document.getElementById('matAssist').value.trim();
 
             try {
-                await addDoc(collection(db, "materials"), {
-                    title, academicYear, professorName, assistantName, publisherName: currentAdminName, createdAt: new Date().toISOString()
-                });
-                showToast('تمت إضافة المادة بنجاح!', 'success');
+                if (editId) {
+                    await updateDoc(doc(db, "materials", editId), { title, academicYear, professorName, assistantName });
+                    showToast('تم تعديل المادة بنجاح!', 'success');
+                } else {
+                    await addDoc(collection(db, "materials"), {
+                        title, academicYear, professorName, assistantName, publisherName: currentAdminName, createdAt: new Date().toISOString()
+                    });
+                    showToast('تمت إضافة المادة بنجاح!', 'success');
+                }
                 resetMaterialForm();
                 fetchMaterialsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
@@ -975,6 +1078,23 @@
         window.resetMaterialForm = function() {
             document.getElementById('materialForm').reset();
             document.getElementById('matEditId').value = '';
+            document.getElementById('materialCardHeader').innerText = 'إضافة مادة دراسية جديدة';
+            document.getElementById('matSubmitBtn').innerText = 'حفظ وإضافة المادة';
+        };
+
+        window.editMaterial = async function(id) {
+            const snap = await getDoc(doc(db, "materials", id));
+            if(snap.exists()) {
+                const m = snap.data();
+                document.getElementById('matEditId').value = id;
+                document.getElementById('matYear').value = m.academicYear;
+                document.getElementById('matTitle').value = m.title;
+                document.getElementById('matProf').value = m.professorName || '';
+                document.getElementById('matAssist').value = m.assistantName || '';
+                document.getElementById('materialCardHeader').innerText = 'تعديل بيانات المادة';
+                document.getElementById('matSubmitBtn').innerText = 'تعديل المادة';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         };
 
         async function fetchMaterialsTable() {
@@ -990,6 +1110,7 @@
                         <td><b>${m.title}</b></td>
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
+                            <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -1001,19 +1122,46 @@
         // --- 2. الأقسام ---
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const editId = document.getElementById('secEditId').value;
             const academicYear = document.getElementById('secYear').value;
             const materialTitle = document.getElementById('secMaterial').value;
             const sectionName = document.getElementById('secName').value.trim();
 
             try {
-                await addDoc(collection(db, "materialSections"), {
-                    academicYear, materialTitle, sectionName, createdAt: new Date().toISOString()
-                });
-                showToast('تم إنشاء القسم بنجاح!', 'success');
-                document.getElementById('sectionForm').reset();
+                if (editId) {
+                    await updateDoc(doc(db, "materialSections", editId), { academicYear, materialTitle, sectionName });
+                    showToast('تم تعديل القسم بنجاح!', 'success');
+                } else {
+                    await addDoc(collection(db, "materialSections"), {
+                        academicYear, materialTitle, sectionName, createdAt: new Date().toISOString()
+                    });
+                    showToast('تم إنشاء القسم بنجاح!', 'success');
+                }
+                resetSectionForm();
                 fetchSectionsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
+
+        window.resetSectionForm = function() {
+            document.getElementById('sectionForm').reset();
+            document.getElementById('secEditId').value = '';
+            document.getElementById('sectionCardHeader').innerText = 'إنشاء قسم جديد للمادة';
+            document.getElementById('secSubmitBtn').innerText = 'إنشاء القسم';
+        };
+
+        window.editSection = async function(id) {
+            const snap = await getDoc(doc(db, "materialSections", id));
+            if(snap.exists()) {
+                const s = snap.data();
+                document.getElementById('secEditId').value = id;
+                document.getElementById('secYear').value = s.academicYear;
+                await populateMaterialsDropdown(s.academicYear, 'secMaterial', s.materialTitle);
+                document.getElementById('secName').value = s.sectionName;
+                document.getElementById('sectionCardHeader').innerText = 'تعديل القسم';
+                document.getElementById('secSubmitBtn').innerText = 'تعديل القسم';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
 
         async function fetchSectionsTable() {
             const tbody = document.getElementById('sectionsTable');
@@ -1028,6 +1176,7 @@
                         <td>${s.materialTitle}</td>
                         <td><b>${s.sectionName}</b></td>
                         <td>
+                            <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -1039,6 +1188,7 @@
         // --- 3. الملفات وامتحانات المهارة ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const editId = document.getElementById('fileEditId').value;
             const academicYear = document.getElementById('fileYear').value;
             const materialTitle = document.getElementById('fileMaterial').value;
             const sectionName = document.getElementById('fileSection').value;
@@ -1069,20 +1219,25 @@
             }
 
             try {
-                fileData.createdAt = new Date().toISOString();
-                await addDoc(collection(db, "materialContents"), fileData);
+                if (editId) {
+                    await updateDoc(doc(db, "materialContents", editId), fileData);
+                    showToast('تم التعديل بنجاح!', 'success');
+                } else {
+                    fileData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "materialContents"), fileData);
 
-                let notifTitle = contentType === 'skill_quiz' ? `تم نشر امتحان مهارة جديد: ${title}` : `تم نشر محتوى جديد: ${title}`;
-                await addDoc(collection(db, "notifications"), {
-                    title: notifTitle,
-                    message: `المادة: ${materialTitle} (${sectionName})`,
-                    type: 'system',
-                    target_group: 'year',
-                    target_year: academicYear,
-                    createdAt: new Date().toISOString()
-                });
+                    let notifTitle = contentType === 'skill_quiz' ? `تم نشر امتحان مهارة جديد: ${title}` : `تم نشر محتوى جديد: ${title}`;
+                    await addDoc(collection(db, "notifications"), {
+                        title: notifTitle,
+                        message: `المادة: ${materialTitle} (${sectionName})`,
+                        type: 'system',
+                        target_group: 'year',
+                        target_year: academicYear,
+                        createdAt: new Date().toISOString()
+                    });
 
-                showToast('تم النشر وإرسال الإشعار للطلاب بنجاح!', 'success');
+                    showToast('تم النشر وإرسال الإشعار للطلاب بنجاح!', 'success');
+                }
                 resetFileForm();
                 fetchFilesTable();
             } catch(e) { 
@@ -1093,6 +1248,9 @@
 
         window.resetFileForm = function() {
             document.getElementById('fileForm').reset();
+            document.getElementById('fileEditId').value = '';
+            document.getElementById('fileCardHeader').innerText = 'رفع ونشر الملفات والمحتوى';
+            document.getElementById('fileSubmitBtn').innerText = 'نشر المحتوى وإرسال إشعار فوري';
             document.getElementById('questionsList').innerHTML = '';
             toggleContentTypeFields();
         };
