@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جامعة حلوان - تفاصيل المادة ومحتوياتها</title>
+    <title>جامعة حلوان - تفاصيل المادة والأقسام</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -43,7 +43,7 @@
         .material-header h1 { font-size: 26px; margin-bottom: 8px; font-weight: 700; }
         .material-header p { font-size: 15px; opacity: 0.85; }
 
-        /* الأقسام المنفصلة: الدكتور vs المعيد */
+        /* الأقسام المنشورة */
         .section-box {
             background: white;
             border-radius: 16px;
@@ -106,29 +106,20 @@
     <div class="container">
         <div class="material-header">
             <h1 id="materialTitleDisplay">جاري التحميل...</h1>
-            <p>استعرض محتويات المادة المنفصلة (ملفات الدكتور وملفات المعيد)</p>
+            <p id="materialProfDisplay">أستاذ المادة: جاري التحميل...</p>
         </div>
 
-        <!-- قسم الدكتور -->
-        <div class="section-box">
-            <div class="section-title">👨‍🏫 ملفات وعروض أستاذ المادة (الدكتور)</div>
-            <div class="content-grid" id="professorContainer">
-                <div class="no-data">جاري التحميل...</div>
-            </div>
-        </div>
-
-        <!-- قسم المعيد -->
-        <div class="section-box">
-            <div class="section-title">👨‍💻 ملفات وسكاشن المعيد (المساعد)</div>
-            <div class="content-grid" id="assistantContainer">
-                <div class="no-data">جاري التحميل...</div>
+        <!-- الأقسام الحقيقية المنشورة للمادة -->
+        <div id="sectionsContainer">
+            <div class="section-box">
+                <div class="no-data">جاري تحميل أقسام ومحتويات المادة...</div>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -150,66 +141,90 @@
             location.href = 'student.html';
         } else {
             document.getElementById('materialTitleDisplay').innerText = materialTitle;
-            fetchContent(materialTitle);
+            fetchMaterialInfoAndSections(materialTitle);
         }
 
-        async function fetchContent(title) {
-            const profContainer = document.getElementById('professorContainer');
-            const assistContainer = document.getElementById('assistantContainer');
-
+        // جلب معلومات المادة (الدكتور والمعيد) والأقسام والملفات بشكل لحظي (Real-time)
+        async function fetchMaterialInfoAndSections(title) {
             try {
-                const q = query(collection(db, "materialContents"), where("materialTitle", "==", title));
-                const snapshot = await getDocs(q);
+                // 1. جلب بيانات الدكتور والمعيد للمادة الأساسية
+                const matQuery = query(collection(db, "materials"), where("title", "==", title));
+                const matSnap = await getDocs(matQuery);
+                let profName = 'غير محدد';
+                let assistName = 'غير محدد';
+                matSnap.forEach(d => {
+                    const m = d.data();
+                    if(m.professorName) profName = m.professorName;
+                    if(m.assistantName) assistName = m.assistantName;
+                });
+                document.getElementById('materialProfDisplayinnerHTML') = '';
+                document.getElementById('materialProfDisplay').innerText = `أستاذ المادة: ${profName} | المعيد: ${assistName}`;
 
-                if (snapshot.empty) {
-                    profContainer.innerHTML = `<div class="no-data">لا توجد ملفات منشورة للدكتور حالياً.</div>`;
-                    assistContainer.innerHTML = `<div class="no-data">لا توجد ملفات منشورة للمعيد حالياً.</div>`;
-                    return;
-                }
+                // 2. الاستماع اللحظي للأقسام المنشورة لهذه المادة
+                const secQuery = query(collection(db, "materialSections"), where("materialTitle", "==", title));
+                
+                onSnapshot(secQuery, async (secSnapshot) => {
+                    const container = document.getElementById('sectionsContainer');
 
-                let profHtml = '';
-                let assistHtml = '';
-                let profCount = 0;
-                let assistCount = 0;
-
-                snapshot.forEach(docSnap => {
-                    const item = docSnap.data();
-                    const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
-                    
-                    // ترجمة نوع المحتوى لعرضه بوضوح
-                    let typeLabel = 'ملف';
-                    if (item.type === 'book') typeLabel = 'كتاب دراسي';
-                    else if (item.type === 'exam') typeLabel = 'امتحان سابق';
-                    else if (item.type === 'quiz') typeLabel = 'امتحان تذكيري (كويز)';
-                    else if (item.type === 'video') typeLabel = 'فيديو شرح';
-                    else if (item.type === 'custom') typeLabel = 'قسم مخصص';
-
-                    const card = `
-                        <div class="content-card">
-                            <div class="content-info">
-                                <h3>[${typeLabel}] ${item.title}</h3>
-                                <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
+                    if (secSnapshot.empty) {
+                        container.innerHTML = `
+                            <div class="section-box">
+                                <div class="no-data">لا توجد أقسام منشورة لهذه المادة حتى الآن.</div>
                             </div>
-                            <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">عرض / تحميل</a>
-                        </div>
-                    `;
-
-                    if (item.targetRole === 'professor') {
-                        profHtml += card;
-                        profCount++;
-                    } else if (item.targetRole === 'assistant') {
-                        assistHtml += card;
-                        assistCount++;
+                        `;
+                        return;
                     }
+
+                    // جلب الملفات التابعة للمادة لعرضها داخل الأقسام
+                    const filesQuery = query(collection(db, "materialContents"), where("materialTitle", "==", title));
+                    const filesSnap = await getDocs(filesQuery);
+                    let allFiles = [];
+                    filesSnap.forEach(f => allFiles.push(f.data()));
+
+                    let sectionsHtml = '';
+                    secSnapshot.forEach(secDoc => {
+                        const sec = secDoc.data();
+                        const secName = sec.sectionName;
+
+                        // تصفية الملفات التي تنتمي لهذا القسم بالذات
+                        const sectionFiles = allFiles.filter(f => f.sectionName === secName);
+
+                        let filesHtml = '';
+                        if (sectionFiles.length > 0) {
+                            sectionFiles.forEach(item => {
+                                const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
+                                const roleLabel = item.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
+
+                                filesHtml += `
+                                    <div class="content-card">
+                                        <div class="content-info">
+                                            <h3>📂 ${item.title}</h3>
+                                            <p>بواسطة (${roleLabel}): <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
+                                        </div>
+                                        <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">عرض / تحميل</a>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            filesHtml = `<div class="no-data">لا توجد ملفات مرفوعة في هذا القسم حالياً.</div>`;
+                        }
+
+                        sectionsHtml += `
+                            <div class="section-box">
+                                <div class="section-title">📁 ${secName}</div>
+                                <div class="content-grid">
+                                    ${filesHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    container.innerHTML = sectionsHtml;
                 });
 
-                profContainer.innerHTML = profCount > 0 ? profHtml : `<div class="no-data">لا توجد ملفات منشورة للدكتور حالياً.</div>`;
-                assistContainer.innerHTML = assistCount > 0 ? assistHtml : `<div class="no-data">لا توجد ملفات منشورة للمعيد حالياً.</div>`;
-
             } catch (e) {
-                console.error(e);
-                profContainer.innerHTML = `<div class="no-data" style="color:red;">حدث خطأ في تحميل البيانات.</div>`;
-                assistContainer.innerHTML = `<div class="no-data" style="color:red;">حدث خطأ في تحميل البيانات.</div>`;
+                console.error("Error fetching material details:", e);
+                document.getElementById('sectionsContainer').innerHTML = `<div class="section-box"><div class="no-data" style="color:red;">حدث خطأ أثناء تحميل محتويات المادة.</div></div>`;
             }
         }
     </script>
