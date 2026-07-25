@@ -383,14 +383,14 @@
             }
         }
 
-        // جلب الإشعارات بـ onSnapshot لتحديث الحذف والتعديل فوراً من قاعدة البيانات
+        // جلب الإشعارات بـ onSnapshot مع فلترة دقيقة ومتطابقة مع إشعارات الأدمن
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
             
-            const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+            const qNotifs = query(collection(db, "notifications"));
             
-            onSnapshot(qEdit, async (snapEdit) => {
+            onSnapshot(qNotifs, async (snapshot) => {
                 let allNotifs = [];
 
                 // 1. إشعارات النشر الخاصة بفرقة الطالب
@@ -407,16 +407,30 @@
                     });
                 });
 
-                // 2. إشعارات تعديل البيانات (تحديث فوري عند الحذف من الأدمن)
-                snapEdit.forEach(d => {
+                // 2. إشعارات الأدمن والإدارة مع تطبيق شروط الفلترة بدقة (الكل، فرقة معينة، أو طالب معين)
+                snapshot.forEach(d => {
                     const item = d.data();
-                    allNotifs.push({
-                        id: d.id,
-                        title: item.title,
-                        subtitle: item.message,
-                        link: '#',
-                        date: item.createdAt || ''
-                    });
+                    let isForThisStudent = false;
+
+                    if (item.target_group === 'all') {
+                        isForThisStudent = true;
+                    } else if (item.target_group === 'year' && String(item.target_year) === String(student.academicYear)) {
+                        isForThisStudent = true;
+                    } else if (item.target_group === 'student' && item.student_id === student.student_id) {
+                        isForThisStudent = true;
+                    } else if (!item.target_group && (!item.student_id || item.student_id === student.student_id)) {
+                        isForThisStudent = true;
+                    }
+
+                    if (isForThisStudent) {
+                        allNotifs.push({
+                            id: d.id,
+                            title: item.title,
+                            subtitle: item.message || '',
+                            link: '#',
+                            date: item.createdAt || ''
+                        });
+                    }
                 });
 
                 if (allNotifs.length === 0) {
