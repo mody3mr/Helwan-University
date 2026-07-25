@@ -70,6 +70,7 @@
         let examSubmitted = false;
         let currentStudent = null;
 
+        // جلب بيانات الطالب بدقة من التخزين المحلي
         const studentStr = localStorage.getItem('currentStudent');
         if (!studentStr) {
             alert('يرجى تسجيل الدخول أولاً!');
@@ -85,14 +86,15 @@
             checkAndLoadQuiz(quizId);
         }
 
-        // 1. التحقق هل الطالب امتحن قبل كده ولا لأ، وهل مسموح له؟
         async function checkAndLoadQuiz(id) {
             try {
-                // فحص قاعدة البيانات لمعرفة إذا كان الطالب أدى الامتحان ده مسبقاً
+                // التأكد من عدم أداء الامتحان مسبقاً بناءً على رقم الطالب والامتحان
+                const studentIdKey = currentStudent.student_id || currentStudent.email || 'unknown_student';
+                
                 const resultsQuery = query(
                     collection(db, "quizResults"),
                     where("quizId", "==", id),
-                    where("studentId", "==", currentStudent.student_id)
+                    where("studentId", "==", studentIdKey)
                 );
                 const resultsSnap = await getDocs(resultsQuery);
 
@@ -101,7 +103,6 @@
                     return;
                 }
 
-                // جلب بيانات الامتحان
                 const docSnap = await getDoc(doc(db, "materialContents", id));
                 if (!docSnap.exists()) {
                     document.getElementById('quizBody').innerHTML = `<div class="no-data" style="color:red;">عذراً، هذا الامتحان غير موجود.</div>`;
@@ -118,7 +119,7 @@
 
                 renderQuestions(quizData.questions);
                 startTimer(quizData.durationMinutes || 15);
-                initSecurityShield(); // تفعيل نظام الحماية ومنع مغادرة الصفحة
+                initSecurityShield();
 
             } catch (e) {
                 console.error(e);
@@ -149,7 +150,7 @@
                 `;
             });
 
-            html += `<button class="btn-submit-quiz" onclick="submitQuiz(false)">تسليم الامتحان وإنهاء</button>`;
+            html += `<button class="btn-submit-quiz" onclick="submitQuiz()">تسليم الامتحان وإنهاء</button>`;
             document.getElementById('quizBody').innerHTML = html;
         }
 
@@ -172,18 +173,17 @@
             }, 1000);
         }
 
-        // 2. نظام الحماية الصارم (Anti-Cheat Shield)
+        // الحماية الصارمة من مغادرة الصفحة أو التبديل
         function initSecurityShield() {
-            // رصد مغادرة التبويب أو تصغير النافذة أو فتح نافذة أخرى
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden && !examSubmitted) {
-                    triggerZeroScoreViolation("تم رصد محاولة مغادرة صفحة الامتحان أو فتح نافذة خارجية!");
+                    triggerZeroScoreViolation("تم رصد محاولة مغادرة صفحة الامتحان!");
                 }
             });
 
             window.addEventListener('blur', () => {
                 if (!examSubmitted) {
-                    triggerZeroScoreViolation("تم رصد محاولة مغادرة صفحة الامتحان أو التبديل لنافذة أخرى!");
+                    triggerZeroScoreViolation("تم رصد محاولة مغادرة صفحة الامتحان!");
                 }
             });
         }
@@ -194,11 +194,8 @@
             if (timerInterval) clearInterval(timerInterval);
 
             alert(`⚠️ تحذير أمني: ${reason}\nتم اعتبار امتحانك منتهياً وتسجيله (صفر).`);
-
-            // حفظ النتيجة بصفر في قاعدة البيانات
             await saveQuizResultToDB(0, quizData.questions.length, 0);
-
-            showBlockedScreen("تم رصد محاولة غش أو مغادرة للصفحة. تم رصد درجتك (صفر).");
+            showBlockedScreen("تم رصد محاولة مغادرة للصفحة. تم تسليم درجتك (صفر).");
         }
 
         window.submitQuiz = async function(isTimeout = false) {
@@ -233,18 +230,21 @@
 
         async function saveQuizResultToDB(score, total, percentage) {
             try {
+                const studentName = currentStudent.fullName || currentStudent.name || 'طالب مجهول';
+                const studentId = currentStudent.student_id || currentStudent.email || 'غير معروف';
+
                 await addDoc(collection(db, "quizResults"), {
                     quizId: quizId,
                     quizTitle: quizData.title,
-                    studentId: currentStudent.student_id,
-                    studentName: currentStudent.fullName,
+                    studentId: studentId,
+                    studentName: studentName,
                     score: score,
                     total: total,
                     percentage: percentage,
                     createdAt: new Date().toISOString()
                 });
             } catch(e) {
-                console.error("Error saving result:", e);
+                console.error("Error saving result to DB:", e);
             }
         }
 
