@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جامعة حلوان - بوابة الطالب الاحترافية</title>
+    <title>جامعة حلوان - بوابة الطالب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -13,7 +13,7 @@
             font-family: 'Cairo', sans-serif;
         }
         body {
-            background: #f1f5f9;
+            background: #f8fafc;
             color: #1e293b;
             min-height: 100vh;
         }
@@ -44,12 +44,14 @@
         }
         
         /* الإشعارات */
-        .notification-container { position: relative; }
+        .notification-container {
+            position: relative;
+        }
         .bell-btn {
             background: #f1f5f9;
             border: none;
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -69,8 +71,8 @@
             color: white;
             font-size: 11px;
             font-weight: 700;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -80,29 +82,29 @@
         .notifications-dropdown {
             position: absolute;
             left: 0;
-            top: 55px;
+            top: 50px;
             background: white;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 340px;
             max-height: 400px;
             overflow-y: auto;
             display: none;
             flex-direction: column;
             z-index: 1100;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #f1f5f9;
         }
         .notifications-dropdown.show { display: flex; }
         .notif-header {
-            padding: 15px;
+            padding: 12px 15px;
             font-weight: 700;
             font-size: 14px;
             border-bottom: 1px solid #f1f5f9;
-            color: #0f172a;
+            color: #1e293b;
             background: #f8fafc;
         }
         .notif-item {
-            padding: 14px 18px;
+            padding: 12px 15px;
             border-bottom: 1px solid #f1f5f9;
             font-size: 13px;
             color: #334155;
@@ -110,18 +112,21 @@
             transition: background 0.2s;
         }
         .notif-item:hover { background: #f8fafc; }
-        .notif-item.unread { background: #eff6ff; border-right: 4px solid #3b82f6; }
-        .notif-item p { margin-bottom: 4px; font-weight: 700; color: #1e293b; }
-        .notif-item span { font-size: 11px; color: #64748b; }
+        .notif-item.unread { background: #eff6ff; border-right: 3px solid #3b82f6; }
+        .notif-item p { margin-bottom: 3px; font-weight: 600; }
+        .notif-item span { font-size: 11px; color: #94a3b8; }
 
         /* بروفايل المستخدم */
-        .user-menu-container { position: relative; cursor: pointer; }
+        .user-menu-container {
+            position: relative;
+            cursor: pointer;
+        }
         .user-profile {
             display: flex;
             align-items: center;
             gap: 10px;
             background: #f8fafc;
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 30px;
             border: 1px solid #e2e8f0;
             font-weight: 600;
@@ -131,15 +136,15 @@
         .dropdown-menu {
             position: absolute;
             left: 0;
-            top: 55px;
+            top: 50px;
             background: white;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 180px;
             display: none;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #f1f5f9;
         }
         .dropdown-menu.show { display: flex; }
         .dropdown-menu a {
@@ -151,44 +156,43 @@
             transition: background 0.2s;
         }
         .dropdown-menu a:hover { background: #f8fafc; }
-        .dropdown-menu a.logout { color: #ef4444; border-top: 1px solid #f1f5f9; }
+        .dropdown-menu a.logout {
+            color: #ef4444;
+            border-top: 1px solid #f1f5f9;
+        }
 
-        /* المحتوى */
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 40px auto;
             padding: 0 20px;
         }
         .welcome-banner {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(135deg, #2563eb 100%, #1d4ed8 0%);
             color: white;
-            padding: 40px;
-            border-radius: 20px;
+            padding: 35px;
+            border-radius: 16px;
             margin-bottom: 35px;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
         }
-        .welcome-banner h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
-        .welcome-banner p { font-size: 15px; opacity: 0.85; }
+        .welcome-banner h1 { font-size: 26px; margin-bottom: 8px; }
+        .welcome-banner p { font-size: 15px; opacity: 0.9; }
 
         .section-title {
             font-size: 20px;
             font-weight: 700;
             color: #0f172a;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         .materials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
         }
         .material-card {
             background: white;
             padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-radius: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             cursor: pointer;
             transition: all 0.3s ease;
             border: 1px solid #e2e8f0;
@@ -200,21 +204,21 @@
             position: absolute;
             top: 0;
             right: 0;
-            width: 6px;
+            width: 5px;
             height: 100%;
             background: #3b82f6;
         }
         .material-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.06);
             border-color: #cbd5e1;
         }
-        .material-card h3 { font-size: 19px; color: #0f172a; margin-bottom: 12px; font-weight: 700; }
-        .material-card p { font-size: 13.5px; color: #64748b; line-height: 1.6; margin-bottom: 6px; }
+        .material-card h3 { font-size: 18px; color: #1e293b; margin-bottom: 8px; }
+        .material-card p { font-size: 13px; color: #64748b; line-height: 1.6; }
 
         #toast-container {
             position: fixed;
-            top: 25px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 9999;
@@ -225,19 +229,19 @@
             max-width: 400px;
         }
         .toast {
-            padding: 16px 20px;
-            border-radius: 12px;
+            padding: 15px 20px;
+            border-radius: 10px;
             color: white;
             font-size: 14px;
             font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             opacity: 0;
             transition: opacity 0.4s ease, transform 0.4s ease;
             transform: translateY(-20px);
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background-color: #22c55e; }
-        .toast.error { background-color: #ef4444; }
+        .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f59e0b; }
     </style>
 </head>
@@ -248,6 +252,7 @@
     <header>
         <div class="logo-area">جامعة <span>حلوان</span></div>
         <div class="header-right">
+            <!-- الجرس والإشعارات -->
             <div class="notification-container">
                 <button class="bell-btn" onclick="toggleNotifications()">
                     🔔
@@ -256,11 +261,12 @@
                 <div class="notifications-dropdown" id="notifDropdown">
                     <div class="notif-header">الإشعارات الجديدة</div>
                     <div id="notifList">
-                        <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>
+                        <div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>
                     </div>
                 </div>
             </div>
 
+            <!-- بروفايل المستخدم -->
             <div class="user-menu-container" onclick="toggleUserDropdown()">
                 <div class="user-profile">
                     <span id="studentNameDisplay">جاري التحميل...</span> ▾
@@ -281,7 +287,7 @@
 
         <div class="section-title">📚 خريطة المواد الدراسية</div>
         <div class="materials-grid" id="materialsGrid">
-            <div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 50px; background: white; border-radius: 16px; border: 1px solid #e2e8f0;">
+            <div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; background: white; border-radius: 14px; border: 1px solid #e2e8f0;">
                 جاري تحميل المواد المخصصة لفرقتك الدراسية...
             </div>
         </div>
@@ -289,7 +295,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -340,58 +346,72 @@
             document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + student.fullName;
             document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
 
-            initRealtimeListeners(student);
+            fetchMaterials(student.academicYear);
+            fetchNotifications(student);
         }
 
-        function initRealtimeListeners(student) {
+        // جلب المواد مع عرض اسم الدكتور والمساعد بدلاً من الجملة القديمة
+        async function fetchMaterials(year) {
             const grid = document.getElementById('materialsGrid');
-            const notifList = document.getElementById('notifList');
-            const badge = document.getElementById('notifBadge');
+            try {
+                const q = query(collection(db, "materials"), where("academicYear", "==", year));
+                const querySnapshot = await getDocs(q);
 
-            const qMaterials = query(collection(db, "materials"), where("academicYear", "==", student.academicYear));
-            onSnapshot(qMaterials, (snapshot) => {
-                if (snapshot.empty) {
-                    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; background:white; border-radius:16px; border: 1px solid #e2e8f0;">لا توجد مواد منشورة لهذه الفرقة حتى الآن.</div>`;
+                if (querySnapshot.empty) {
+                    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; background:white; border-radius:14px; border: 1px solid #e2e8f0;">لا توجد مواد منشورة لهذه الفرقة حتى الآن.</div>`;
                     return;
                 }
 
                 let html = '';
-                snapshot.forEach((docSnap) => {
-                    const mat = docSnap.data();
+                querySnapshot.forEach((docSnap) => {
+                    const material = docSnap.data();
+                    const prof = material.professorName ? `أستاذ المادة: ${material.professorName}` : 'أستاذ المادة: غير محدد';
+                    const assist = material.assistantName ? ` | المعيد: ${material.assistantName}` : '';
+                    
                     html += `
-                        <div class="material-card" onclick="openMaterialDetails('${mat.title}')">
-                            <h3>📚 ${mat.title}</h3>
-                            <p><b>أستاذ المادة:</b> ${mat.professorName || 'غير محدد'}</p>
-                            <p><b>المعيد / المساعد:</b> ${mat.assistantName || 'غير محدد'}</p>
+                        <div class="material-card" onclick="openMaterialDetails('${material.title}')">
+                            <h3>📚 ${material.title}</h3>
+                            <p>${prof}${assist}</p>
                         </div>
                     `;
                 });
                 grid.innerHTML = html;
-            });
 
-            const qContents = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
-            const qEdits = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+            } catch (error) {
+                console.error("Error fetching materials: ", error);
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: red; padding: 40px;">حدث خطأ أثناء تحميل المواد الدراسية.</div>`;
+            }
+        }
 
-            let latestContents = [];
-            let latestEdits = [];
-
-            function updateNotificationsUI() {
+        // جلب الإشعارات التفاعلية (مواد دراسية + حالة تعديل البيانات) وتحديد المقروء عبر LocalStorage
+        async function fetchNotifications(student) {
+            const notifList = document.getElementById('notifList');
+            const badge = document.getElementById('notifBadge');
+            
+            try {
                 let allNotifs = [];
 
-                latestContents.forEach(item => {
-                    const roleText = item.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
+                // 1. إشعارات النشر الخاصة بفرقة الطالب
+                const qMat = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
+                const snapMat = await getDocs(qMat);
+                snapMat.forEach(d => {
+                    const item = d.data();
                     allNotifs.push({
-                        id: item.id,
-                        title: `تم نشر محتوى جديد (${roleText}): ${item.title}`,
+                        id: d.id,
+                        title: `تم نشر ${item.type === 'book' ? 'كتاب' : 'امتحان'}: ${item.title}`,
                         subtitle: `المادة: ${item.materialTitle} | بواسطة: ${item.publisherName || 'الإدارة'}`,
                         link: `material.html?title=${encodeURIComponent(item.materialTitle)}`,
                         date: item.createdAt || ''
                     });
                 });
 
-                latestEdits.forEach(item => {
+                // 2. إشعارات تعديل البيانات الخاصة بهذا الطالب فقط
+                const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+                const snapEdit = await getDocs(qEdit);
+                snapEdit.forEach(d => {
+                    const item = d.data();
                     allNotifs.push({
-                        id: item.id,
+                        id: d.id,
                         title: item.title,
                         subtitle: item.message,
                         link: '#',
@@ -400,12 +420,14 @@
                 });
 
                 if (allNotifs.length === 0) {
-                    notifList.innerHTML = `<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>`;
+                    notifList.innerHTML = `<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>`;
                     badge.style.display = 'none';
                     return;
                 }
 
+                // استرجاع الإشعارات المقروءة سابقاً من الـ LocalStorage
                 const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
+
                 let html = '';
                 let unreadCount = 0;
 
@@ -416,7 +438,8 @@
                     html += `
                         <div class="notif-item ${!isRead ? 'unread' : ''}" onclick="handleNotificationClick('${notif.id}', '${notif.link}', '${student.student_id}')">
                             <p>${notif.title}</p>
-                            <span>${notif.subtitle}</span>
+                            <span style="display:block; margin-top:2px; color:#475569;">${notif.subtitle}</span>
+                            <span>${notif.date ? new Date(notif.date).toLocaleDateString('ar-EG') : ''}</span>
                         </div>
                     `;
                 });
@@ -428,21 +451,13 @@
                 } else {
                     badge.style.display = 'none';
                 }
+
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
             }
-
-            onSnapshot(qContents, (snapshot) => {
-                latestContents = [];
-                snapshot.forEach(doc => latestContents.push({ id: doc.id, ...doc.data() }));
-                updateNotificationsUI();
-            });
-
-            onSnapshot(qEdits, (snapshot) => {
-                latestEdits = [];
-                snapshot.forEach(doc => latestEdits.push({ id: doc.id, ...doc.data() }));
-                updateNotificationsUI();
-            });
         }
 
+        // عند النقر على الإشعار: يتم تعليمه كمقروء وتوجيه الطالب لرابطه
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
@@ -456,8 +471,8 @@
             }
         }
 
-        window.openMaterialDetails = function(title) {
-            location.href = `material.html?title=${encodeURIComponent(title)}`;
+        window.openMaterialDetails = function(materialTitle) {
+            location.href = `material.html?title=${encodeURIComponent(materialTitle)}`;
         }
     </script>
 
