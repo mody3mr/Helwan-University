@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامعة حلوان - إعدادات الحساب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+        body {
+            background: #f4f6f9;
+            color: #333;
+            min-height: 100vh;
+        }
+        header {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        .back-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-btn:hover { background: #475569; }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #1e293b;
+            font-size: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+        }
+        .form-group input:disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover { background: #2563eb; }
+
+        /* نظام الـ Toast Messages */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast {
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(-20px);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background-color: #22c55e; }
+        .toast.error { background-color: #ef4444; }
+        .toast.warning { background-color: #f59e0b; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <header>
+        <div class="logo" onclick="location.href='student.html'">جامعة حلوان</div>
+        <a href="student.html" class="back-btn">العودة للرئيسية</a>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>إعدادات وتعديل البيانات</h2>
+            <form id="settingsForm">
+                
+                <div class="form-group">
+                    <label>الرقم التعريفي (ID - لا يمكن تعديله)</label>
+                    <input type="text" id="studentId" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">الاسم الرباعي</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="tel" id="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">كلمة المرور الجديدة</label>
+                    <input type="password" id="password" placeholder="اتركها فارغة إذا لمغن رغبة في التغيير" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="academicYear">السنة الدراسية</label>
+                    <select id="academicYear" required>
+                        <option value="1">الفرقة الأولى</option>
+                        <option value="2">الفرقة الثانية</option>
+                        <option value="3">الفرقة الثالثة</option>
+                        <option value="4">الفرقة الرابعة</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>رقم البطاقة (لا يمكن تعديله)</label>
+                    <input type="text" id="nationalId" disabled>
+                </div>
+
+                <button type="submit" class="btn-submit">إرسال طلب التعديل للإدارة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- فايربيس والمنطق البرمجي -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
+            authDomain: "helwan-university-3cfd3.firebaseapp.com",
+            projectId: "helwan-university-3cfd3",
+            storageBucket: "helwan-university-3cfd3.firebasestorage.app",
+            messagingSenderId: "649399927965",
+            appId: "1:649399927965:web:87f52cb4eff211595fc074"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // استرجاع بيانات الطالب الحالي وعرضها في الحقول
+        const studentDataStr = localStorage.getItem('currentStudent');
+        if (!studentDataStr) {
+            location.href = 'index.html';
+        } else {
+            const student = JSON.parse(studentDataStr);
+            document.getElementById('studentId').value = student.student_id || '';
+            document.getElementById('fullName').value = student.fullName || '';
+            document.getElementById('phone').value = student.phone || '';
+            document.getElementById('email').value = student.email || '';
+            document.getElementById('password').value = student.password || '';
+            document.getElementById('academicYear').value = student.academicYear || '1';
+            document.getElementById('nationalId').value = student.nationalId || '';
+        }
+
+        // إرسال طلب التعديل لـ Firestore
+        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const student = JSON.parse(localStorage.getItem('currentStudent'));
+
+            const updatedData = {
+                student_id: student.student_id,
+                nationalId: student.nationalId,
+                fullName: document.getElementById('fullName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value.trim(),
+                academicYear: document.getElementById('academicYear').value,
+                originalDocId: student.id || student.student_id,
+                status: 'pending_edit',
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                const editsRef = collection(db, "pendingEdits");
+                await addDoc(editsRef, updatedData);
+
+                showToast('تم إرسال طلب التعديل بنجاح، وهو الآن في انتظار موافقة الإدارة.', 'success');
+            } catch (error) {
+                console.error("Error submitting edit request: ", error);
+                showToast('حدث خطأ أثناء إرسال طلب التعديل.', 'error');
+            }
+        });
+    </script>
+
+</body>
+</html>
