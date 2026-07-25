@@ -31,9 +31,43 @@
         .result-score { font-size: 48px; font-weight: 700; color: #2563eb; margin-bottom: 20px; }
         .btn-back { background: #2563eb; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 16px; }
+
+        /* نافذة التنبيه الاحترافية (Custom Professional Modal) */
+        #customAlertOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px;
+        }
+        .custom-alert-box {
+            background: white; width: 100%; max-width: 450px; border-radius: 20px;
+            padding: 30px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            animation: modalScale 0.3s ease;
+        }
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .custom-alert-icon { font-size: 42px; margin-bottom: 15px; }
+        .custom-alert-title { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        .custom-alert-msg { font-size: 14.5px; color: #475569; margin-bottom: 25px; line-height: 1.6; }
+        .custom-alert-btn {
+            background: #2563eb; color: white; border: none; padding: 12px 30px;
+            border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.2s; width: 100%;
+        }
+        .custom-alert-btn:hover { background: #1d4ed8; }
     </style>
 </head>
 <body>
+
+    <!-- نافذة التنبيه الاحترافية بدلاً من رسائل المتصفح القديمة -->
+    <div id="customAlertOverlay">
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon" id="alertIcon">⚠️</div>
+            <div class="custom-alert-title" id="alertTitle">تنبيه هام</div>
+            <div class="custom-alert-msg" id="alertMessage">رسالة التنبيه هنا...</div>
+            <button class="custom-alert-btn" onclick="closeCustomAlert()">حسناً، فهمت</button>
+        </div>
+    </div>
 
     <div class="container" id="quizContainer">
         <div class="quiz-header">
@@ -70,18 +104,34 @@
         let examSubmitted = false;
         let currentStudent = null;
         let existingResultDocId = null;
+        let alertCallback = null;
+
+        // دالة إظهار التنبيه الاحترافي
+        window.showAlert = function(title, message, icon = '⚠️', callback = null) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertIcon').innerText = icon;
+            document.getElementById('customAlertOverlay').style.display = 'flex';
+            alertCallback = callback;
+        }
+
+        window.closeCustomAlert = function() {
+            document.getElementById('customAlertOverlay').style.display = 'none';
+            if (typeof alertCallback === 'function') {
+                alertCallback();
+                alertCallback = null;
+            }
+        }
 
         const studentStr = localStorage.getItem('currentStudent');
         if (!studentStr) {
-            alert('يرجى تسجيل الدخول أولاً!');
-            location.href = 'index.html';
+            showAlert('خطأ في تسجيل الدخول', 'يرجى تسجيل الدخول أولاً!', '❌', () => { location.href = 'index.html'; });
         } else {
             currentStudent = JSON.parse(studentStr);
         }
 
         if (!quizId) {
-            alert('لم يتم تحديد الامتحان!');
-            window.history.back();
+            showAlert('خطأ', 'لم يتم تحديد الامتحان!', '❌', () => { window.history.back(); });
         } else {
             checkAndLoadQuiz(quizId);
         }
@@ -90,7 +140,6 @@
             try {
                 const studentIdKey = currentStudent.student_id || currentStudent.email || 'unknown_student';
                 
-                // البحث عن نتائج الطالب السابقة لهذا الامتحان
                 const resultsQuery = query(
                     collection(db, "quizResults"),
                     where("quizId", "==", id),
@@ -101,14 +150,12 @@
                 let hasActiveRetake = false;
                 resultsSnap.forEach(docSnap => {
                     const resData = docSnap.data();
-                    existingResultDocId = docSnap.id; // حفظ الـ ID لو هنحتاج نحدث النتيجة السابقة
-                    // لو الأدمن وافق على الإعادة (canRetake == true)
+                    existingResultDocId = docSnap.id;
                     if (resData.canRetake === true) {
                         hasActiveRetake = true;
                     }
                 });
 
-                // لو الطالب امتحن قبل كده، ومفيش موافقة نشطة من الأدمن بالإعادة
                 if (!resultsSnap.empty && !hasActiveRetake) {
                     showBlockedScreen("لقد قمت بأداء هذا الامتحان مسبقاً! محاولتك انتهت ولا يمكنك إعادته إلا بعد موافقة الإدارة من لوحة التحكم.");
                     return;
@@ -152,7 +199,6 @@
                 });
 
                 html += `
-                    The question card...
                     <div class="question-card" data-qindex="${qIndex}">
                         <h3>السؤال ${qIndex + 1}: ${q.questionText}</h3>
                         <div class="options-list">
@@ -178,8 +224,7 @@
 
                 if (totalSeconds <= 0) {
                     clearInterval(timerInterval);
-                    alert('انتهى الوقت المخصص للامتحان!');
-                    submitQuiz(true);
+                    showAlert('انهاء الوقت', 'انتهى الوقت المخصص للامتحان!', '⏰', () => { submitQuiz(true); });
                 }
                 totalSeconds--;
             }, 1000);
@@ -204,9 +249,10 @@
             examSubmitted = true;
             if (timerInterval) clearInterval(timerInterval);
 
-            alert(`⚠️ تحذير أمني: ${reason}\nتم اعتبار امتحانك منتهياً وتسجيله (صفر).`);
             await saveQuizResultToDB(0, quizData.questions.length, 0);
-            showBlockedScreen("تم رصد محاولة مغادرة للصفحة. تم تسليم درجتك (صفر).");
+            showAlert('تحذير أمني أصفر', `${reason}\nتم اعتبار امتحانك منتهياً وتسجيله (صفر).`, '🚫', () => {
+                showBlockedScreen("تم رصد محاولة مغادرة للصفحة. تم تسليم درجتك (صفر).");
+            });
         }
 
         window.submitQuiz = async function(isTimeout = false) {
@@ -254,16 +300,14 @@
                     score: score,
                     total: total,
                     percentage: percentage,
-                    canRetake: false, // استنفذ محاولته الإضافية حتى لو وافق الأدمن مرة أخرى
-                    attemptNumber: existingResultDocId ? 2 : 1, // توثيق رقم المحاولة
+                    canRetake: false,
+                    attemptNumber: existingResultDocId ? 2 : 1,
                     createdAt: new Date().toISOString()
                 };
 
                 if (existingResultDocId) {
-                    // تحديث النتيجة السائدة عند الإعادة
                     await updateDoc(doc(db, "quizResults", existingResultDocId), resultPayload);
                 } else {
-                    // تسجيل جديد للمحاولة الأولى
                     await addDoc(collection(db, "quizResults"), resultPayload);
                 }
             } catch(e) {
