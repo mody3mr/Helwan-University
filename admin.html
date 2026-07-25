@@ -7,10 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; }
+        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; }
+        
         .sidebar {
             width: 280px; background: #0f172a; color: white; display: flex;
-            flex-direction: column; justify-content: space-between; padding: 25px 20px;
+            flex-direction: column; justify-content: flex-start; padding: 25px 20px;
             box-shadow: 4px 0 15px rgba(0,0,0,0.05); position: sticky; top: 0; height: 100vh;
         }
         .sidebar-brand {
@@ -23,27 +24,39 @@
             font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease;
         }
         .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
-        .sidebar-logout {
-            background: #ef4444; color: white; border: none; padding: 13px;
-            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.3s; font-size: 14px;
-        }
-        .sidebar-logout:hover { background: #dc2626; }
 
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); }
         .header-top {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; background: white; padding: 20px 30px;
             border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
         .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
-        .admin-badge { background: #e0f2fe; color: #0369a1; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; }
+        
+        /* الهيدر وقائمة الحساب العلوية */
+        .admin-menu-container { position: relative; cursor: pointer; }
+        .admin-profile {
+            display: flex; align-items: center; gap: 10px; background: #f8fafc;
+            padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0;
+            font-weight: 600; color: #1e293b; font-size: 14px;
+        }
+        .dropdown-menu {
+            position: absolute; left: 0; top: 50px; background: white; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none;
+            flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000;
+        }
+        .dropdown-menu.show { display: flex; }
+        .dropdown-menu a {
+            padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block;
+        }
+        .dropdown-menu a:hover { background: #f8fafc; }
 
         .tab-section { display: none; }
         .tab-section.active { display: block; }
 
         .card-box {
             background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0;
+            overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%;
         }
         .card-header {
             padding: 20px 25px; border-bottom: 1px solid #f1f5f9;
@@ -68,19 +81,19 @@
         }
         .btn-submit:hover { background: #1d4ed8; }
 
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: right; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; white-space: nowrap; }
         table th, table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         table th { background: #f8fafc; color: #475569; font-weight: 700; }
+        
+        /* أزرار الإجراءات الموحدة */
         .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; }
         .btn-approve { background: #22c55e; color: white; }
         .btn-approve:hover { background: #16a34a; }
         .btn-reject { background: #ef4444; color: white; margin-right: 5px; }
         .btn-reject:hover { background: #dc2626; }
-        .btn-edit { background: #3b82f6; color: white; margin-left: 5px; }
-        .btn-edit:hover { background: #2563eb; }
-        .btn-delete { background: #64748b; color: white; }
-        .btn-delete:hover { background: #475569; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-delete:hover { background: #dc2626; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
         #toast-container {
@@ -110,18 +123,26 @@
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة الملفات</li>
                 <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
+                <li id="menuAdmins" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
             </ul>
         </div>
-        <button class="sidebar-logout" onclick="location.href='index.html'">تسجيل الخروج</button>
     </div>
 
     <div class="main-content">
         <div class="header-top">
             <h2 id="pageTitle">إدارة المواد</h2>
-            <div class="admin-badge" id="adminNameDisplay">مسؤول النظام</div>
+            <!-- قائمة الحساب الإداري وزر تسجيل الخروج العلوي -->
+            <div class="admin-menu-container" onclick="toggleAdminDropdown()">
+                <div class="admin-profile">
+                    <span id="adminNameDisplay">مسؤول النظام</span> ▾
+                </div>
+                <div class="dropdown-menu" id="adminDropdown">
+                    <a href="#" onclick="logoutAdmin()">تسجيل الخروج</a>
+                </div>
+            </div>
         </div>
 
-        <!-- 1. إدارة المواد (إضافة فقط بدون طاقم تدريس + عرض وتعديل وحذف) -->
+        <!-- 1. إدارة المواد (بدون طاقم تدريس + عرض وتعديل وحذف) -->
         <div id="sectionMaterials" class="tab-section active">
             <div class="card-box">
                 <div class="card-header">إضافة مادة دراسية جديدة</div>
@@ -148,7 +169,6 @@
                 </div>
             </div>
 
-            <!-- جدول عرض وتعديل وحذف المواد -->
             <div class="card-box">
                 <div class="card-header">قائمة المواد الدراسية المسجلة</div>
                 <div class="table-responsive">
@@ -169,7 +189,7 @@
             </div>
         </div>
 
-        <!-- 2. إدارة الأقسام (مع جدول عرض وتعديل وحذف) -->
+        <!-- 2. إدارة الأقسام -->
         <div id="sectionSections" class="tab-section">
             <div class="card-box">
                 <div class="card-header">إنشاء قسم جديد للمادة</div>
@@ -222,7 +242,7 @@
             </div>
         </div>
 
-        <!-- 3. إدارة الملفات (مع كلمة المعيد فقط + جدول عرض وتعديل وحذف) -->
+        <!-- 3. إدارة الملفات (مع المعيد فقط) -->
         <div id="sectionFiles" class="tab-section">
             <div class="card-box">
                 <div class="card-header">رفع ونشر الملفات والمحتوى</div>
@@ -293,7 +313,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات (إرسال إشعار مخصص لفرقة، جميع الفرق، أو طالب معين) -->
+        <!-- 4. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box">
                 <div class="card-header">مركز إدارة وإرسال الإشعارات للطلاب</div>
@@ -336,7 +356,7 @@
             </div>
         </div>
 
-        <!-- 5. إدارة الطلاب (طلبات جديدة + تعديلات + قائمة جميع الطلاب مع حظر/إلغاء حظر) -->
+        <!-- 5. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
@@ -380,7 +400,6 @@
                 </div>
             </div>
 
-            <!-- قائمة جميع طلاب الجامعة مع التحكم الكامل والحظر -->
             <div class="card-box">
                 <div class="card-header">قائمة جميع طلاب الجامعة (إدارة كاملة وحظر)</div>
                 <div class="table-responsive">
@@ -397,6 +416,59 @@
                         </thead>
                         <tbody id="allStudentsTable">
                             <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. تاب إدارة الأعضاء الإداريين الجديدة -->
+        <div id="sectionAdmins" class="tab-section">
+            <div class="card-box" style="margin-bottom: 25px;">
+                <div class="card-header">إنشاء حساب إداري جديد (مدير أو مشرف)</div>
+                <div class="card-body">
+                    <form id="adminCreateForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="admName">اسم العضو الإداري</label>
+                                <input type="text" id="admName" placeholder="الاسم الرباعي" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admEmail">البريد الإلكتروني</label>
+                                <input type="email" id="admEmail" placeholder="admin@helwan.edu.eg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admPassword">كلمة المرور</label>
+                                <input type="password" id="admPassword" placeholder="كلمة المرور" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admRole">الصلاحية / الدور</label>
+                                <select id="admRole" required>
+                                    <option value="manager">مدير عام (صلاحيات كاملة)</option>
+                                    <option value="supervisor">مشرف (صلاحيات محددة)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="margin-top: 10px;">إنشاء الحساب الإداري</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="card-header">قائمة الموظفين والأعضاء الإداريين</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الدور / الصلاحية</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminsTable">
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -423,7 +495,7 @@
         const db = getFirestore(app);
 
         const currentAdminName = localStorage.getItem('currentAdminName') || "مسؤول النظام";
-        document.getElementById('adminNameDisplay').innerText = "المسؤول: " + currentAdminName;
+        document.getElementById('adminNameDisplay').innerText = currentAdminName;
 
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -438,9 +510,21 @@
             }, 4000);
         }
 
+        // إدارة ظهور قائمة الحساب العلوية
+        window.toggleAdminDropdown = function() {
+            document.getElementById('adminDropdown').classList.toggle('show');
+        }
+
+        window.logoutAdmin = function() {
+            localStorage.removeItem('currentAdminName');
+            location.href = 'index.html';
+        }
+
+        // التنقل التلقائي مع عمل ريفرش وجلب للبيانات (تجنب الكاش القديم)
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+            document.getElementById('adminDropdown').classList.remove('show');
 
             if(tab === 'materials') {
                 document.getElementById('sectionMaterials').classList.add('active');
@@ -468,6 +552,11 @@
                 fetchPendingStudents();
                 fetchPendingEdits();
                 fetchAllStudents();
+            } else if(tab === 'admins') {
+                document.getElementById('sectionAdmins').classList.add('active');
+                document.getElementById('menuAdmins').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة الأعضاء الإداريين';
+                fetchAdminsTable();
             }
         }
 
@@ -477,7 +566,6 @@
             document.getElementById('studentInputGroup').style.display = val === 'student' ? 'block' : 'none';
         }
 
-        // جلب المواد لأقسام وسلشات التحديد
         async function populateMaterialsDropdown(yearId, dropdownId) {
             const selectMat = document.getElementById(dropdownId);
             selectMat.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
@@ -518,7 +606,7 @@
             } catch(e) { console.error(e); }
         });
 
-        // 1. إضافة المادة (بدون طاقم تدريس)
+        // 1. إدارة المواد
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('matYear').value;
@@ -547,7 +635,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // 2. إنشاء القسم
+        // 2. إدارة الأقسام
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('secYear').value;
@@ -577,7 +665,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // 3. نشر الملف (مع كلمة المعيد فقط)
+        // 3. إدارة الملفات (المعيد فقط)
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('fileYear').value;
@@ -613,7 +701,6 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // دالة عامة للحذف والتحديث
         window.deleteDocItem = async function(collName, docId, callback) {
             if(confirm("هل أنت متأكد من الحذف؟")) {
                 try {
@@ -624,7 +711,7 @@
             }
         };
 
-        // 4. إرسال إشعار مخصص للطلاب
+        // 4. الإشعارات
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const targetType = document.getElementById('notifTargetType').value;
@@ -633,19 +720,13 @@
 
             try {
                 if(targetType === 'all') {
-                    await addDoc(collection(db, "notifications"), {
-                        target_group: 'all', title, message, createdAt: new Date().toISOString()
-                    });
+                    await addDoc(collection(db, "notifications"), { target_group: 'all', title, message, createdAt: new Date().toISOString() });
                 } else if(targetType === 'year') {
                     const year = document.getElementById('notifYear').value;
-                    await addDoc(collection(db, "notifications"), {
-                        target_year: year, title, message, createdAt: new Date().toISOString()
-                    });
+                    await addDoc(collection(db, "notifications"), { target_year: year, title, message, createdAt: new Date().toISOString() });
                 } else if(targetType === 'student') {
                     const studentId = document.getElementById('notifStudentId').value.trim();
-                    await addDoc(collection(db, "notifications"), {
-                        student_id: studentId, title, message, createdAt: new Date().toISOString()
-                    });
+                    await addDoc(collection(db, "notifications"), { student_id: studentId, title, message, createdAt: new Date().toISOString() });
                 }
                 showToast('تم إرسال الإشعار بنجاح!', 'success');
                 this.reset();
@@ -653,7 +734,7 @@
             } catch(e) { showToast('حدث خطأ أثناء إرسال الإشعار', 'error'); }
         });
 
-        // 5. إدارة الطلاب (طلبات جديدة + تعديلات + قائمة كاملة وحظر)
+        // 5. الطلاب والحظر
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -719,7 +800,6 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // عرض جميع الطلاب مع زر الحظر / إلغاء الحظر
         async function fetchAllStudents() {
             const tbody = document.getElementById('allStudentsTable');
             try {
@@ -761,7 +841,65 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-        // تشغيل التحميل الأولي للمواد
+        // 6. الأعضاء الإداريين
+        document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('admName').value.trim();
+            const email = document.getElementById('admEmail').value.trim();
+            const password = document.getElementById('admPassword').value.trim();
+            const role = document.getElementById('admRole').value;
+
+            try {
+                await addDoc(collection(db, "admins"), {
+                    name, email, password, role, status: 'active', createdAt: new Date().toISOString()
+                });
+                showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
+                this.reset();
+                fetchAdminsTable();
+            } catch(e) { showToast('حدث خطأ أثناء إنشاء الحساب', 'error'); }
+        });
+
+        async function fetchAdminsTable() {
+            const tbody = document.getElementById('adminsTable');
+            try {
+                const snapshot = await getDocs(collection(db, "admins"));
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const adm = d.data();
+                    const roleText = adm.role === 'manager' ? 'مدير عام' : 'مشرف';
+                    const statusText = adm.status === 'active' ? 'نشط' : 'موقف';
+                    const statusColor = adm.status === 'active' ? 'green' : 'red';
+                    const actionBtnText = adm.status === 'active' ? 'إيقاف' : 'تفعيل';
+                    const actionBtnClass = adm.status === 'active' ? 'btn-reject' : 'btn-approve';
+                    const newStatus = adm.status === 'active' ? 'suspended' : 'active';
+
+                    html += `
+                        <tr>
+                            <td><b>${adm.name}</b></td>
+                            <td>${adm.email}</td>
+                            <td>${roleText}</td>
+                            <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
+                            <td>
+                                <button class="btn ${actionBtnClass}" onclick="toggleAdminStatus('${d.id}', '${newStatus}')">${actionBtnText}</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}', fetchAdminsTable)">حذف</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في تحميل المشرفين</td></tr>`; }
+        }
+
+        window.toggleAdminStatus = async function(docId, newStatus) {
+            try {
+                await updateDoc(doc(db, "admins", docId), { status: newStatus });
+                showToast('تم تحديث حالة العضو الإداري بنجاح', 'success');
+                fetchAdminsTable();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        }
+
+        // التشغيل الأولي
         fetchMaterialsTable();
     </script>
 
