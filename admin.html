@@ -84,22 +84,11 @@
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .header-top h2 {
-            color: #1e293b;
-            font-size: 22px;
-        }
-        .admin-name {
-            font-weight: 600;
-            color: #64748b;
-            font-size: 14px;
-        }
+        .header-top h2 { color: #1e293b; font-size: 22px; }
+        .admin-name { font-weight: 600; color: #64748b; font-size: 14px; }
 
-        .tab-section {
-            display: none;
-        }
-        .tab-section.active {
-            display: block;
-        }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
 
         .card-table {
             background: white;
@@ -115,43 +104,16 @@
             font-size: 16px;
             color: #1e293b;
         }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: right;
-        }
-        table th, table td {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 14px;
-        }
-        table th {
-            background: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-        }
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        table th, table td { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        table th { background: #f8fafc; color: #475569; font-weight: 600; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
         .btn-approve { background: #22c55e; color: white; }
         .btn-approve:hover { background: #16a34a; }
         .btn-reject { background: #ef4444; color: white; margin-right: 6px; }
         .btn-reject:hover { background: #dc2626; }
-        .no-data {
-            text-align: center;
-            color: #94a3b8;
-            padding: 40px;
-            font-size: 15px;
-        }
+        .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
         .form-card {
             background: white;
@@ -160,16 +122,8 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             max-width: 600px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #334155;
-            font-weight: 600;
-            font-size: 14px;
-        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
         .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
@@ -325,7 +279,19 @@
                         <input type="text" id="pubTitle" placeholder="مثال: البرمجة المتقدمة أو كتاب قواعد البيانات" required>
                     </div>
 
-                    <div class="form-group" id="fileUrlGroup">
+                    <!-- حقول خاصة بأستاذ المادة والمساعد تظهر عند اختيار إضافة مادة -->
+                    <div id="materialExtraFields">
+                        <div class="form-group">
+                            <label for="pubProf">اسم أستاذ المادة (الدكتور)</label>
+                            <input type="text" id="pubProf" placeholder="مثال: د. أحمد محمد">
+                        </div>
+                        <div class="form-group">
+                            <label for="pubAssist">اسم المعيد / المساعد (اختياري)</label>
+                            <input type="text" id="pubAssist" placeholder="مثال: م. محمود علي">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="fileUrlGroup" style="display: none;">
                         <label for="pubFileUrl">رابط الملف (Google Drive / PDF Link)</label>
                         <input type="url" id="pubFileUrl" placeholder="https://example.com/file.pdf">
                     </div>
@@ -353,7 +319,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const currentAdminName = "أحمد محمد (مسؤول النظام)";
+        const currentAdminName = localStorage.getItem('currentAdminName') || "مسؤول النظام";
         document.getElementById('adminNameDisplay').innerText = "أهلاً بك، " + currentAdminName;
 
         window.showToast = function(message, type = 'success') {
@@ -472,7 +438,7 @@
             }
         }
 
-        // معالجة واستمكال الموافقة على التعديل وتحديثه في كوليكشن users الأساسي
+        // الموافقة على التعديل + إرسال إشعار فوري للطالب
         window.approveEdit = async function(editId) {
             try {
                 const editDocRef = doc(db, "pendingEdits", editId);
@@ -484,23 +450,18 @@
                 }
 
                 const editData = editSnap.data();
-                
-                // البحث عن مستند الطالب الأساسي باستخدام student_id
                 const usersRef = collection(db, "users");
                 const qUser = query(usersRef, where("student_id", "==", editData.student_id));
                 const userSnap = await getDocs(qUser);
 
                 if (userSnap.empty) {
-                    showToast('لم يتم العثور على حساب الطالب المرتبط بهذه التعديلات.', 'error');
+                    showToast('لم يتم العثور على حساب الطالب المرتبط.', 'error');
                     return;
                 }
 
                 let targetUserDocId = null;
-                userSnap.forEach((d) => {
-                    targetUserDocId = d.id;
-                });
+                userSnap.forEach((d) => { targetUserDocId = d.id; });
 
-                // تحديث مستند الطالب بالبيانات الجديدة
                 await updateDoc(doc(db, "users", targetUserDocId), {
                     fullName: editData.fullName,
                     phone: editData.phone,
@@ -509,33 +470,58 @@
                     academicYear: editData.academicYear
                 });
 
-                // حذف طلب التعديل المعلق بعد اعتماده
-                await deleteDoc(editDocRef);
+                // إرسال إشعار الموافقة للطالب في كوليكشن notifications
+                await addDoc(collection(db, "notifications"), {
+                    student_id: editData.student_id,
+                    title: "تمت الموافقة على تعديل بياناتك",
+                    message: "قامت الإدارة باعتماد وتحديث بياناتك الشخصية بنجاح.",
+                    createdAt: new Date().toISOString()
+                });
 
-                showToast('تم اعتماد وتحديث بيانات الطالب بنجاح.', 'success');
+                await deleteDoc(editDocRef);
+                showToast('تم اعتماد التعديل وإرسال إشعار للطالب.', 'success');
                 fetchPendingEdits();
             } catch (error) {
-                console.error("Error approving edit:", error);
+                console.error(error);
                 showToast('حدث خطأ أثناء اعتماد التعديل.', 'error');
             }
         }
 
+        // رفض التعديل + إرسال إشعار للطالب
         window.rejectEdit = async function(editId) {
             try {
-                await deleteDoc(doc(db, "pendingEdits", editId));
-                showToast('تم رفض طلب التعديل.', 'warning');
+                const editDocRef = doc(db, "pendingEdits", editId);
+                const editSnap = await getDoc(editDocRef);
+                if (editSnap.exists()) {
+                    const editData = editSnap.data();
+                    // إرسال إشعار بالرفض للطالب
+                    await addDoc(collection(db, "notifications"), {
+                        student_id: editData.student_id,
+                        title: "تم رفض طلب تعديل البيانات",
+                        message: "عذراً، لم توافق الإدارة على التعديلات المرسلة.",
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                await deleteDoc(editDocRef);
+                showToast('تم رفض طلب التعديل وإرسال إشعار للطالب.', 'warning');
                 fetchPendingEdits();
             } catch (error) {
                 showToast('حدث خطأ أثناء الرفض.', 'error');
             }
         }
 
+        // التحكم في ظهور الحقول بناء على نوع المحتوى المنشور
         document.getElementById('pubType').addEventListener('change', function() {
             const fileGroup = document.getElementById('fileUrlGroup');
+            const materialExtraFields = document.getElementById('materialExtraFields');
+            
             if(this.value === 'material') {
                 fileGroup.style.display = 'none';
+                materialExtraFields.style.display = 'block';
             } else {
                 fileGroup.style.display = 'block';
+                materialExtraFields.style.display = 'none';
             }
         });
 
@@ -545,16 +531,20 @@
             const academicYear = document.getElementById('pubYear').value;
             const title = document.getElementById('pubTitle').value.trim();
             const fileUrl = document.getElementById('pubFileUrl').value.trim();
+            const professorName = document.getElementById('pubProf').value.trim();
+            const assistantName = document.getElementById('pubAssist').value.trim();
 
             try {
                 if(type === 'material') {
                     await addDoc(collection(db, "materials"), {
                         title: title,
                         academicYear: academicYear,
+                        professorName: professorName,
+                        assistantName: assistantName,
                         publisherName: currentAdminName,
                         createdAt: new Date().toISOString()
                     });
-                    showToast('تم نشر المادة الجديدة في الخريطة بنجاح!', 'success');
+                    showToast('تم نشر المادة الجديدة وتحديد طاقم التدريس بنجاح!', 'success');
                 } else {
                     await addDoc(collection(db, "materialContents"), {
                         materialTitle: title,
@@ -565,7 +555,7 @@
                         publisherName: currentAdminName,
                         createdAt: new Date().toISOString()
                     });
-                    showToast('تم نشر الملف بنجاح بواسطة ' + currentAdminName, 'success');
+                    showToast('تم نشر الملف وإرسال الإشعار التلقائي للطلاب بنجاح!', 'success');
                 }
                 document.getElementById('publishForm').reset();
             } catch (error) {
