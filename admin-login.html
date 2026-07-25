@@ -77,11 +77,11 @@
             const passwordVal = document.getElementById('adminPassword').value.trim();
 
             try {
-                // 1. السوبر أدمن الخاص بك
+                // 1. السوبر أدمن الخاص بك (محمد عمرو)
                 if ((inputVal === "Mohamed Amr" || inputVal === "mody3mr" || inputVal === "admin@helwan.edu.eg") && passwordVal === "mody2026") {
-                    localStorage.setItem('currentAdminName', "محمد عمرو (سوبر أدمن)");
-                    localStorage.setItem('currentAdminRole', "super_admin");
-                    localStorage.setItem('adminPermissions', JSON.stringify(['materials', 'sections', 'files', 'notifs', 'students', 'admins']));
+                    sessionStorage.setItem('currentAdminName', "محمد عمرو (سوبر أدمن)");
+                    sessionStorage.setItem('currentAdminRole', "super_admin");
+                    sessionStorage.setItem('adminPermissions', JSON.stringify(['materials_manage', 'materials_delete', 'sections_manage', 'sections_delete', 'files_manage', 'files_delete', 'notifs_manage', 'notifs_delete', 'students_manage', 'students_delete']));
                     showToast('أهلاً بك يا باشمهندس محمد عمرو، جاري التوجيه...', 'success');
                     setTimeout(() => { location.href = 'admin.html'; }, 1000);
                     return;
@@ -103,9 +103,9 @@
                         return;
                     }
 
-                    localStorage.setItem('currentAdminName', adminDoc.name);
-                    localStorage.setItem('currentAdminRole', adminDoc.role);
-                    localStorage.setItem('adminPermissions', JSON.stringify(adminDoc.permissions || []));
+                    sessionStorage.setItem('currentAdminName', adminDoc.name);
+                    sessionStorage.setItem('currentAdminRole', adminDoc.role);
+                    sessionStorage.setItem('adminPermissions', JSON.stringify(adminDoc.permissions || []));
                     
                     showToast('تم تسجيل الدخول بنجاح، مرحباً ' + adminDoc.name, 'success');
                     setTimeout(() => { location.href = 'admin.html'; }, 1000);
