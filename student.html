@@ -383,7 +383,7 @@
             }
         }
 
-        // جلب الإشعارات بـ onSnapshot مع قراءة رابط التوجيه (link) بدقة
+        // جلب الإشعارات
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
@@ -408,11 +408,22 @@
                     }
 
                     if (isForThisStudent) {
+                        // استخراج اسم المادة أوتوماتيك من نص الرسالة أو العنوان لو الرابط مش موجود
+                        let inferredLink = item.link || '#';
+                        if (inferredLink === '#' && item.message) {
+                            // لو الرسالة فيها شكل "المادة: [اسم المادة]"
+                            const match = item.message.match(/المادة:\s*([^(]+)/);
+                            if (match && match[1]) {
+                                const matName = match[1].trim();
+                                inferredLink = `material.html?title=${encodeURIComponent(matName)}`;
+                            }
+                        }
+
                         allNotifs.push({
                             id: d.id,
                             title: item.title,
                             subtitle: item.message || '',
-                            link: item.link || '#',
+                            link: inferredLink,
                             date: item.createdAt || ''
                         });
                     }
