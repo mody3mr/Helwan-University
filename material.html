@@ -59,20 +59,30 @@
         .content-card {
             background: #f8fafc; padding: 18px 22px; border-radius: 12px; border: 1px solid #e2e8f0;
             display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;
+            flex-wrap: wrap; gap: 15px;
         }
         .content-card:hover { border-color: #cbd5e1; background: #fff; }
         .content-info h3 { font-size: 15px; color: #0f172a; margin-bottom: 5px; font-weight: 700; }
         .content-info p { font-size: 13px; color: #64748b; }
+        
+        .card-actions { display: flex; gap: 10px; }
         .btn-view {
-            background: #2563eb; color: white; padding: 8px 18px; border-radius: 8px;
+            background: #2563eb; color: white; padding: 8px 16px; border-radius: 8px;
             border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;
         }
         .btn-view:hover { background: #1d4ed8; }
+        .btn-download {
+            background: #22c55e; color: white; padding: 8px 16px; border-radius: 8px;
+            text-decoration: none; font-weight: 600; font-size: 13px; transition: background 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-download:hover { background: #16a34a; }
+
         .no-data { text-align: center; color: #94a3b8; padding: 25px; font-size: 14px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* نافذة العرض الداخلي (Modal Viewer) للملفات والصور */
+        /* نافذة العرض الداخلي للملفات */
         #fileModalOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px);
@@ -104,16 +114,14 @@
 </head>
 <body>
 
-    <!-- نافذة العرض الداخلي للملفات -->
+    <!-- نافذة العرض الداخلي -->
     <div id="fileModalOverlay">
         <div class="modal-box">
             <div class="modal-header">
                 <h3 id="modalFileTitle">عرض المحتوى</h3>
                 <button class="close-modal" onclick="closeFileModal()">✕</button>
             </div>
-            <div class="modal-body" id="modalBodyContainer">
-                <!-- سيتم حقن الـ iframe أو img هنا -->
-            </div>
+            <div class="modal-body" id="modalBodyContainer"></div>
         </div>
     </div>
 
@@ -182,10 +190,8 @@
             }
         }
 
-        // تحويل روابط جوجل درايف العادية إلى روابط قابلة للعرض المباشر (Embedded)
         function getEmbeddableUrl(url) {
             if (!url) return '';
-            // لو رابط Google Drive ملف، نحول /view أو /edit إلى /preview
             if (url.includes('drive.google.com')) {
                 return url.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview');
             }
@@ -200,7 +206,6 @@
             titleEl.innerText = title;
             const embedUrl = getEmbeddableUrl(fileUrl);
 
-            // فحص لو الملف صورة أو PDF لعرضه بالشكل المناسب
             if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) || fileUrl.includes('image')) {
                 bodyContainer.innerHTML = `<img src="${fileUrl}" alt="${title}">`;
             } else {
@@ -273,7 +278,10 @@
                                     <h3>📁 ${item.title}</h3>
                                     <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
                                 </div>
-                                <button class="btn-view" onclick="openFileModal('${item.title.replace(/'/g, "\\'")}', '${item.fileUrl}')">عرض الملف</button>
+                                <div class="card-actions">
+                                    <button class="btn-view" onclick="openFileModal('${item.title.replace(/'/g, "\\'")}', '${item.fileUrl}')">عرض الملف</button>
+                                    <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">تحميل</a>
+                                </div>
                             </div>
                         `;
                     });
