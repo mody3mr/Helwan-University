@@ -18,7 +18,6 @@
             display: flex;
             min-height: 100vh;
         }
-        /* الشريط الجانبي */
         .sidebar {
             width: 260px;
             background: #1e293b;
@@ -70,7 +69,6 @@
         }
         .sidebar-logout:hover { background: #dc2626; }
 
-        /* المحتوى الرئيسي */
         .main-content {
             flex-grow: 1;
             padding: 30px;
@@ -103,7 +101,6 @@
             display: block;
         }
 
-        /* البطاقات والجداول */
         .card-table {
             background: white;
             border-radius: 12px;
@@ -156,7 +153,6 @@
             font-size: 15px;
         }
 
-        /* نموذج النشر */
         .form-card {
             background: white;
             padding: 30px;
@@ -201,7 +197,6 @@
         }
         .btn-submit:hover { background: #2563eb; }
 
-        /* نظام الـ Toast Messages */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -235,7 +230,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- الشريط الجانبي -->
     <div class="sidebar">
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
@@ -248,14 +242,12 @@
         <button class="sidebar-logout" onclick="location.href='index.html'">تسجيل الخروج</button>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <div class="header-top">
             <h2 id="pageTitle">طلبات الطلاب الجدد</h2>
             <div class="admin-name" id="adminNameDisplay">أهلاً بك، مسؤول النظام</div>
         </div>
 
-        <!-- قسم طلبات الطلاب الجدد -->
         <div id="sectionStudents" class="tab-section active">
             <div class="card-table">
                 <div class="card-table-header">طلبات إنشاء الحساب المعلقة</div>
@@ -280,7 +272,6 @@
             </div>
         </div>
 
-        <!-- قسم طلبات تعديل البيانات -->
         <div id="sectionEdits" class="tab-section">
             <div class="card-table">
                 <div class="card-table-header">طلبات تعديل بيانات الطلاب</div>
@@ -304,7 +295,6 @@
             </div>
         </div>
 
-        <!-- قسم نشر الكتب والمواد -->
         <div id="sectionPublish" class="tab-section">
             <div class="form-card">
                 <h3 style="margin-bottom: 20px; color: #1e293b;">نشر كتاب أو امتحان سابق أو إضافة مادة</h3>
@@ -347,10 +337,9 @@
 
     </div>
 
-    <!-- فايربيس والمنطق البرمجي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, doc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, doc, updateDoc, addDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -364,7 +353,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // اسم الأدمن الحالي (افتراضي أو يمكن حفظه عند تسجيل دخول الأدمن)
         const currentAdminName = "أحمد محمد (مسؤول النظام)";
         document.getElementById('adminNameDisplay').innerText = "أهلاً بك، " + currentAdminName;
 
@@ -381,7 +369,6 @@
             }, 4000);
         }
 
-        // التنقل بين الأقسام في لوحة التحكم
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
@@ -403,7 +390,6 @@
             }
         }
 
-        // 1. جلب طلبات الطلاب الجدد
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -451,7 +437,6 @@
             }
         }
 
-        // 2. جلب طلبات التعديل المعلقة
         async function fetchPendingEdits() {
             const tbody = document.getElementById('pendingEditsTable');
             try {
@@ -487,15 +472,50 @@
             }
         }
 
-        // الموافقة على التعديل وتحديثه في مستند المستخدم الأساسي
+        // معالجة واستمكال الموافقة على التعديل وتحديثه في كوليكشن users الأساسي
         window.approveEdit = async function(editId) {
             try {
-                // جلب بيانات طلب التعديل
-                // ... سيتم تنفيذ التحديث الفعلي وحذف الطلب المعلق
-                showToast('تم اعتماد التعديل بنجاح وتحديث بيانات الطالب.', 'success');
-                await deleteDoc(doc(db, "pendingEdits", editId));
+                const editDocRef = doc(db, "pendingEdits", editId);
+                const editSnap = await getDoc(editDocRef);
+
+                if (!editSnap.exists()) {
+                    showToast('طلب التعديل غير موجود.', 'error');
+                    return;
+                }
+
+                const editData = editSnap.data();
+                
+                // البحث عن مستند الطالب الأساسي باستخدام student_id
+                const usersRef = collection(db, "users");
+                const qUser = query(usersRef, where("student_id", "==", editData.student_id));
+                const userSnap = await getDocs(qUser);
+
+                if (userSnap.empty) {
+                    showToast('لم يتم العثور على حساب الطالب المرتبط بهذه التعديلات.', 'error');
+                    return;
+                }
+
+                let targetUserDocId = null;
+                userSnap.forEach((d) => {
+                    targetUserDocId = d.id;
+                });
+
+                // تحديث مستند الطالب بالبيانات الجديدة
+                await updateDoc(doc(db, "users", targetUserDocId), {
+                    fullName: editData.fullName,
+                    phone: editData.phone,
+                    email: editData.email,
+                    password: editData.password,
+                    academicYear: editData.academicYear
+                });
+
+                // حذف طلب التعديل المعلق بعد اعتماده
+                await deleteDoc(editDocRef);
+
+                showToast('تم اعتماد وتحديث بيانات الطالب بنجاح.', 'success');
                 fetchPendingEdits();
             } catch (error) {
+                console.error("Error approving edit:", error);
                 showToast('حدث خطأ أثناء اعتماد التعديل.', 'error');
             }
         }
@@ -510,7 +530,6 @@
             }
         }
 
-        // 3. نشر المحتوى (مادة جديدة، كتاب، أو امتحان)
         document.getElementById('pubType').addEventListener('change', function() {
             const fileGroup = document.getElementById('fileUrlGroup');
             if(this.value === 'material') {
@@ -529,7 +548,6 @@
 
             try {
                 if(type === 'material') {
-                    // إضافة مادة جديدة لخريطة المواد
                     await addDoc(collection(db, "materials"), {
                         title: title,
                         academicYear: academicYear,
@@ -538,14 +556,13 @@
                     });
                     showToast('تم نشر المادة الجديدة في الخريطة بنجاح!', 'success');
                 } else {
-                    // إضافة كتاب أو امتحان سابق للمادة
                     await addDoc(collection(db, "materialContents"), {
-                        materialTitle: title, // أو ربطها بالمواد
+                        materialTitle: title,
                         title: title,
-                        type: type, // 'book' or 'exam'
+                        type: type,
                         academicYear: academicYear,
                         fileUrl: fileUrl,
-                        publisherName: currentAdminName, // يظهر اسم الأدمن الذي قام بالنشر بدقة
+                        publisherName: currentAdminName,
                         createdAt: new Date().toISOString()
                     });
                     showToast('تم نشر الملف بنجاح بواسطة ' + currentAdminName, 'success');
@@ -557,7 +574,6 @@
             }
         });
 
-        // التشغيل الأولي عند فتح الصفحة
         fetchPendingStudents();
     </script>
 
