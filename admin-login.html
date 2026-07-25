@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامعة حلوان - تسجيل دخول الإدارة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .login-card { background: #ffffff; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 420px; }
+        h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-weight: 700; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+        .btn-submit { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        .btn-submit:hover { background: #1d4ed8; }
+        #toast-container { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
+        .toast { padding: 16px 20px; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background-color: #22c55e; }
+        .toast.error { background-color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div class="login-card">
+        <h2>تسجيل دخول الإدارة</h2>
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminName">اسم المسؤول</label>
+                <input type="text" id="adminName" placeholder="مثال: أحمد محمد" required>
+            </div>
+            <div class="form-group">
+                <label for="adminCode">كلمة المرور الإدارية</label>
+                <input type="password" id="adminCode" placeholder="أدخل كلمة المرور (تجربة: admin123 أو 1234)" required>
+            </div>
+            <button type="submit" class="btn-submit">دخول لوحة التحكم</button>
+        </form>
+    </div>
+
+    <script>
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const adminName = document.getElementById('adminName').value.trim();
+            const adminCode = document.getElementById('adminCode').value.trim();
+
+            // كلمة المرور الافتراضية للتجربة
+            if (adminCode === "admin123" || adminCode === "1234") {
+                localStorage.setItem('currentAdminName', adminName);
+                showToast('مرحباً بك يا ' + adminName + '، جاري توجيهك لوحة التحكم...', 'success');
+                setTimeout(() => {
+                    location.href = 'admin.html';
+                }, 1200);
+            } else {
+                showToast('كلمة المرور غير صحيحة!', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
