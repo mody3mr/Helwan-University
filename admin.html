@@ -574,7 +574,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>الاسم</th>
+                                <th>اسم العضو</th>
                                 <th>البريد الإلكتروني</th>
                                 <th>الدور</th>
                                 <th>الحالة</th>
@@ -671,13 +671,6 @@
             const role = document.getElementById('admRole').value;
             const group = document.getElementById('permissionsGroup');
             if(group) group.style.display = (role === 'supervisor') ? 'block' : 'none';
-        }
-
-        function checkPermission(actionKey) {
-            if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') return true;
-            if (adminPermissions.includes(actionKey)) return true;
-            showToast('عذراً، ليس لديك صلاحية للقيام بهذا الإجراء', 'error');
-            return false;
         }
 
         window.switchTab = function(tab) {
@@ -783,12 +776,30 @@
             } catch(e) { console.error(e); }
         }
 
+        // دالة الحذف العامة (مع حذف الإشعار المرتبط أوتوماتيك لو كان الملف من materialContents)
         window.deleteDocItem = async function(collName, docId, actionKey) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
+                        // لو بنحذف ملف من materialContents، نبحث ونحذف الإشعار المرتبط به تلقائياً
+                        if (collName === 'materialContents') {
+                            const fileSnap = await getDoc(doc(db, "materialContents", docId));
+                            if (fileSnap.exists()) {
+                                const fileData = fileSnap.data();
+                                const notifQuery = query(
+                                    collection(db, "notifications"), 
+                                    where("title", "==", `تم نشر محتوى جديد: ${fileData.title}`)
+                                );
+                                const notifSnap = await getDocs(notifQuery);
+                                notifSnap.forEach(async (nDoc) => {
+                                    await deleteDoc(doc(db, "notifications", nDoc.id));
+                                });
+                            }
+                        }
+
+                        // حذف العنصر الأساسي
                         await deleteDoc(doc(db, collName, docId));
-                        showToast('تم الحذف بنجاح من قاعدة البيانات', 'success');
+                        showToast('تم الحذف بنجاح والإشعار المرتبط اختفى', 'success');
                         const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
                         switchTab(currentTab);
                     } catch(e) {
@@ -933,7 +944,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات (تم إصلاح حفظ الملف في materialContents + إرسال الإشعار لـ notifications) ---
+        // --- 3. الملفات ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('fileEditId').value;
@@ -951,10 +962,10 @@
                     showToast('تم تعديل الملف بنجاح!', 'success');
                 } else {
                     fileData.createdAt = new Date().toISOString();
-                    // 1. حفظ الملف في قاعدة البيانات ليظهر في جدول الأدمن وصفحة المادة
+                    // 1. حفظ الملف في قاعدة البيانات
                     await addDoc(collection(db, "materialContents"), fileData);
 
-                    // 2. إرسال الإشعار الفوري لجدول notifications ليظهر عند الطالب
+                    // 2. إرسال الإشعار لـ notifications
                     await addDoc(collection(db, "notifications"), {
                         title: `تم نشر محتوى جديد: ${title}`,
                         message: `المادة: ${materialTitle} (${sectionName})`,
@@ -964,7 +975,7 @@
                         createdAt: new Date().toISOString()
                     });
 
-                    showToast('تم نشر الملف وحفظه وإرسال الإشعار للطلاب بنجاح!', 'success');
+                    showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
                 }
                 resetFileForm();
                 fetchFilesTable();
