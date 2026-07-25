@@ -199,9 +199,27 @@
 
     </div>
 
-    <script>
+    <!-- سكربتات ربط Firebase والمنطق البرمجي -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // إعدادات فايربيس الخاصة بالمستخدم
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
+            authDomain: "helwan-university-3cfd3.firebaseapp.com",
+            projectId: "helwan-university-3cfd3",
+            storageBucket: "helwan-university-3cfd3.firebasestorage.app",
+            messagingSenderId: "649399927965",
+            appId: "1:649399927965:web:87f52cb4eff211595fc074"
+        };
+
+        // تهيئة فايربيس
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // دالة إظهار الـ Toast Messages الاحترافية
-        function showToast(message, type = 'success') {
+        window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -209,12 +227,10 @@
             
             container.appendChild(toast);
             
-            // تفعيل تأثير الظهور
             setTimeout(() => {
                 toast.classList.add('show');
             }, 100);
 
-            // إخفاء وحذف الـ Toast بعد 4 ثواني
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => {
@@ -223,8 +239,8 @@
             }, 4000);
         }
 
-        // دالة التنقل بين واجهة تسجيل الدخول وإنشاء الحساب
-        function switchForm(target) {
+        // دالة التنقل بين الواجهات
+        window.switchForm = function(target) {
             const loginSec = document.getElementById('loginSection');
             const regSec = document.getElementById('registerSection');
             
@@ -237,32 +253,109 @@
             }
         }
 
-        // محاكاة إرسال فورم التسجيل (لحد ما نربط Firebase ونتحقق من عدم التكرار)
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        // معالجة تسجيل حساب جديد
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const nationalId = document.getElementById('nationalId').value;
-            const phone = document.getElementById('phone').value;
 
-            // التحقق المبدئي (هيتوسع لما نربط بـ Firebase لمنع التكرار)
-            if(nationalId.length !== 14) {
+            const fullName = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const academicYear = document.getElementById('academicYear').value;
+            const nationalId = document.getElementById('nationalId').value.trim();
+
+            if (nationalId.length !== 14) {
                 showToast('رقم البطاقة يجب أن يكون 14 رقماً صحيحاً!', 'error');
                 return;
             }
 
-            // مثال لرسالة نجاح احترافية
-            showToast('تم استلام طلبك بنجاح! حسابك في انتظار موافقة الإدارة.', 'success');
-            
-            // بعد ثواني ممكن ننقله لتسجيل الدخول
-            setTimeout(() => {
-                switchForm('login');
-            }, 2500);
+            showToast('جاري التحقق من البيانات...', 'warning');
+
+            try {
+                const usersRef = collection(db, "users");
+
+                // 1. التحقق مما إذا كان الرقم القومي مسجلاً مسبقاً
+                const qNational = query(usersRef, where("nationalId", "==", nationalId));
+                const snapNational = await getDocs(qNational);
+                if (!snapNational.empty) {
+                    showToast('رقم البطاقة هذا مسجل مسبقاً بحساب آخر!', 'error');
+                    return;
+                }
+
+                // 2. التحقق مما إذا كان رقم الهاتف مسجلاً مسبقاً
+                const qPhone = query(usersRef, where("phone", "==", phone));
+                const snapPhone = await getDocs(qPhone);
+                if (!snapPhone.empty) {
+                    showToast('رقم الهاتف هذا مسجل مسبقاً بحساب آخر!', 'error');
+                    return;
+                }
+
+                // 3. توليد ID عشوائي فريد للطالب
+                const studentId = 'HU-' + Math.floor(100000 + Math.random() * 900000);
+
+                // 4. حفظ البيانات في كوليكشن users مع status pending
+                await addDoc(usersRef, {
+                    student_id: studentId,
+                    fullName: fullName,
+                    phone: phone,
+                    email: email,
+                    password: password,
+                    academicYear: academicYear,
+                    nationalId: nationalId,
+                    status: 'pending', // في انتظار موافقة الأدمن
+                    createdAt: new Date().toISOString()
+                });
+
+                showToast('تم إرسال طلبك بنجاح! رقم الـ ID الخاص بك هو: ' + studentId + ' وحسابك بانتظار موافقة الإدارة.', 'success');
+                document.getElementById('registerForm').reset();
+                
+                setTimeout(() => {
+                    switchForm('login');
+                }, 3000);
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showToast('حدث خطأ أثناء التسجيل، يجدر المحاولة لاحقاً.', 'error');
+            }
         });
 
-        // محاكاة تسجيل الدخول
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // معالجة تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
             showToast('جاري التحقق من بيانات الدخول...', 'warning');
+
+            try {
+                const usersRef = collection(db, "users");
+                const qLogin = query(usersRef, where("email", "==", email), where("password", "==", password));
+                const querySnapshot = await getDocs(qLogin);
+
+                if (querySnapshot.empty) {
+                    showToast('البريد الإلكتروني أو كلمة المرور غير صحيحة!', 'error');
+                    return;
+                }
+
+                let userData = null;
+                querySnapshot.forEach((doc) => {
+                    userData = doc.data();
+                });
+
+                if (userData.status === 'pending') {
+                    showToast('حسابك قيد المراجعة ولم يتم اعتماده من الإدارة بعد.', 'warning');
+                } else if (userData.status === 'rejected') {
+                    showToast('عذراً، تم رفض طلب إنشاء هذا الحساب من الإدارة.', 'error');
+                } else if (userData.status === 'approved') {
+                    showToast('تم تسجيل الدخول بنجاح! أهلاً بك يا ' + userData.fullName, 'success');
+                    // هنا ممكن توجهه لصفحة الطالب الرئيسية لاحقاً
+                }
+
+            } catch (error) {
+                console.error("Login error: ", error);
+                showToast('حدث خطأ أثناء تسجيل الدخول.', 'error');
+            }
         });
     </script>
 
