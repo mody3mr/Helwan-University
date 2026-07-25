@@ -3,75 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جامعة حلوان - تفاصيل المادة</title>
+    <title>جامعة حلوان - تفاصيل المادة ومحتوياتها</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
-        body {
-            background: #f4f6f9;
-            color: #333;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; min-height: 100vh; }
         header {
             background: #ffffff;
-            padding: 15px 30px;
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2c3e50;
-            cursor: pointer;
-        }
+        .logo { font-size: 20px; font-weight: 700; color: #0f172a; cursor: pointer; }
         .back-btn {
             background: #64748b;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 8px 18px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
+            transition: background 0.2s;
         }
         .back-btn:hover { background: #475569; }
 
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
         .material-header {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.15);
+            padding: 35px;
+            border-radius: 16px;
+            margin-bottom: 35px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
         }
-        .material-header h1 {
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-        .material-header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
+        .material-header h1 { font-size: 26px; margin-bottom: 8px; font-weight: 700; }
+        .material-header p { font-size: 15px; opacity: 0.85; }
 
+        /* الأقسام المنفصلة: الدكتور vs المعيد */
+        .section-box {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #e2e8f0;
+        }
         .section-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 15px;
-            margin-top: 25px;
+            color: #0f172a;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .content-grid {
@@ -80,77 +70,33 @@
             gap: 15px;
         }
         .content-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            background: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-right: 4px solid #3b82f6;
+            transition: all 0.2s;
         }
-        .content-info h3 {
-            font-size: 16px;
-            color: #1e293b;
-            margin-bottom: 5px;
-        }
-        .content-info p {
-            font-size: 13px;
-            color: #64748b;
-        }
+        .content-card:hover { border-color: #cbd5e1; background: #fff; }
+        .content-info h3 { font-size: 16px; color: #0f172a; margin-bottom: 5px; font-weight: 700; }
+        .content-info p { font-size: 13px; color: #64748b; }
         .btn-download {
             background: #22c55e;
             color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 8px 18px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
             font-size: 13px;
             transition: background 0.2s;
         }
         .btn-download:hover { background: #16a34a; }
-        .no-data {
-            background: white;
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px;
-            color: #94a3b8;
-            font-size: 14px;
-        }
-
-        /* نظام الـ Toast Messages */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 90%;
-            max-width: 400px;
-        }
-        .toast {
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(-20px);
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background-color: #22c55e; }
-        .toast.error { background-color: #ef4444; }
-        .toast.warning { background-color: #f59e0b; }
+        .no-data { text-align: center; color: #94a3b8; padding: 25px; font-size: 14px; }
     </style>
 </head>
 <body>
-
-    <div id="toast-container"></div>
 
     <header>
         <div class="logo" onclick="location.href='student.html'">جامعة حلوان</div>
@@ -160,21 +106,26 @@
     <div class="container">
         <div class="material-header">
             <h1 id="materialTitleDisplay">جاري التحميل...</h1>
-            <p>استعرض كتب المادة الدراسية والامتحانات السابقة المعتمدة</p>
+            <p>استعرض محتويات المادة المنفصلة (ملفات الدكتور وملفات المعيد)</p>
         </div>
 
-        <div class="section-title">📚 كتب المادة</div>
-        <div class="content-grid" id="booksContainer">
-            <div class="no-data">جاري تحميل الكتب...</div>
+        <!-- قسم الدكتور -->
+        <div class="section-box">
+            <div class="section-title">👨‍🏫 ملفات وعروض أستاذ المادة (الدكتور)</div>
+            <div class="content-grid" id="professorContainer">
+                <div class="no-data">جاري التحميل...</div>
+            </div>
         </div>
 
-        <div class="section-title">📝 الامتحانات السابقة</div>
-        <div class="content-grid" id="examsContainer">
-            <div class="no-data">جاري تحميل الامتحانات...</div>
+        <!-- قسم المعيد -->
+        <div class="section-box">
+            <div class="section-title">👨‍💻 ملفات وسكاشن المعيد (المساعد)</div>
+            <div class="content-grid" id="assistantContainer">
+                <div class="no-data">جاري التحميل...</div>
+            </div>
         </div>
     </div>
 
-    <!-- فايربيس والمنطق البرمجي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -191,81 +142,74 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 100);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
-
-        // قراءة اسم المادة من رابط الـ URL
         const urlParams = new URLSearchParams(window.location.search);
         const materialTitle = urlParams.get('title');
 
         if (!materialTitle) {
-            showToast('لم يتم تحديد المادة المطلوبة!', 'error');
-            setTimeout(() => location.href = 'student.html', 2000);
+            alert('لم يتم تحديد المادة!');
+            location.href = 'student.html';
         } else {
             document.getElementById('materialTitleDisplay').innerText = materialTitle;
-            fetchMaterialContent(materialTitle);
+            fetchContent(materialTitle);
         }
 
-        async function fetchMaterialContent(title) {
-            const booksContainer = document.getElementById('booksContainer');
-            const examsContainer = document.getElementById('examsContainer');
+        async function fetchContent(title) {
+            const profContainer = document.getElementById('professorContainer');
+            const assistContainer = document.getElementById('assistantContainer');
 
             try {
-                const contentsRef = collection(db, "materialContents");
-                const q = query(contentsRef, where("materialTitle", "==", title));
-                const querySnapshot = await getDocs(q);
+                const q = query(collection(db, "materialContents"), where("materialTitle", "==", title));
+                const snapshot = await getDocs(q);
 
-                if (querySnapshot.empty) {
-                    booksContainer.innerHTML = `<div class="no-data">لا توجد كتب منشورة لهذه المادة حالياً.</div>`;
-                    examsContainer.innerHTML = `<div class="no-data">لا توجد امتحانات سابقة منشورة لهذه المادة حالياً.</div>`;
+                if (snapshot.empty) {
+                    profContainer.innerHTML = `<div class="no-data">لا توجد ملفات منشورة للدكتور حالياً.</div>`;
+                    assistContainer.innerHTML = `<div class="no-data">لا توجد ملفات منشورة للمعيد حالياً.</div>`;
                     return;
                 }
 
-                let booksHtml = '';
-                let examsHtml = '';
-                let booksCount = 0;
-                let examsCount = 0;
+                let profHtml = '';
+                let assistHtml = '';
+                let profCount = 0;
+                let assistCount = 0;
 
-                querySnapshot.forEach((docSnap) => {
+                snapshot.forEach(docSnap => {
                     const item = docSnap.data();
-                    const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : 'غير محدد';
-                    const publisher = item.publisherName || 'الإدارة';
+                    const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
+                    
+                    // ترجمة نوع المحتوى لعرضه بوضوح
+                    let typeLabel = 'ملف';
+                    if (item.type === 'book') typeLabel = 'كتاب دراسي';
+                    else if (item.type === 'exam') typeLabel = 'امتحان سابق';
+                    else if (item.type === 'quiz') typeLabel = 'امتحان تذكيري (كويز)';
+                    else if (item.type === 'video') typeLabel = 'فيديو شرح';
+                    else if (item.type === 'custom') typeLabel = 'قسم مخصص';
 
-                    const cardHtml = `
+                    const card = `
                         <div class="content-card">
                             <div class="content-info">
-                                <h3>${item.title}</h3>
-                                <p>تم النشر بواسطة: <b>${publisher}</b> | بتاريخ: ${dateFormatted}</p>
+                                <h3>[${typeLabel}] ${item.title}</h3>
+                                <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
                             </div>
                             <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">عرض / تحميل</a>
                         </div>
                     `;
 
-                    if (item.type === 'book') {
-                        booksHtml += cardHtml;
-                        booksCount++;
-                    } else if (item.type === 'exam') {
-                        examsHtml += cardHtml;
-                        examsCount++;
+                    if (item.targetRole === 'professor') {
+                        profHtml += card;
+                        profCount++;
+                    } else if (item.targetRole === 'assistant') {
+                        assistHtml += card;
+                        assistCount++;
                     }
                 });
 
-                booksContainer.innerHTML = booksCount > 0 ? booksHtml : `<div class="no-data">لا توجد كتب منشورة لهذه المادة حالياً.</div>`;
-                examsContainer.innerHTML = examsCount > 0 ? examsHtml : `<div class="no-data">لا توجد امتحانات سابقة منشورة لهذه المادة حالياً.</div>`;
+                profContainer.innerHTML = profCount > 0 ? profHtml : `<div class="no-data">لا توجد ملفات منشورة للدكتور حالياً.</div>`;
+                assistContainer.innerHTML = assistCount > 0 ? assistHtml : `<div class="no-data">لا توجد ملفات منشورة للمعيد حالياً.</div>`;
 
-            } catch (error) {
-                console.error("Error fetching material content: ", error);
-                showToast('حدث خطأ أثناء تحميل محتويات المادة.', 'error');
+            } catch (e) {
+                console.error(e);
+                profContainer.innerHTML = `<div class="no-data" style="color:red;">حدث خطأ في تحميل البيانات.</div>`;
+                assistContainer.innerHTML = `<div class="no-data" style="color:red;">حدث خطأ في تحميل البيانات.</div>`;
             }
         }
     </script>
