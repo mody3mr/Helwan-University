@@ -77,16 +77,17 @@
             const passwordVal = document.getElementById('adminPassword').value.trim();
 
             try {
-                // 1. التحقق إذا كان الحساب هو السوبر أدمن الخاص بك (محمد عمرو)
+                // 1. السوبر أدمن الخاص بك
                 if ((inputVal === "Mohamed Amr" || inputVal === "mody3mr" || inputVal === "admin@helwan.edu.eg") && passwordVal === "mody2026") {
                     localStorage.setItem('currentAdminName', "محمد عمرو (سوبر أدمن)");
                     localStorage.setItem('currentAdminRole', "super_admin");
+                    localStorage.setItem('adminPermissions', JSON.stringify(['materials', 'sections', 'files', 'notifs', 'students', 'admins']));
                     showToast('أهلاً بك يا باشمهندس محمد عمرو، جاري التوجيه...', 'success');
                     setTimeout(() => { location.href = 'admin.html'; }, 1000);
                     return;
                 }
 
-                // 2. التحقق من قاعدة البيانات (كوليكشن admins للموظفين والمديرين المنشئين)
+                // 2. التحقق من قاعدة البيانات للمديرين والمشرفين
                 const qEmail = query(collection(db, "admins"), where("email", "==", inputVal), where("password", "==", passwordVal));
                 const qName = query(collection(db, "admins"), where("name", "==", inputVal), where("password", "==", passwordVal));
 
@@ -103,7 +104,9 @@
                     }
 
                     localStorage.setItem('currentAdminName', adminDoc.name);
-                    localStorage.setItem('currentAdminRole', adminDoc.role); // manager أو supervisor
+                    localStorage.setItem('currentAdminRole', adminDoc.role);
+                    localStorage.setItem('adminPermissions', JSON.stringify(adminDoc.permissions || []));
+                    
                     showToast('تم تسجيل الدخول بنجاح، مرحباً ' + adminDoc.name, 'success');
                     setTimeout(() => { location.href = 'admin.html'; }, 1000);
                 } else {
