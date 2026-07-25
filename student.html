@@ -240,7 +240,6 @@
             }, 4000);
         }
 
-        // إظهار وإخفاء القائمة المنسدلة لبروفایل الطالب
         window.toggleDropdown = function() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('show');
@@ -251,7 +250,6 @@
             location.href = 'index.html';
         }
 
-        // التحقق من بيانات الطالب المسجل محلياً
         const studentDataStr = localStorage.getItem('currentStudent');
         if (!studentDataStr) {
             location.href = 'index.html';
@@ -261,7 +259,6 @@
             document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + student.fullName;
             document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
 
-            // جلب المواد الخاصة بفرقة الطالب فقط
             fetchMaterials(student.academicYear);
         }
 
