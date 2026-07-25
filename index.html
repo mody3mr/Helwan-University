@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جامعة حلوان - إنشاء حساب طالب جديد</title>
+    <title>جامعة حلوان - البوابة الطلابية</title>
     <!-- استدعاء خط Cairo الشيك -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -21,15 +21,16 @@
             align-items: center;
             padding: 20px;
         }
-        .register-container {
+        .card-container {
             background: #ffffff;
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 500px;
+            transition: all 0.3s ease;
         }
-        .register-container h2 {
+        h2 {
             text-align: center;
             color: #2c3e50;
             margin-bottom: 25px;
@@ -74,83 +75,194 @@
         .btn-submit:hover {
             background: #2980b9;
         }
-        .login-link {
+        .switch-text {
             text-align: center;
             margin-top: 15px;
             font-size: 14px;
             color: #7f8c8d;
         }
-        .login-link a {
+        .switch-text span {
             color: #3498db;
             text-decoration: none;
             font-weight: 600;
+            cursor: pointer;
         }
-        .login-link a:hover {
+        .switch-text span:hover {
             text-decoration: underline;
         }
+        .hidden {
+            display: none;
+        }
+
+        /* تصميم الـ Toast Messages الاحترافية */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast {
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(-20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { background-color: #2ecc71; }
+        .toast.error { background-color: #e74c3c; }
+        .toast.warning { background-color: #f39c12; }
     </style>
 </head>
 <body>
 
-    <div class="register-container">
-        <h2>تسجيل طالب جديد - جامعة حلوان</h2>
-        <form id="registerForm">
-            
-            <!-- الاسم الرباعي -->
-            <div class="form-group">
-                <label for="fullName">الاسم الرباعي</label>
-                <input type="text" id="fullName" placeholder="أدخل اسمك الرباعي" required>
-            </div>
+    <!-- حاوية الـ Toast Messages -->
+    <div id="toast-container"></div>
 
-            <!-- رقم الهاتف -->
-            <div class="form-group">
-                <label for="phone">رقم الهاتف</label>
-                <input type="tel" id="phone" placeholder="أدخل رقم هاتفك المحمول" required>
-            </div>
+    <div class="card-container">
+        
+        <!-- قسم تسجيل الدخول -->
+        <div id="loginSection">
+            <h2>تسجيل الدخول - جامعة حلوان</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required>
+                </div>
+                <button type="submit" class="btn-submit">دخول</button>
+                <div class="switch-text">
+                    ليس لديك حساب؟ <span onclick="switchForm('register')">انشئ حساب جديد</span>
+                </div>
+            </form>
+        </div>
 
-            <!-- البريد الإلكتروني -->
-            <div class="form-group">
-                <label for="email">البريد الإلكتروني</label>
-                <input type="email" id="email" placeholder="example@domain.com" required>
-            </div>
+        <!-- قسم إنشاء الحساب (مخفي افتراضياً) -->
+        <div id="registerSection" class="hidden">
+            <h2>تسجيل طالب جديد</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="fullName">الاسم الرباعي</label>
+                    <input type="text" id="fullName" placeholder="أدخل اسمك الرباعي" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="tel" id="phone" placeholder="أدخل رقم هاتفك المحمول" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" placeholder="أدخل كلمة مرور قوية" required>
+                </div>
+                <div class="form-group">
+                    <label for="academicYear">السنة الدراسية</label>
+                    <select id="academicYear" required>
+                        <option value="" disabled selected>اختر الفرقة الدراسية...</option>
+                        <option value="1">الفرقة الأولى</option>
+                        <option value="2">الفرقة الثانية</option>
+                        <option value="3">الفرقة الثالثة</option>
+                        <option value="4">الفرقة الرابعة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="nationalId">رقم البطاقة (القومي)</label>
+                    <input type="text" id="nationalId" placeholder="أدخل رقم البطاقة المكون من 14 رقماً" maxlength="14" required>
+                </div>
+                <button type="submit" class="btn-submit">تسجيل الحساب</button>
+                <div class="switch-text">
+                    لديك حساب بالفعل؟ <span onclick="switchForm('login')">تسجيل الدخول</span>
+                </div>
+            </form>
+        </div>
 
-            <!-- كلمة المرور -->
-            <div class="form-group">
-                <label for="password">كلمة المرور</label>
-                <input type="password" id="password" placeholder="أدخل كلمة مرور قوية" required>
-            </div>
-
-            <!-- السنة الدراسية (السبينر) -->
-            <div class="form-group">
-                <label for="academicYear">السنة الدراسية</label>
-                <select id="academicYear" required>
-                    <option value="" disabled selected>اختر الفرقة الدراسية...</option>
-                    <option value="1">الفرقة الأولى</option>
-                    <option value="2">الفرقة الثانية</option>
-                    <option value="3">الفرقة الثالثة</option>
-                    <option value="4">الفرقة الرابعة</option>
-                </select>
-            </div>
-
-            <!-- رقم البطاقة -->
-            <div class="form-group">
-                <label for="nationalId">رقم البطاقة (القومي)</label>
-                <input type="text" id="nationalId" placeholder="أدخل رقم البطاقة المكون من 14 رقماً" maxlength="14" required>
-            </div>
-
-            <!-- زر التسجيل -->
-            <button type="submit" class="btn-submit">تسجيل الحساب</button>
-
-            <div class="login-link">
-                لديك حساب بالفعل؟ <a href="#">تسجيل الدخول</a>
-            </div>
-        </form>
     </div>
 
     <script>
+        // دالة إظهار الـ Toast Messages الاحترافية
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            // تفعيل تأثير الظهور
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // إخفاء وحذف الـ Toast بعد 4 ثواني
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }, 4000);
+        }
+
+        // دالة التنقل بين واجهة تسجيل الدخول وإنشاء الحساب
+        function switchForm(target) {
+            const loginSec = document.getElementById('loginSection');
+            const regSec = document.getElementById('registerSection');
+            
+            if(target === 'register') {
+                loginSec.classList.add('hidden');
+                regSec.classList.remove('hidden');
+            } else {
+                regSec.classList.add('hidden');
+                loginSec.classList.remove('hidden');
+            }
+        }
+
+        // محاكاة إرسال فورم التسجيل (لحد ما نربط Firebase ونتحقق من عدم التكرار)
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('تم استلام بياناتك بنجاح! حسابك في انتظار موافقة الإدارة.');
+            
+            const nationalId = document.getElementById('nationalId').value;
+            const phone = document.getElementById('phone').value;
+
+            // التحقق المبدئي (هيتوسع لما نربط بـ Firebase لمنع التكرار)
+            if(nationalId.length !== 14) {
+                showToast('رقم البطاقة يجب أن يكون 14 رقماً صحيحاً!', 'error');
+                return;
+            }
+
+            // مثال لرسالة نجاح احترافية
+            showToast('تم استلام طلبك بنجاح! حسابك في انتظار موافقة الإدارة.', 'success');
+            
+            // بعد ثواني ممكن ننقله لتسجيل الدخول
+            setTimeout(() => {
+                switchForm('login');
+            }, 2500);
+        });
+
+        // محاكاة تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('جاري التحقق من بيانات الدخول...', 'warning');
         });
     </script>
 
