@@ -17,7 +17,6 @@
             color: #1e293b;
             min-height: 100vh;
         }
-        /* الهيدر الاحترافي الفخم */
         header {
             background: #ffffff;
             padding: 15px 40px;
@@ -37,16 +36,14 @@
             font-weight: 700;
             color: #0f172a;
         }
-        .logo-area span {
-            color: #3b82f6;
-        }
+        .logo-area span { color: #3b82f6; }
         .header-right {
             display: flex;
             align-items: center;
             gap: 25px;
         }
         
-        /* إيقونة الجرس والإشعارات */
+        /* الإشعارات */
         .notification-container {
             position: relative;
         }
@@ -89,7 +86,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 320px;
+            width: 340px;
             max-height: 400px;
             overflow-y: auto;
             display: none;
@@ -111,13 +108,15 @@
             border-bottom: 1px solid #f1f5f9;
             font-size: 13px;
             color: #334155;
+            cursor: pointer;
             transition: background 0.2s;
         }
         .notif-item:hover { background: #f8fafc; }
+        .notif-item.unread { background: #eff6ff; border-right: 3px solid #3b82f6; }
         .notif-item p { margin-bottom: 3px; font-weight: 600; }
         .notif-item span { font-size: 11px; color: #94a3b8; }
 
-        /* بروفايل المستخدم والقائمة */
+        /* بروفايل المستخدم */
         .user-menu-container {
             position: relative;
             cursor: pointer;
@@ -162,7 +161,6 @@
             border-top: 1px solid #f1f5f9;
         }
 
-        /* المحتوى الرئيسي */
         .container {
             max-width: 1100px;
             margin: 40px auto;
@@ -175,27 +173,15 @@
             border-radius: 16px;
             margin-bottom: 35px;
             box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
-            position: relative;
-            overflow: hidden;
         }
-        .welcome-banner h1 {
-            font-size: 26px;
-            margin-bottom: 8px;
-        }
-        .welcome-banner p {
-            font-size: 15px;
-            opacity: 0.9;
-        }
+        .welcome-banner h1 { font-size: 26px; margin-bottom: 8px; }
+        .welcome-banner p { font-size: 15px; opacity: 0.9; }
 
-        /* خريطة المواد */
         .section-title {
             font-size: 20px;
             font-weight: 700;
             color: #0f172a;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         .materials-grid {
             display: grid;
@@ -227,17 +213,9 @@
             box-shadow: 0 12px 20px rgba(0,0,0,0.06);
             border-color: #cbd5e1;
         }
-        .material-card h3 {
-            font-size: 18px;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-        .material-card p {
-            font-size: 13px;
-            color: #64748b;
-        }
+        .material-card h3 { font-size: 18px; color: #1e293b; margin-bottom: 8px; }
+        .material-card p { font-size: 13px; color: #64748b; line-height: 1.6; }
 
-        /* Toast Messages */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -263,7 +241,7 @@
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background-color: #22c55e; }
-        .toast.error { background-color: #ef4444; }
+        .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f59e0b; }
     </style>
 </head>
@@ -271,13 +249,10 @@
 
     <div id="toast-container"></div>
 
-    <!-- الهيدر الاحترافي -->
     <header>
-        <div class="logo-area">
-            جامعة <span>حلوان</span>
-        </div>
+        <div class="logo-area">جامعة <span>حلوان</span></div>
         <div class="header-right">
-            <!-- أيقونة الإشعارات المتطورة -->
+            <!-- الجرس والإشعارات -->
             <div class="notification-container">
                 <button class="bell-btn" onclick="toggleNotifications()">
                     🔔
@@ -304,7 +279,6 @@
         </div>
     </header>
 
-    <!-- المحتوى -->
     <div class="container">
         <div class="welcome-banner">
             <h1 id="welcomeTitle">أهلاً بك يا طالب</h1>
@@ -319,7 +293,6 @@
         </div>
     </div>
 
-    <!-- فايربيس والمنطق البرمجي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -374,10 +347,10 @@
             document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
 
             fetchMaterials(student.academicYear);
-            fetchNotifications(student.academicYear);
+            fetchNotifications(student);
         }
 
-        // جلب المواد الدراسية الخاصة بفرقة الطالب
+        // جلب المواد مع عرض اسم الدكتور والمساعد بدلاً من الجملة القديمة
         async function fetchMaterials(year) {
             const grid = document.getElementById('materialsGrid');
             try {
@@ -392,10 +365,13 @@
                 let html = '';
                 querySnapshot.forEach((docSnap) => {
                     const material = docSnap.data();
+                    const prof = material.professorName ? `أستاذ المادة: ${material.professorName}` : 'أستاذ المادة: غير محدد';
+                    const assist = material.assistantName ? ` | المعيد: ${material.assistantName}` : '';
+                    
                     html += `
                         <div class="material-card" onclick="openMaterialDetails('${material.title}')">
                             <h3>📚 ${material.title}</h3>
-                            <p>انقر لعرض كتب المادة والامتحانات السابقة</p>
+                            <p>${prof}${assist}</p>
                         </div>
                     `;
                 });
@@ -407,42 +383,91 @@
             }
         }
 
-        // جلب الإشعارات التلقائية عند نشر أي بيانات تخص سنة الطالب
-        async function fetchNotifications(year) {
+        // جلب الإشعارات التفاعلية (مواد دراسية + حالة تعديل البيانات) وتحديد المقروء عبر LocalStorage
+        async function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
+            
             try {
-                const q = query(collection(db, "materialContents"), where("academicYear", "==", year));
-                const querySnapshot = await getDocs(q);
+                let allNotifs = [];
 
-                if (querySnapshot.empty) {
+                // 1. إشعارات النشر الخاصة بفرقة الطالب
+                const qMat = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
+                const snapMat = await getDocs(qMat);
+                snapMat.forEach(d => {
+                    const item = d.data();
+                    allNotifs.push({
+                        id: d.id,
+                        title: `تم نشر ${item.type === 'book' ? 'كتاب' : 'امتحان'}: ${item.title}`,
+                        subtitle: `المادة: ${item.materialTitle} | بواسطة: ${item.publisherName || 'الإدارة'}`,
+                        link: `material.html?title=${encodeURIComponent(item.materialTitle)}`,
+                        date: item.createdAt || ''
+                    });
+                });
+
+                // 2. إشعارات تعديل البيانات الخاصة بهذا الطالب فقط
+                const qEdit = query(collection(db, "notifications"), where("student_id", "==", student.student_id));
+                const snapEdit = await getDocs(qEdit);
+                snapEdit.forEach(d => {
+                    const item = d.data();
+                    allNotifs.push({
+                        id: d.id,
+                        title: item.title,
+                        subtitle: item.message,
+                        link: '#',
+                        date: item.createdAt || ''
+                    });
+                });
+
+                if (allNotifs.length === 0) {
                     notifList.innerHTML = `<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>`;
                     badge.style.display = 'none';
                     return;
                 }
 
+                // استرجاع الإشعارات المقروءة سابقاً من الـ LocalStorage
+                const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
+
                 let html = '';
-                let count = 0;
-                querySnapshot.forEach((docSnap) => {
-                    const item = docSnap.data();
-                    const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : 'حديثاً';
-                    const typeText = item.type === 'book' ? 'كتاب دراسي جديد' : 'امتحان سابق جديد';
-                    
+                let unreadCount = 0;
+
+                allNotifs.forEach(notif => {
+                    const isRead = readNotifs.includes(notif.id);
+                    if (!isRead) unreadCount++;
+
                     html += `
-                        <div class="notif-item">
-                            <p>تم نشر ${typeText}: ${item.title}</p>
-                            <span>بواسطة: ${item.publisherName || 'الإدارة'} | ${dateFormatted}</span>
+                        <div class="notif-item ${!isRead ? 'unread' : ''}" onclick="handleNotificationClick('${notif.id}', '${notif.link}', '${student.student_id}')">
+                            <p>${notif.title}</p>
+                            <span style="display:block; margin-top:2px; color:#475569;">${notif.subtitle}</span>
+                            <span>${notif.date ? new Date(notif.date).toLocaleDateString('ar-EG') : ''}</span>
                         </div>
                     `;
-                    count++;
                 });
 
                 notifList.innerHTML = html;
-                badge.innerText = count;
-                badge.style.display = 'flex';
+                if (unreadCount > 0) {
+                    badge.innerText = unreadCount;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
 
             } catch (error) {
                 console.error("Error fetching notifications:", error);
+            }
+        }
+
+        // عند النقر على الإشعار: يتم تعليمه كمقروء وتوجيه الطالب لرابطه
+        window.handleNotificationClick = function(notifId, link, studentId) {
+            let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
+            if (!readNotifs.includes(notifId)) {
+                readNotifs.push(notifId);
+                localStorage.setItem('readNotifications_' + studentId, JSON.stringify(readNotifs));
+            }
+            if (link && link !== '#') {
+                location.href = link;
+            } else {
+                location.reload();
             }
         }
 
