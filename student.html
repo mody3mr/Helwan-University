@@ -292,8 +292,9 @@
             }
         }
 
+        // تم ربط الانتقال لصفحة تفاصيل المادة بالكامل هنا مباشرة
         window.openMaterialDetails = function(materialTitle) {
-            showToast('جاري فتح محتويات مادة: ' + materialTitle, 'success');
+            location.href = `material.html?title=${encodeURIComponent(materialTitle)}`;
         }
     </script>
 
