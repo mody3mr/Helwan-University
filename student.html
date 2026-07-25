@@ -383,31 +383,17 @@
             }
         }
 
-        // جلب الإشعارات بـ onSnapshot مع فلترة دقيقة ومتطابقة مع إشعارات الأدمن
+        // جلب الإشعارات بـ onSnapshot مع الاكتفاء بجدول الإشعارات الأساسي لتجنب أي تكرار
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
             
             const qNotifs = query(collection(db, "notifications"));
             
-            onSnapshot(qNotifs, async (snapshot) => {
+            onSnapshot(qNotifs, (snapshot) => {
                 let allNotifs = [];
 
-                // 1. إشعارات النشر الخاصة بفرقة الطالب
-                const qMat = query(collection(db, "materialContents"), where("academicYear", "==", student.academicYear));
-                const snapMat = await getDocs(qMat);
-                snapMat.forEach(d => {
-                    const item = d.data();
-                    allNotifs.push({
-                        id: d.id,
-                        title: `تم نشر ${item.type === 'book' ? 'كتاب' : 'امتحان'}: ${item.title}`,
-                        subtitle: `المادة: ${item.materialTitle} | بواسطة: ${item.publisherName || 'الإدارة'}`,
-                        link: `material.html?title=${encodeURIComponent(item.materialTitle)}`,
-                        date: item.createdAt || ''
-                    });
-                });
-
-                // 2. إشعارات الأدمن والإدارة مع تطبيق شروط الفلترة بدقة (الكل، فرقة معينة، أو طالب معين)
+                // الاعتماد على إشعارات جدول notifications المرسلة مباشرة من الإدارة لمنع أي ازدواجية أو تكرار
                 snapshot.forEach(d => {
                     const item = d.data();
                     let isForThisStudent = false;
@@ -427,7 +413,7 @@
                             id: d.id,
                             title: item.title,
                             subtitle: item.message || '',
-                            link: '#',
+                            link: item.link || '#',
                             date: item.createdAt || ''
                         });
                     }
