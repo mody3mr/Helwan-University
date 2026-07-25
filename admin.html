@@ -106,7 +106,7 @@
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background-color: #22c55e; }
-        .toast.error { background-color: #ef4444; }
+        .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f59e0b; }
     </style>
 </head>
@@ -323,7 +323,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات (مع فلترة متكاملة) -->
+        <!-- 4. إدارة الإشعارات (فلترة متكاملة وسجل شامل) -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -368,7 +368,7 @@
 
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>سجل جميع الإشعارات المرسلة (النظام والمخصصة)</span>
+                    <span>سجل جميع الإشعارات (النظام والمخصصة)</span>
                     <select id="notifFilterSelect" onchange="fetchNotifsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
                         <option value="all">عرض الكل</option>
                         <option value="custom">إشعارات الأدمن (المخصصة)</option>
@@ -379,7 +379,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>نوع الإشعار</th>
+                                <th>النوع</th>
                                 <th>العنوان</th>
                                 <th>الرسالة / التفاصيل</th>
                                 <th>المستهدف</th>
@@ -517,7 +517,7 @@
 
     </div>
 
-    <!-- المنطق البرمجي -->
+    <!-- المنطق البرمجي والربط -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -559,7 +559,7 @@
             location.href = 'index.html';
         }
 
-        // --- نظام التبويبات الفوري وحفظ التاب الحالي عند الريفرش ---
+        // --- نظام التبويبات مع الحفاظ على التاب الحالي عند الريفرش ---
         window.switchTab = function(tab) {
             localStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
@@ -606,7 +606,6 @@
             }
         }
 
-        // التشغيل التلقائي على آخر تاب تم فتحه قبل الريفرش
         window.addEventListener('DOMContentLoaded', () => {
             const savedTab = localStorage.getItem('adminActiveTab') || 'materials';
             switchTab(savedTab);
@@ -663,7 +662,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- دالة عامة موحدة وحساسة للحذف عبر كل الأقسام ---
+        // --- دالة الحذف العامة الآمنة لجميع الأقسام ---
         window.deleteDocItem = async function(collName, docId, callback) {
             if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
                 try {
@@ -823,13 +822,20 @@
             const fileUrl = document.getElementById('fileUrl').value.trim();
 
             try {
+                let fileData = { academicYear, materialTitle, sectionName, targetRole, title, fileUrl, publisherName: currentAdminName };
                 if (editId) {
-                    await updateDoc(doc(db, "materialContents", editId), { academicYear, materialTitle, sectionName, targetRole, title, fileUrl });
+                    await updateDoc(doc(db, "materialContents", editId), fileData);
                     showToast('تم تعديل الملف بنجاح!', 'success');
                 } else {
-                    await addDoc(collection(db, "materialContents"), {
-                        academicYear, materialTitle, sectionName, targetRole, title, fileUrl,
-                        publisherName: currentAdminName, createdAt: new Date().toISOString()
+                    fileData.createdAt = new Date().toISOString();
+                    const docRef = await addDoc(collection(db, "materialContents"), fileData);
+                    // تسجيل إشعار نظام تلقائي عند نشر ملف جديد
+                    await addDoc(collection(db, "notifications"), {
+                        title: `تم نشر محتوى جديد: ${title}`,
+                        message: `المادة: ${materialTitle} (${sectionName})`,
+                        type: 'system',
+                        target_year: academicYear,
+                        createdAt: new Date().toISOString()
                     });
                     showToast('تم نشر الملف وإرسال الإشعار بنجاح!', 'success');
                 }
@@ -886,7 +892,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. إدارة الإشعارات مع الفلترة التامة ---
+        // --- 4. إدارة الإشعارات مع الفلترة التامة (نظام + أدمن) ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('notifEditId').value;
@@ -924,6 +930,10 @@
             const snap = await getDoc(doc(db, "notifications", id));
             if(snap.exists()) {
                 const n = snap.data();
+                if(n.type !== 'custom_admin') {
+                    showToast('إشعارات النظام التلقائية لا يمكن تعديلها، يمكنك حذفها فقط.', 'warning');
+                    return;
+                }
                 document.getElementById('notifEditId').value = id;
                 document.getElementById('notifTitle').value = n.title;
                 document.getElementById('notifMessage').value = n.message;
@@ -977,7 +987,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. إدارة الطلاب ---
+        // --- 5. إدارة الطلاب وحذفهم النهائي ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -1084,7 +1094,7 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين (الموظفين والحظر والحذف) ---
+        // --- 6. الأعضاء الإداريين (الموظفين والحظر والحذف وإنشاء الحساب) ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('adminEditId').value;
