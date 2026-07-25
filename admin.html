@@ -7,12 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; }
+        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; width: 100vw; }
         
         .sidebar {
             width: 280px; background: #0f172a; color: white; display: flex;
             flex-direction: column; justify-content: flex-start; padding: 25px 20px;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.05); position: sticky; top: 0; height: 100vh;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); position: sticky; top: 0; height: 100vh; flex-shrink: 0;
         }
         .sidebar-brand {
             font-size: 22px; font-weight: 700; text-align: center;
@@ -29,7 +29,7 @@
         .header-top {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; background: white; padding: 20px 30px;
-            border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%;
         }
         .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
         
@@ -50,7 +50,7 @@
         }
         .dropdown-menu a:hover { background: #f8fafc; }
 
-        .tab-section { display: none; }
+        .tab-section { display: none; width: 100%; }
         .tab-section.active { display: block; }
 
         .card-box {
@@ -63,7 +63,7 @@
         }
         .card-body { padding: 25px; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; }
         .form-group { margin-bottom: 20px; }
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
@@ -118,7 +118,7 @@
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
             <ul class="sidebar-menu">
-                <li id="menuMaterials" class="active" onclick="switchTab('materials')">📚 إدارة المواد</li>
+                <li id="menuMaterials" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة الملفات</li>
                 <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
@@ -141,8 +141,8 @@
             </div>
         </div>
 
-        <!-- 1. إدارة المواد (مع طاقم التدريس وتعديل وحذف) -->
-        <div id="sectionMaterials" class="tab-section active">
+        <!-- 1. إدارة المواد -->
+        <div id="sectionMaterials" class="tab-section">
             <div class="card-box">
                 <div class="card-header" id="materialCardHeader">إضافة مادة دراسية جديدة</div>
                 <div class="card-body">
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <!-- 2. إدارة الأقسام (مع تعديل وحذف) -->
+        <!-- 2. إدارة الأقسام -->
         <div id="sectionSections" class="tab-section">
             <div class="card-box">
                 <div class="card-header" id="sectionCardHeader">إنشاء قسم جديد للمادة</div>
@@ -251,7 +251,7 @@
             </div>
         </div>
 
-        <!-- 3. إدارة الملفات (مع المعيد وتعديل وحذف) -->
+        <!-- 3. إدارة الملفات -->
         <div id="sectionFiles" class="tab-section">
             <div class="card-box">
                 <div class="card-header" id="fileCardHeader">رفع ونشر الملفات والمحتوى</div>
@@ -323,7 +323,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات (إرسال + فلترة كاملة + تعديل وحذف) -->
+        <!-- 4. إدارة الإشعارات (مع فلترة متكاملة) -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -366,30 +366,29 @@
                 </div>
             </div>
 
-            <!-- جدول عرض و فلترة جميع الإشعارات المرسلة -->
             <div class="card-box">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>سجل الإشعارات المرسلة</span>
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span>سجل جميع الإشعارات المرسلة (النظام والمخصصة)</span>
                     <select id="notifFilterSelect" onchange="fetchNotifsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
                         <option value="all">عرض الكل</option>
-                        <option value="group_all">للجميع</option>
-                        <option value="group_year">لفرقة معينة</option>
-                        <option value="group_student">لطالب معين</option>
+                        <option value="custom">إشعارات الأدمن (المخصصة)</option>
+                        <option value="system">إشعارات النظام (النشر والتعديلات)</option>
                     </select>
                 </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
+                                <th>نوع الإشعار</th>
                                 <th>العنوان</th>
-                                <th>الرسالة</th>
+                                <th>الرسالة / التفاصيل</th>
                                 <th>المستهدف</th>
                                 <th>التاريخ</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="notifsTable">
-                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -521,7 +520,7 @@
     <!-- المنطق البرمجي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -560,8 +559,9 @@
             location.href = 'index.html';
         }
 
-        // التنقل التلقائي مع عمل ريفرش وجلب للبيانات (إبطال الكاش)
+        // --- نظام التبويبات الفوري وحفظ التاب الحالي عند الريفرش ---
         window.switchTab = function(tab) {
+            localStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
             document.getElementById('adminDropdown').classList.remove('show');
@@ -605,6 +605,12 @@
                 fetchAdminsTable();
             }
         }
+
+        // التشغيل التلقائي على آخر تاب تم فتحه قبل الريفرش
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTab = localStorage.getItem('adminActiveTab') || 'materials';
+            switchTab(savedTab);
+        });
 
         window.toggleNotifTargetInput = function() {
             const val = document.getElementById('notifTargetType').value;
@@ -656,6 +662,20 @@
                 selectSec.innerHTML = opts;
             } catch(e) { console.error(e); }
         }
+
+        // --- دالة عامة موحدة وحساسة للحذف عبر كل الأقسام ---
+        window.deleteDocItem = async function(collName, docId, callback) {
+            if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
+                try {
+                    await deleteDoc(doc(db, collName, docId));
+                    showToast('تم الحذف بنجاح', 'success');
+                    if(callback) callback();
+                } catch(e) {
+                    console.error("Delete error:", e);
+                    showToast('حدث خطأ أثناء الحذف', 'error');
+                }
+            }
+        };
 
         // --- 1. إدارة المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
@@ -866,17 +886,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        window.deleteDocItem = async function(collName, docId, callback) {
-            if(confirm("هل أنت متأكد من الحذف؟")) {
-                try {
-                    await deleteDoc(doc(db, collName, docId));
-                    showToast('تم الحذف بنجاح', 'success');
-                    callback();
-                } catch(e) { showToast('حدث خطأ أثناء الحذف', 'error'); }
-            }
-        };
-
-        // --- 4. إدارة الإشعارات مع فلترة وتعديل وحذف ---
+        // --- 4. إدارة الإشعارات مع الفلترة التامة ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('notifEditId').value;
@@ -884,7 +894,7 @@
             const title = document.getElementById('notifTitle').value.trim();
             const message = document.getElementById('notifMessage').value.trim();
 
-            let notifData = { title, message, createdAt: new Date().toISOString() };
+            let notifData = { title, message, type: 'custom_admin', createdAt: new Date().toISOString() };
             if(targetType === 'all') notifData.target_group = 'all';
             else if(targetType === 'year') notifData.target_year = document.getElementById('notifYear').value;
             else if(targetType === 'student') notifData.student_id = document.getElementById('notifStudentId').value.trim();
@@ -927,7 +937,7 @@
                     document.getElementById('notifStudentId').value = n.student_id;
                 }
                 toggleNotifTargetInput();
-                document.getElementById('notifCardHeader').innerText = 'تعديل الإشعار';
+                document.getElementById('notifCardHeader').innerText = 'تعديل الإشعار المخصص';
                 document.getElementById('notifSubmitBtn').innerText = 'تعديل الإشعار';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -938,34 +948,36 @@
             const filterVal = document.getElementById('notifFilterSelect').value;
             try {
                 const snapshot = await getDocs(collection(db, "notifications"));
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const n = d.data();
-                    let targetText = 'الكل';
-                    let groupKey = 'group_all';
-                    if(n.target_year) { targetText = `فرقة ${n.target_year}`; groupKey = 'group_year'; }
-                    else if(n.student_id) { targetText = `طالب: ${n.student_id}`; groupKey = 'group_student'; }
+                    let typeCategory = n.type === 'custom_admin' ? 'custom' : 'system';
+                    if(filterVal !== 'all' && filterVal !== typeCategory) return;
 
-                    if(filterVal !== 'all' && filterVal !== groupKey) return;
+                    let typeLabel = n.type === 'custom_admin' ? 'إشعار أدمن' : 'إشعار نظام';
+                    let targetText = 'الكل';
+                    if(n.target_year) targetText = `فرقة ${n.target_year}`;
+                    else if(n.student_id) targetText = `طالب: ${n.student_id}`;
 
                     const dateFormatted = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-EG') : '';
                     html += `<tr>
+                        <td><span style="background: ${n.type === 'custom_admin' ? '#e0f2fe' : '#fef3c7'}; color: ${n.type === 'custom_admin' ? '#0369a1' : '#b45309'}; padding: 4px 10px; border-radius: 6px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
                         <td><b>${n.title}</b></td>
-                        <td>${n.message}</td>
+                        <td>${n.message || '-'}</td>
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
-                            <button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>
+                            ${n.type === 'custom_admin' ? `<button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>` : ''}
                             <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', fetchNotifsTable)">حذف</button>
                         </td>
                     </tr>`;
                 });
-                tbody.innerHTML = html || `<tr><td colspan="5" class="no-data">لا توجد نتائج مطابقة للفلتر.</td></tr>`;
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+                tbody.innerHTML = html || `<tr><td colspan="6" class="no-data">لا توجد نتائج مطابقة للفلتر.</td></tr>`;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. إدارة الطلاب والحظر ---
+        // --- 5. إدارة الطلاب ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -1011,7 +1023,7 @@
                 const uSnap = await getDocs(query(collection(db, "users"), where("student_id", "==", ed.student_id)));
                 let uId = ''; uSnap.forEach(d => uId = d.id);
                 await updateDoc(doc(db, "users", uId), { fullName: ed.fullName, phone: ed.phone, email: ed.email, password: ed.password, academicYear: ed.academicYear });
-                await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تمت الموافقة على تعديل بياناتك", message: "اعتمدت الإدارة التعديلات بنجاح.", createdAt: new Date().toISOString() });
+                await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تمت الموافقة على تعديل بياناتك", message: "اعتمدت الإدارة التعديلات بنجاح.", type: 'system', createdAt: new Date().toISOString() });
                 await deleteDoc(doc(db, "pendingEdits", editId));
                 showToast('تم اعتماد التعديل وإرسال إشعار.', 'success');
                 fetchPendingEdits();
@@ -1023,7 +1035,7 @@
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(editSnap.exists()) {
                     const ed = editSnap.data();
-                    await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تم رفض تعديل البيانات", message: "لم توافق الإدارة على التعديلات.", createdAt: new Date().toISOString() });
+                    await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تم رفض تعديل البيانات", message: "لم توافق الإدارة على التعديلات.", type: 'system', createdAt: new Date().toISOString() });
                 }
                 await deleteDoc(doc(db, "pendingEdits", editId));
                 showToast('تم الرفض وإرسال إشعار.', 'warning');
@@ -1072,7 +1084,7 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين والوظائف ---
+        // --- 6. الأعضاء الإداريين (الموظفين والحظر والحذف) ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('adminEditId').value;
@@ -1093,7 +1105,7 @@
                 }
                 resetAdminForm();
                 fetchAdminsTable();
-            } catch(e) { showToast('حدث خطأ أثناء الحفظ', 'error'); }
+            } catch(e) { showToast('حدث خطأ أثناء حفظ العضو الإداري', 'error'); }
         });
 
         window.resetAdminForm = function() {
@@ -1158,9 +1170,6 @@
                 fetchAdminsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
-
-        // التشغيل الأولي
-        fetchMaterialsTable();
     </script>
 
 </body>
