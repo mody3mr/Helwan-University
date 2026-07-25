@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جامعة حلوان - امتحان المهارة التفاعلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 30px auto; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+        
+        .quiz-header { background: #0f172a; color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .quiz-header h2 { font-size: 22px; font-weight: 700; }
+        .timer-box { background: #ef4444; color: white; padding: 8px 18px; border-radius: 30px; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+
+        .quiz-body { padding: 30px; }
+        .question-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+        .question-card h3 { font-size: 16px; color: #0f172a; margin-bottom: 15px; font-weight: 700; }
+        
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item { display: flex; align-items: center; gap: 10px; background: white; padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .option-item:hover { border-color: #3b82f6; background: #eff6ff; }
+        .option-item input { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; }
+
+        .btn-submit-quiz { background: #22c55e; color: white; border: none; padding: 14px 25px; font-size: 16px; font-weight: 700; border-radius: 12px; width: 100%; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+        .btn-submit-quiz:hover { background: #16a34a; }
+
+        /* شاشة النتيجة */
+        .result-box { text-align: center; padding: 40px 20px; display: none; }
+        .result-box h1 { font-size: 32px; color: #0f172a; margin-bottom: 15px; }
+        .result-score { font-size: 48px; font-weight: 700; color: #2563eb; margin-bottom: 20px; }
+        .btn-back { background: #2563eb; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block; }
+        .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="quizContainer">
+        <div class="quiz-header">
+            <h2 id="quizTitle">جاري تحميل الامتحان...</h2>
+            <div class="timer-box" id="timerBox">⏳ الوقت باقي: --:--</div>
+        </div>
+
+        <div class="quiz-body" id="quizBody">
+            <div class="no-data">جاري جلب أسئلة الامتحان...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
+            authDomain: "helwan-university-3cfd3.firebaseapp.com",
+            projectId: "helwan-university-3cfd3",
+            storageBucket: "helwan-university-3cfd3.firebasestorage.app",
+            messagingSenderId: "649399927965",
+            appId: "1:649399927965:web:87f52cb4eff211595fc074"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const quizId = urlParams.get('id');
+
+        let quizData = null;
+        let timerInterval = null;
+
+        if (!quizId) {
+            alert('لم يتم تحديد الامتحان!');
+            window.history.back();
+        } else {
+            loadQuiz(quizId);
+        }
+
+        async function loadQuiz(id) {
+            try {
+                const docSnap = await getDoc(doc(db, "materialContents", id));
+                if (!docSnap.exists()) {
+                    document.getElementById('quizBody').innerHTML = `<div class="no-data" style="color:red;">عذراً، هذا الامتحان غير موجود أو تم حذفه.</div>`;
+                    return;
+                }
+
+                quizData = docSnap.data();
+                document.getElementById('quizTitle').innerText = quizData.title;
+
+                // لو الامتحان ملوش أسئلة مسجلة لسه
+                if (!quizData.questions || quizData.questions.length === 0) {
+                    document.getElementById('quizBody').innerHTML = `<div class="no-data">لم يتم إدراج أسئلة لهذا الامتحان بعد بواسطة الإدارة.</div>`;
+                    return;
+                }
+
+                renderQuestions(quizData.questions);
+                startTimer(quizData.durationMinutes || 10);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('quizBody').innerHTML = `<div class="no-data" style="color:red;">حدث خطأ أثناء تحميل الامتحان.</div>`;
+            }
+        }
+
+        function renderQuestions(questions) {
+            let html = '';
+            questions.forEach((q, qIndex) => {
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label class="option-item">
+                            <input type="radio" name="question_${qIndex}" value="${optIndex}">
+                            <span>${opt}</span>
+                        </label>
+                    `;
+                });
+
+                html += `
+                    <div class="question-card" data-qindex="${qIndex}">
+                        <h3>السؤال ${qIndex + 1}: ${q.questionText}</h3>
+                        <div class="options-list">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `<button class="btn-submit-quiz" onclick="submitQuiz()">تسليم الامتحان وإنهاء</button>`;
+            document.getElementById('quizBody').innerHTML = html;
+        }
+
+        function startTimer(durationMinutes) {
+            let totalSeconds = durationMinutes * 60;
+            const timerBox = document.getElementById('timerBox');
+
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(totalSeconds / 60);
+                let seconds = totalSeconds % 60;
+
+                timerBox.innerText = `⏳ الوقت باقي: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert('انتهى الوقت المخصص للامتحان!');
+                    submitQuiz();
+                }
+                totalSeconds--;
+            }, 1000);
+        }
+
+        window.submitQuiz = function() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            let score = 0;
+            const questions = quizData.questions;
+
+            questions.forEach((q, qIndex) => {
+                const selected = document.querySelector(`input[name="question_${qIndex}"]:checked`);
+                if (selected && parseInt(selected.value) === q.correctOptionIndex) {
+                    score++;
+                }
+            });
+
+            const percentage = Math.round((score / questions.length) * 100);
+
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = `
+                <div class="result-box" style="display: block;">
+                    <h1>🎉 تم تسليم الامتحان بنجاح!</h1>
+                    <p style="color:#64748b; font-size:16px; margin-bottom:10px;">نتيجة تقييم المهارة الخاصة بك:</p>
+                    <div class="result-score">${score} / ${questions.length} (${percentage}%)</div>
+                    <p style="color:#334155; font-size:15px; margin-bottom:25px;">${percentage >= 50 ? 'أداء ممتاز، استمر في التميز!' : 'تحتاج لمراجعة المادة ومحاولة التدريب مرة أخرى.'}</p>
+                    <a href="javascript:window.history.back();" class="btn-back">العودة لصفحة المادة</a>
+                </div>
+            `;
+        }
+    </script>
+
+</body>
+</html>
