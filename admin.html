@@ -323,7 +323,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات (فلترة متكاملة وسجل شامل) -->
+        <!-- 4. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -517,7 +517,7 @@
 
     </div>
 
-    <!-- المنطق البرمجي والربط -->
+    <!-- المنطق البرمجي والربط المضمون -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -559,7 +559,7 @@
             location.href = 'index.html';
         }
 
-        // --- نظام التبويبات مع الحفاظ على التاب الحالي عند الريفرش ---
+        // نظام التبويبات الفوري مع ثبات التاب بعد الريفرش
         window.switchTab = function(tab) {
             localStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
@@ -662,13 +662,15 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- دالة الحذف العامة الآمنة لجميع الأقسام ---
-        window.deleteDocItem = async function(collName, docId, callback) {
+        // --- دالة الحذف المباشرة والآمنة 100% ---
+        window.deleteDocItem = async function(collName, docId) {
             if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
                 try {
                     await deleteDoc(doc(db, collName, docId));
                     showToast('تم الحذف بنجاح', 'success');
-                    if(callback) callback();
+                    // إعادة تحميل التاب الحالي فورا لتحديث الجدول
+                    const currentTab = localStorage.getItem('adminActiveTab') || 'materials';
+                    switchTab(currentTab);
                 } catch(e) {
                     console.error("Delete error:", e);
                     showToast('حدث خطأ أثناء الحذف', 'error');
@@ -736,7 +738,7 @@
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
                             <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', fetchMaterialsTable)">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -802,7 +804,7 @@
                         <td><b>${s.sectionName}</b></td>
                         <td>
                             <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', fetchSectionsTable)">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -828,8 +830,7 @@
                     showToast('تم تعديل الملف بنجاح!', 'success');
                 } else {
                     fileData.createdAt = new Date().toISOString();
-                    const docRef = await addDoc(collection(db, "materialContents"), fileData);
-                    // تسجيل إشعار نظام تلقائي عند نشر ملف جديد
+                    await addDoc(collection(db, "materialContents"), fileData);
                     await addDoc(collection(db, "notifications"), {
                         title: `تم نشر محتوى جديد: ${title}`,
                         message: `المادة: ${materialTitle} (${sectionName})`,
@@ -884,7 +885,7 @@
                         <td><a href="${f.fileUrl}" target="_blank">رابط الملف</a></td>
                         <td>
                             <button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', fetchFilesTable)">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -892,7 +893,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. إدارة الإشعارات مع الفلترة التامة (نظام + أدمن) ---
+        // --- 4. إدارة الإشعارات مع الفلترة التامة ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('notifEditId').value;
@@ -979,7 +980,7 @@
                         <td>${dateFormatted}</td>
                         <td>
                             ${n.type === 'custom_admin' ? `<button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>` : ''}
-                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', fetchNotifsTable)">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1076,7 +1077,7 @@
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
                                 <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${d.id}', '${newStatus}')">${banBtnText}</button>
-                                <button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}', fetchAllStudents)">حذف</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}')">حذف</button>
                             </td>
                         </tr>
                     `;
@@ -1164,7 +1165,7 @@
                             <td>
                                 <button class="btn ${actionBtnClass}" onclick="toggleAdminStatus('${d.id}', '${newStatus}')">${actionBtnText}</button>
                                 <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
-                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}', fetchAdminsTable)">حذف</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
                             </td>
                         </tr>
                     `;
