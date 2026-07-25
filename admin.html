@@ -352,7 +352,7 @@
                             </div>
                             <div class="form-group" id="urlInputGroup">
                                 <label for="fileUrl">رابط الملف (Google Drive / PDF / صورة)</label>
-                                <input type="url" id="urlInput" placeholder="https://...">
+                                <input type="url" id="fileUrl" placeholder="https://...">
                             </div>
                             <div class="form-group" id="quizDurationGroup" style="display: none;">
                                 <label for="quizDuration">مدة الامتحان (بالدقائق)</label>
@@ -656,7 +656,6 @@
 
         const currentAdminName = sessionStorage.getItem('currentAdminName');
         const currentAdminRole = sessionStorage.getItem('currentAdminRole');
-        const adminPermissions = JSON.parse(sessionStorage.getItem('adminPermissions') || '[]');
 
         if (!currentAdminName) {
             location.href = 'admin-login.html';
@@ -894,7 +893,7 @@
             list.appendChild(qDiv);
         }
 
-        // جلب نتائج الطلاب في الامتحانات
+        // جلب نتائج الطلاب في تاب "تقارير ونتائج الطلاب"
         async function fetchQuizResults() {
             const tbody = document.getElementById('quizResultsTable');
             try {
@@ -909,9 +908,9 @@
                     const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
                     html += `
                         <tr>
-                            <td><b>${r.studentName}</b></td>
-                            <td>${r.studentId}</td>
-                            <td>${r.quizTitle}</td>
+                            <td><b>${r.studentName || 'غير معروف'}</b></td>
+                            <td>${r.studentId || '-'}</td>
+                            <td>${r.quizTitle || 'امتحان'}</td>
                             <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
                             <td>${dateFormatted}</td>
                         </tr>
@@ -919,7 +918,7 @@
                 });
                 tbody.innerHTML = html;
             } catch (e) {
-                console.error(e);
+                console.error("Error fetching quiz results:", e);
                 tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في تحميل النتائج.</td></tr>`;
             }
         }
