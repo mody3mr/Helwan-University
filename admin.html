@@ -933,7 +933,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات ---
+        // --- 3. الملفات (تم إصلاح حفظ الملف في materialContents + إرسال الإشعار لـ notifications) ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('fileEditId').value;
@@ -945,11 +945,16 @@
             const fileUrl = document.getElementById('fileUrl').value.trim();
 
             try {
+                let fileData = { academicYear, materialTitle, sectionName, targetRole, title, fileUrl, publisherName: currentAdminName };
                 if (editId) {
-                    await updateDoc(doc(db, "materialContents", editId), { academicYear, materialTitle, sectionName, targetRole, title, fileUrl });
+                    await updateDoc(doc(db, "materialContents", editId), fileData);
                     showToast('تم تعديل الملف بنجاح!', 'success');
                 } else {
-                    // نشر الملف وإرسال إشعار مباشر لجدول notifications ليظهر عند الطالب ويتم حذفه من نفس الجدول
+                    fileData.createdAt = new Date().toISOString();
+                    // 1. حفظ الملف في قاعدة البيانات ليظهر في جدول الأدمن وصفحة المادة
+                    await addDoc(collection(db, "materialContents"), fileData);
+
+                    // 2. إرسال الإشعار الفوري لجدول notifications ليظهر عند الطالب
                     await addDoc(collection(db, "notifications"), {
                         title: `تم نشر محتوى جديد: ${title}`,
                         message: `المادة: ${materialTitle} (${sectionName})`,
@@ -958,11 +963,15 @@
                         target_year: academicYear,
                         createdAt: new Date().toISOString()
                     });
-                    showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
+
+                    showToast('تم نشر الملف وحفظه وإرسال الإشعار للطلاب بنجاح!', 'success');
                 }
                 resetFileForm();
                 fetchFilesTable();
-            } catch(e) { showToast('حدث خطأ', 'error'); }
+            } catch(e) { 
+                console.error(e);
+                showToast('حدث خطأ أثناء النشر', 'error'); 
+            }
         });
 
         window.resetFileForm = function() {
