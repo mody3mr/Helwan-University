@@ -18,7 +18,6 @@
             display: flex;
             min-height: 100vh;
         }
-        /* الشريط الجانبي الفخم */
         .sidebar {
             width: 280px;
             background: #0f172a;
@@ -36,7 +35,6 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #1e293b;
             color: #38bdf8;
-            letter-spacing: 0.5px;
         }
         .sidebar-menu {
             list-style: none;
@@ -54,9 +52,6 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         .sidebar-menu li.active, .sidebar-menu li:hover {
             background: #38bdf8;
@@ -77,7 +72,6 @@
         }
         .sidebar-logout:hover { background: #dc2626; }
 
-        /* المحتوى الرئيسي */
         .main-content {
             flex-grow: 1;
             padding: 40px;
@@ -93,11 +87,7 @@
             border-radius: 14px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .header-top h2 {
-            color: #0f172a;
-            font-size: 24px;
-            font-weight: 700;
-        }
+        .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
         .admin-badge {
             background: #e0f2fe;
             color: #0369a1;
@@ -110,7 +100,6 @@
         .tab-section { display: none; }
         .tab-section.active { display: block; }
 
-        /* البطاقات والنماذج والجداول */
         .card-box {
             background: white;
             border-radius: 16px;
@@ -127,21 +116,14 @@
             color: #0f172a;
             background: #f8fafc;
         }
-        .card-body {
-            padding: 25px;
-        }
+        .card-body { padding: 25px; }
         
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
+        .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -188,7 +170,6 @@
         .btn-reject:hover { background: #dc2626; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
-        /* Toast Messages */
         #toast-container {
             position: fixed;
             top: 25px;
@@ -222,35 +203,35 @@
 
     <div id="toast-container"></div>
 
-    <!-- الشريط الجانبي بالترتيب الجديد والدقيق -->
+    <!-- القائمة الجانبية بالترتيب الجديد والمحدد -->
     <div class="sidebar">
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
             <ul class="sidebar-menu">
-                <li id="menuMaterials" class="active" onclick="switchTab('materials')">📚 إدارة المواد وطاقم التدريس</li>
-                <li id="menuContent" onclick="switchTab('content')">📂 إدارة الأقسام والمحتوى</li>
-                <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب (الطلبات والتعديلات)</li>
+                <li id="menuMaterials" class="active" onclick="switchTab('materials')">📚 إدارة المواد</li>
+                <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
+                <li id="menuFiles" onclick="switchTab('files')">📑 إدارة الملفات</li>
+                <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
             </ul>
         </div>
         <button class="sidebar-logout" onclick="location.href='index.html'">تسجيل الخروج</button>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <div class="header-top">
-            <h2 id="pageTitle">إدارة المواد وطاقم التدريس</h2>
+            <h2 id="pageTitle">إدارة المواد</h2>
             <div class="admin-badge" id="adminNameDisplay">مسؤول النظام</div>
         </div>
 
-        <!-- 1. تبويب إدارة المواد وطاقم التدريس -->
+        <!-- 1. تاب إدارة المواد -->
         <div id="sectionMaterials" class="tab-section active">
             <div class="card-box">
-                <div class="card-header">إضافة مادة دراسية جديدة وتحديد طاقم التدريس</div>
+                <div class="card-header">إضافة مادة دراسية جديدة وطاقم التدريس</div>
                 <div class="card-body">
                     <form id="materialForm">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="matYear">الفرقة الدراسية المستهدفة</label>
+                                <label for="matYear">الفرقة الدراسية</label>
                                 <select id="matYear" required>
                                     <option value="" disabled selected>اختر الفرقة...</option>
                                     <option value="1">الفرقة الأولى</option>
@@ -260,34 +241,34 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="matTitle">اسم المادة الدراسية</label>
-                                <input type="text" id="matTitle" placeholder="مثال: قواعد البيانات المتقدمة" required>
+                                <label for="matTitle">اسم المادة</label>
+                                <input type="text" id="matTitle" placeholder="مثال: البرمجة المتقدمة" required>
                             </div>
                             <div class="form-group">
-                                <label for="matProf">اسم أستاذ المادة (الدكتور)</label>
+                                <label for="matProf">أستاذ المادة (الدكتور)</label>
                                 <input type="text" id="matProf" placeholder="مثال: أ.د/ محمد أحمد" required>
                             </div>
                             <div class="form-group">
-                                <label for="matAssist">اسم المعيد / المساعد</label>
+                                <label for="matAssist">المعيد / المساعد</label>
                                 <input type="text" id="matAssist" placeholder="مثال: م/ محمود حسن" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 15px;">حفظ وإضافة المادة للخريطة</button>
+                        <button type="submit" class="btn-submit" style="margin-top: 15px;">حفظ المادة</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- 2. تبويب إدارة الأقسام والمحتوى (فصل ملفات الدكتور عن المعيد + أنواع محتوى متعددة) -->
-        <div id="sectionContent" class="tab-section">
+        <!-- 2. تاب إدارة الأقسام (إنشاء أقسام جديدة للمادة والفرقة) -->
+        <div id="sectionSections" class="tab-section">
             <div class="card-box">
-                <div class="card-header">نشر محتوى جديد (كتب، امتحانات، فيديوهات، أقسام)</div>
+                <div class="card-header">إنشاء قسم جديد (تابع لمادة وفرقة معينة)</div>
                 <div class="card-body">
-                    <form id="contentForm">
+                    <form id="sectionForm">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="cntYear">الفرقة الدراسية</label>
-                                <select id="cntYear" required>
+                                <label for="secYear">الفرقة الدراسية</label>
+                                <select id="secYear" required>
                                     <option value="" disabled selected>اختر الفرقة...</option>
                                     <option value="1">الفرقة الأولى</option>
                                     <option value="2">الفرقة الثانية</option>
@@ -296,48 +277,77 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="cntMaterial">اختر المادة الدراسية</label>
-                                <select id="cntMaterial" required>
+                                <label for="secMaterial">اختر المادة</label>
+                                <select id="secMaterial" required>
                                     <option value="" disabled selected>اختر الفرقة أولاً...</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="cntTarget">جهة النشر (لمن يتبع هذا الملف؟)</label>
-                                <select id="cntTarget" required>
-                                    <option value="professor">ملفات الدكتور (أستاذ المادة)</option>
-                                    <option value="assistant">ملفات المعيد (المساعد)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="cntType">نوع المحتوى / القسم</label>
-                                <select id="cntType" required>
-                                    <option value="book">كتاب المادة (PDF)</option>
-                                    <option value="exam">امتحان سابق</option>
-                                    <option value="quiz">امتحان تذكيري / كويز</option>
-                                    <option value="video">فيديو شرح</option>
-                                    <option value="custom">قسم مخصّص جديد</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="cntTitle">عنوان الملف أو القسم</label>
-                                <input type="text" id="cntTitle" placeholder="مثال: شابتر 1 أو المحاضرة الأولى" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="cntFileUrl">رابط الملف (Google Drive / PDF / Video Link)</label>
-                                <input type="url" id="cntFileUrl" placeholder="https://..." required>
+                                <label for="secName">اسم القسم الجديد</label>
+                                <input type="text" id="secName" placeholder="مثال: المحاضرات، السكاشن، كويزات الأسبوع الأول" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="margin-top: 15px;">نشر المحتوى وإرسال إشعار فوري للطلاب</button>
+                        <button type="submit" class="btn-submit" style="margin-top: 15px;">إنشاء القسم</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- 3. تبويب إدارة الطلاب (الطلبات الجديدة + تعديلات البيانات في مكان واحد) -->
+        <!-- 3. تاب إدارة الملفات (النشر في مادة وقسم معين وعند دكتور أو معيد) -->
+        <div id="sectionFiles" class="tab-section">
+            <div class="card-box">
+                <div class="card-header">رفع ونشر الملفات داخل الأقسام</div>
+                <div class="card-body">
+                    <form id="fileForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fileYear">الفرقة الدراسية</label>
+                                <select id="fileYear" required>
+                                    <option value="" disabled selected>اختر الفرقة...</option>
+                                    <option value="1">الفرقة الأولى</option>
+                                    <option value="2">الفرقة الثانية</option>
+                                    <option value="3">الفرقة الثالثة</option>
+                                    <option value="4">الفرقة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileMaterial">اختر المادة</label>
+                                <select id="fileMaterial" required>
+                                    <option value="" disabled selected>اختر الفرقة أولاً...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileSection">اختر القسم</label>
+                                <select id="fileSection" required>
+                                    <option value="" disabled selected>اختر المادة أولاً...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileTarget">يتبع لمن؟</label>
+                                <select id="fileTarget" required>
+                                    <option value="professor">الدكتور (أستاذ المادة)</option>
+                                    <option value="assistant">المعيد (المساعد)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileTitle">عنوان الملف / المحتوى</label>
+                                <input type="text" id="fileTitle" placeholder="مثال: شابتر 1 - ملف PDF" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileUrl">رابط الملف (Google Drive / PDF / Video)</label>
+                                <input type="url" id="fileUrl" placeholder="https://..." required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="margin-top: 15px;">نشر الملف وإرسال إشعار للطلاب</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. تاب إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
-            <!-- طلبات إنشاء الحسابات الجديدة -->
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
+                <div class="card-header">طلبات إنشاء الحسابات الجديدة</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -357,9 +367,8 @@
                 </div>
             </div>
 
-            <!-- طلبات تعديل البيانات -->
             <div class="card-box">
-                <div class="card-header">طلبات تعديل البيانات الشخصية (Pending Edits)</div>
+                <div class="card-header">طلبات تعديل البيانات الشخصية</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -382,7 +391,6 @@
 
     </div>
 
-    <!-- المنطق البرمجي وربط فايربيس -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -415,7 +423,6 @@
             }, 4000);
         }
 
-        // التنقل بين الأقسام من القائمة الجانبية بالترتيب الجديد
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
@@ -423,26 +430,29 @@
             if(tab === 'materials') {
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة المواد وطاقم التدريس';
-            } else if(tab === 'content') {
-                document.getElementById('sectionContent').classList.add('active');
-                document.getElementById('menuContent').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة الأقسام والمحتوى';
+                document.getElementById('pageTitle').innerText = 'إدارة المواد';
+            } else if(tab === 'sections') {
+                document.getElementById('sectionSections').classList.add('active');
+                document.getElementById('menuSections').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة الأقسام';
+            } else if(tab === 'files') {
+                document.getElementById('sectionFiles').classList.add('active');
+                document.getElementById('menuFiles').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة الملفات';
             } else if(tab === 'students') {
                 document.getElementById('sectionStudents').classList.add('active');
                 document.getElementById('menuStudents').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة الطلاب والطلبات';
+                document.getElementById('pageTitle').innerText = 'إدارة الطلاب';
                 fetchPendingStudents();
                 fetchPendingEdits();
             }
         }
 
-        // جلب المواد بناءً على الفرقة المختارة في قسم نشر المحتوى
-        document.getElementById('cntYear').addEventListener('change', async function() {
+        // جلب المواد حسب الفرقة في تاب الأقسام
+        document.getElementById('secYear').addEventListener('change', async function() {
             const year = this.value;
-            const selectMat = document.getElementById('cntMaterial');
+            const selectMat = document.getElementById('secMaterial');
             selectMat.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
-            
             try {
                 const q = query(collection(db, "materials"), where("academicYear", "==", year));
                 const snapshot = await getDocs(q);
@@ -452,16 +462,56 @@
                 }
                 let opts = `<option value="" disabled selected>اختر المادة...</option>`;
                 snapshot.forEach(d => {
-                    const mat = d.data();
-                    opts += `<option value="${mat.title}">${mat.title} (د. ${mat.professorName})</option>`;
+                    const m = d.data();
+                    opts += `<option value="${m.title}">${m.title}</option>`;
                 });
                 selectMat.innerHTML = opts;
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         });
 
-        // 1. إضافة مادة دراسية جديدة
+        // جلب المواد حسب الفرقة في تاب الملفات
+        document.getElementById('fileYear').addEventListener('change', async function() {
+            const year = this.value;
+            const selectMat = document.getElementById('fileMaterial');
+            selectMat.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
+            try {
+                const q = query(collection(db, "materials"), where("academicYear", "==", year));
+                const snapshot = await getDocs(q);
+                if(snapshot.empty) {
+                    selectMat.innerHTML = `<option value="" disabled selected>لا توجد مواد لهذه الفرقة</option>`;
+                    return;
+                }
+                let opts = `<option value="" disabled selected>اختر المادة...</option>`;
+                snapshot.forEach(d => {
+                    const m = d.data();
+                    opts += `<option value="${m.title}">${m.title}</option>`;
+                });
+                selectMat.innerHTML = opts;
+            } catch(e) { console.error(e); }
+        });
+
+        // جلب الأقسام حسب المادة المختارة في تاب الملفات
+        document.getElementById('fileMaterial').addEventListener('change', async function() {
+            const matTitle = this.value;
+            const selectSec = document.getElementById('fileSection');
+            selectSec.innerHTML = `<option value="" disabled selected>جاري التحميل...</option>`;
+            try {
+                const q = query(collection(db, "materialSections"), where("materialTitle", "==", matTitle));
+                const snapshot = await getDocs(q);
+                if(snapshot.empty) {
+                    selectSec.innerHTML = `<option value="" disabled selected>لا توجد أقسام لهذه المادة، قم بإنشائها أولاً</option>`;
+                    return;
+                }
+                let opts = `<option value="" disabled selected>اختر القسم...</option>`;
+                snapshot.forEach(d => {
+                    const s = d.data();
+                    opts += `<option value="${s.sectionName}">${s.sectionName}</option>`;
+                });
+                selectSec.innerHTML = opts;
+            } catch(e) { console.error(e); }
+        });
+
+        // 1. إضافة المادة
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const academicYear = document.getElementById('matYear').value;
@@ -475,109 +525,90 @@
                     publisherName: currentAdminName,
                     createdAt: new Date().toISOString()
                 });
-                showToast('تمت إضافة المادة وطاقم التدريس بنجاح!', 'success');
+                showToast('تمت إضافة المادة بنجاح!', 'success');
                 this.reset();
-            } catch(e) {
-                showToast('حدث خطأ أثناء إضافة المادة.', 'error');
-            }
+            } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // 2. نشر محتوى جديد (كتب، امتحانات، فيديوهات، دكتور أو معيد)
-        document.getElementById('contentForm').addEventListener('submit', async function(e) {
+        // 2. إنشاء قسم جديد للمادة
+        document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const academicYear = document.getElementById('cntYear').value;
-            const materialTitle = document.getElementById('cntMaterial').value;
-            const targetRole = document.getElementById('cntTarget').value; // professor or assistant
-            const type = document.getElementById('cntType').value;
-            const title = document.getElementById('cntTitle').value.trim();
-            const fileUrl = document.getElementById('cntFileUrl').value.trim();
+            const academicYear = document.getElementById('secYear').value;
+            const materialTitle = document.getElementById('secMaterial').value;
+            const sectionName = document.getElementById('secName').value.trim();
+
+            try {
+                await addDoc(collection(db, "materialSections"), {
+                    academicYear, materialTitle, sectionName,
+                    createdAt: new Date().toISOString()
+                });
+                showToast('تم إنشاء القسم بنجاح!', 'success');
+                this.reset();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        });
+
+        // 3. نشر الملف داخل القسم وعند دكتور أو معيد
+        document.getElementById('fileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const academicYear = document.getElementById('fileYear').value;
+            const materialTitle = document.getElementById('fileMaterial').value;
+            const sectionName = document.getElementById('fileSection').value;
+            const targetRole = document.getElementById('fileTarget').value;
+            const title = document.getElementById('fileTitle').value.trim();
+            const fileUrl = document.getElementById('fileUrl').value.trim();
 
             try {
                 await addDoc(collection(db, "materialContents"), {
-                    academicYear, materialTitle, targetRole, type, title, fileUrl,
+                    academicYear, materialTitle, sectionName, targetRole, title, fileUrl,
                     publisherName: currentAdminName,
                     createdAt: new Date().toISOString()
                 });
-                showToast('تم نشر المحتوى وإرسال الإشعار للطلاب بنجاح!', 'success');
+                showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
                 this.reset();
-            } catch(e) {
-                showToast('حدث خطأ أثناء النشر.', 'error');
-            }
+            } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // 3. إدارة الطلاب: طلبات التسجيل الجديدة
+        // 4. إدارة الطلاب
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
-                const q = query(collection(db, "users"), where("status", "==", "pending"));
-                const snapshot = await getDocs(q);
+                const snapshot = await getDocs(query(collection(db, "users"), where("status", "==", "pending")));
                 if(snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة حالياً.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>`;
                     return;
                 }
                 let html = '';
                 snapshot.forEach(d => {
                     const u = d.data();
-                    html += `
-                        <tr>
-                            <td><b>${u.student_id}</b></td>
-                            <td>${u.fullName}</td>
-                            <td>${u.email}</td>
-                            <td>${u.phone}</td>
-                            <td>الفرقة ${u.academicYear}</td>
-                            <td>
-                                <button class="btn btn-approve" onclick="updateStudent('${d.id}', 'approved')">موافقة</button>
-                                <button class="btn btn-reject" onclick="updateStudent('${d.id}', 'rejected')">رفض</button>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr><td><b>${u.student_id}</b></td><td>${u.fullName}</td><td>${u.email}</td><td>${u.phone}</td><td>الفرقة ${u.academicYear}</td><td><button class="btn btn-approve" onclick="updateStudent('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudent('${d.id}', 'rejected')">رفض</button></td></tr>`;
                 });
                 tbody.innerHTML = html;
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في جلب البيانات.</td></tr>`;
-            }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في الجلب.</td></tr>`; }
         }
 
         window.updateStudent = async function(docId, status) {
             try {
                 await updateDoc(doc(db, "users", docId), { status });
-                showToast(status === 'approved' ? 'تمت الموافقة على الطالب' : 'تم رفض الطلب', status === 'approved' ? 'success' : 'warning');
+                showToast(status === 'approved' ? 'تمت الموافقة' : 'تم الرفض', status === 'approved' ? 'success' : 'warning');
                 fetchPendingStudents();
-            } catch(e) {
-                showToast('حدث خطأ', 'error');
-            }
+            } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // 4. إدارة الطلاب: طلبات التعديل
         async function fetchPendingEdits() {
             const tbody = document.getElementById('pendingEditsTable');
             try {
                 const snapshot = await getDocs(collection(db, "pendingEdits"));
                 if(snapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل معلقة.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل.</td></tr>`;
                     return;
                 }
                 let html = '';
                 snapshot.forEach(d => {
                     const ed = d.data();
-                    html += `
-                        <tr>
-                            <td><b>${ed.student_id}</b></td>
-                            <td>${ed.fullName}</td>
-                            <td>${ed.phone}</td>
-                            <td>${ed.email}</td>
-                            <td>الفرقة ${ed.academicYear}</td>
-                            <td>
-                                <button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button>
-                                <button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr><td><b>${ed.student_id}</b></td><td>${ed.fullName}</td><td>${ed.phone}</td><td>${ed.email}</td><td>الفرقة ${ed.academicYear}</td><td><button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button><button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button></td></tr>`;
                 });
                 tbody.innerHTML = html;
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في جلب البيانات.</td></tr>`;
-            }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في الجلب.</td></tr>`; }
         }
 
         window.approveEdit = async function(editId) {
@@ -585,28 +616,15 @@
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(!editSnap.exists()) return;
                 const ed = editSnap.data();
-
                 const uSnap = await getDocs(query(collection(db, "users"), where("student_id", "==", ed.student_id)));
-                let userDocId = '';
-                uSnap.forEach(d => userDocId = d.id);
-
-                await updateDoc(doc(db, "users", userDocId), {
-                    fullName: ed.fullName, phone: ed.phone, email: ed.email, password: ed.password, academicYear: ed.academicYear
-                });
-
-                await addDoc(collection(db, "notifications"), {
-                    student_id: ed.student_id,
-                    title: "تمت الموافقة على تعديل بياناتك",
-                    message: "قامت الإدارة باعتماد تعديلات بياناتك الشخصية بنجاح.",
-                    createdAt: new Date().toISOString()
-                });
-
+                let uId = '';
+                uSnap.forEach(d => uId = d.id);
+                await updateDoc(doc(db, "users", uId), { fullName: ed.fullName, phone: ed.phone, email: ed.email, password: ed.password, academicYear: ed.academicYear });
+                await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تمت الموافقة على تعديل بياناتك", message: "اعتمدت الإدارة التعديلات بنجاح.", createdAt: new Date().toISOString() });
                 await deleteDoc(doc(db, "pendingEdits", editId));
-                showToast('تم اعتماد التعديل وإرسال إشعار للطالب.', 'success');
+                showToast('تم اعتماد التعديل وإرسال إشعار.', 'success');
                 fetchPendingEdits();
-            } catch(e) {
-                showToast('حدث خطأ أثناء اعتماد التعديل', 'error');
-            }
+            } catch(e) { showToast('خطأ', 'error'); }
         }
 
         window.rejectEdit = async function(editId) {
@@ -614,19 +632,12 @@
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(editSnap.exists()) {
                     const ed = editSnap.data();
-                    await addDoc(collection(db, "notifications"), {
-                        student_id: ed.student_id,
-                        title: "تم رفض طلب تعديل البيانات",
-                        message: "عذراً، لم توافق الإدارة على التعديلات المرسلة.",
-                        createdAt: new Date().toISOString()
-                    });
+                    await addDoc(collection(db, "notifications"), { student_id: ed.student_id, title: "تم رفض تعديل البيانات", message: "لم توافق الإدارة على التعديلات.", createdAt: new Date().toISOString() });
                 }
                 await deleteDoc(doc(db, "pendingEdits", editId));
-                showToast('تم رفض طلب التعديل وإرسال إشعار.', 'warning');
+                showToast('تم الرفض وإرسال إشعار.', 'warning');
                 fetchPendingEdits();
-            } catch(e) {
-                showToast('حدث خطأ', 'error');
-            }
+            } catch(e) { showToast('خطأ', 'error'); }
         }
     </script>
 
