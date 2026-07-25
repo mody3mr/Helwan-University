@@ -31,18 +31,33 @@
         <h2>تسجيل دخول الإدارة</h2>
         <form id="adminLoginForm">
             <div class="form-group">
-                <label for="adminName">اسم المسؤول</label>
-                <input type="text" id="adminName" placeholder="مثال: أحمد محمد" required>
+                <label for="adminEmail">البريد الإلكتروني أو اسم المسؤول</label>
+                <input type="text" id="adminEmail" placeholder="أدخل البريد أو الاسم" required>
             </div>
             <div class="form-group">
-                <label for="adminCode">كلمة المرور الإدارية</label>
-                <input type="password" id="adminCode" placeholder="أدخل كلمة المرور (تجربة: admin123 أو 1234)" required>
+                <label for="adminPassword">كلمة المرور</label>
+                <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور" required>
             </div>
             <button type="submit" class="btn-submit">دخول لوحة التحكم</button>
         </form>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
+            authDomain: "helwan-university-3cfd3.firebaseapp.com",
+            projectId: "helwan-university-3cfd3",
+            storageBucket: "helwan-university-3cfd3.firebasestorage.app",
+            messagingSenderId: "649399927965",
+            appId: "1:649399927965:web:87f52cb4eff211595fc074"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -56,20 +71,48 @@
             }, 3500);
         }
 
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const adminName = document.getElementById('adminName').value.trim();
-            const adminCode = document.getElementById('adminCode').value.trim();
+            const inputVal = document.getElementById('adminEmail').value.trim();
+            const passwordVal = document.getElementById('adminPassword').value.trim();
 
-            // كلمة المرور الافتراضية للتجربة
-            if (adminCode === "admin123" || adminCode === "1234") {
-                localStorage.setItem('currentAdminName', adminName);
-                showToast('مرحباً بك يا ' + adminName + '، جاري توجيهك لوحة التحكم...', 'success');
-                setTimeout(() => {
-                    location.href = 'admin.html';
-                }, 1200);
-            } else {
-                showToast('كلمة المرور غير صحيحة!', 'error');
+            try {
+                // 1. التحقق إذا كان الحساب هو السوبر أدمن الخاص بك (محمد عمرو)
+                if ((inputVal === "Mohamed Amr" || inputVal === "mody3mr" || inputVal === "admin@helwan.edu.eg") && passwordVal === "mody2026") {
+                    localStorage.setItem('currentAdminName', "محمد عمرو (سوبر أدمن)");
+                    localStorage.setItem('currentAdminRole', "super_admin");
+                    showToast('أهلاً بك يا باشمهندس محمد عمرو، جاري التوجيه...', 'success');
+                    setTimeout(() => { location.href = 'admin.html'; }, 1000);
+                    return;
+                }
+
+                // 2. التحقق من قاعدة البيانات (كوليكشن admins للموظفين والمديرين المنشئين)
+                const qEmail = query(collection(db, "admins"), where("email", "==", inputVal), where("password", "==", passwordVal));
+                const qName = query(collection(db, "admins"), where("name", "==", inputVal), where("password", "==", passwordVal));
+
+                const [snapEmail, snapName] = await Promise.all([getDocs(qEmail), getDocs(qName)]);
+                let adminDoc = null;
+
+                if (!snapEmail.empty) adminDoc = snapEmail.docs[0].data();
+                else if (!snapName.empty) adminDoc = snapName.docs[0].data();
+
+                if (adminDoc) {
+                    if (adminDoc.status === 'suspended') {
+                        showToast('عذراً، هذا الحساب موقوف من قبل الإدارة.', 'error');
+                        return;
+                    }
+
+                    localStorage.setItem('currentAdminName', adminDoc.name);
+                    localStorage.setItem('currentAdminRole', adminDoc.role); // manager أو supervisor
+                    showToast('تم تسجيل الدخول بنجاح، مرحباً ' + adminDoc.name, 'success');
+                    setTimeout(() => { location.href = 'admin.html'; }, 1000);
+                } else {
+                    showToast('بيانات الدخول غير صحيحة أو الحساب غير موجود!', 'error');
+                }
+
+            } catch (err) {
+                console.error(err);
+                showToast('حدث خطأ أثناء الاتصال بقاعدة البيانات', 'error');
             }
         });
     </script>
