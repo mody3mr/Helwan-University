@@ -366,7 +366,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات (تظهر للطلاب بضبط target_group و target_year) -->
+        <!-- 4. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -411,18 +411,12 @@
 
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>سجل جميع الإشعارات (النظام والمخصصة)</span>
-                    <select id="notifFilterSelect" onchange="fetchNotifsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
-                        <option value="all">عرض الكل</option>
-                        <option value="custom">إشعارات الأدمن (المخصصة)</option>
-                        <option value="system">إشعارات النظام (النشر والتعديلات)</option>
-                    </select>
+                    <span>سجل جميع الإشعارات المرسلة</span>
                 </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>النوع</th>
                                 <th>العنوان</th>
                                 <th>الرسالة / التفاصيل</th>
                                 <th>المستهدف</th>
@@ -431,14 +425,14 @@
                             </tr>
                         </thead>
                         <tbody id="notifsTable">
-                            <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- 5. إدارة الطلاب (مع بيانات كاملة، بحث شامل، وفلترة متقدمة) -->
+        <!-- 5. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
@@ -484,9 +478,9 @@
 
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>قائمة جميع طلاب الجامعة (بيانات كاملة وبحث وفلترة)</span>
+                    <span>قائمة جميع طلاب الجامعة</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم، الـ ID، أو الهاتف..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو الـ ID..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
                         <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
                             <option value="all">جميع الفرق</option>
                             <option value="1">الفرقة الأولى</option>
@@ -496,7 +490,7 @@
                         </select>
                         <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
                             <option value="all">جميع الحالات</option>
-                            <option value="approved">النشطون (المقبولون)</option>
+                            <option value="approved">النشطون</option>
                             <option value="banned">المحظورون</option>
                             <option value="pending">قيد الانتظار</option>
                         </select>
@@ -526,7 +520,7 @@
         <!-- 6. الأعضاء الإداريين -->
         <div id="sectionAdmins" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header" id="adminCardHeader">إنشاء حساب إداري جديد (مدير أو مشرف)</div>
+                <div class="card-header" id="adminCardHeader">إنشاء حساب إداري جديد</div>
                 <div class="card-body">
                     <form id="adminCreateForm">
                         <input type="hidden" id="adminEditId">
@@ -547,32 +541,27 @@
                                 <label for="admRole">الصلاحية / الدور</label>
                                 <select id="admRole" required onchange="toggleRolePermissions()">
                                     <option value="manager">مدير عام (صلاحيات كاملة)</option>
-                                    <option value="supervisor">مشرف (صلاحيات دقيقة ومخصصة)</option>
+                                    <option value="supervisor">مشرف (صلاحيات مخصصة)</option>
                                 </select>
                             </div>
                             
                             <div class="form-group full-width" id="permissionsGroup" style="display: none;">
                                 <div class="permissions-box">
-                                    <label class="main-lbl">حدد الأفعال والصلاحيات المسموح بها لهذا المشرف:</label>
+                                    <label class="main-lbl">حدد الصلاحيات المسموح بها:</label>
                                     <div class="perm-grid">
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_manage"> 📚 إضافة وتعديل المواد</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_delete"> 🗑️ حذف المواد</label>
-                                        
                                         <label class="perm-item"><input type="checkbox" name="perm" value="sections_manage"> 📂 إضافة وتعديل الأقسام</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="sections_delete"> 🗑️ حذف الأقسام</label>
-                                        
                                         <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 نشر وتعديل الملفات</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="files_delete"> 🗑️ حذف الملفات</label>
-                                        
                                         <label class="perm-item"><input type="checkbox" name="perm" value="notifs_manage"> 🔔 إرسال وتعديل الإشعارات</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="notifs_delete"> 🗑️ حذف الإشعارات</label>
-                                        
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 قبول طلبات وحظر الطلاب</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_delete"> 🗑️ حذف الطلاب نهائياً</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 قبول وحظر الطلاب</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_delete"> 🗑️ حذف الطلاب</label>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                         <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top: 10px;">إنشاء الحساب الإداري</button>
                     </form>
@@ -587,7 +576,7 @@
                             <tr>
                                 <th>الاسم</th>
                                 <th>البريد الإلكتروني</th>
-                                <th>الدور / الصلاحية</th>
+                                <th>الدور</th>
                                 <th>الحالة</th>
                                 <th>الإجراءات</th>
                             </tr>
@@ -602,7 +591,6 @@
 
     </div>
 
-    <!-- المنطق البرمجي والتحقق العالي الأمان -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -619,7 +607,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- حماية عالية الأمان وتسجيل خروج تلقائي عبر sessionStorage ---
         const currentAdminName = sessionStorage.getItem('currentAdminName');
         const currentAdminRole = sessionStorage.getItem('currentAdminRole');
         const adminPermissions = JSON.parse(sessionStorage.getItem('adminPermissions') || '[]');
@@ -633,18 +620,6 @@
             if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
                 const adminMenu = document.getElementById('menuAdmins');
                 if(adminMenu) adminMenu.style.display = 'none';
-
-                const hasMat = adminPermissions.some(p => p.startsWith('materials_'));
-                const hasSec = adminPermissions.some(p => p.startsWith('sections_'));
-                const hasFile = adminPermissions.some(p => p.startsWith('files_'));
-                const hasNotif = adminPermissions.some(p => p.startsWith('notifs_'));
-                const hasStud = adminPermissions.some(p => p.startsWith('students_'));
-
-                if (!hasMat) { const el = document.getElementById('menuMaterials'); if(el) el.style.display = 'none'; }
-                if (!hasSec) { const el = document.getElementById('menuSections'); if(el) el.style.display = 'none'; }
-                if (!hasFile) { const el = document.getElementById('menuFiles'); if(el) el.style.display = 'none'; }
-                if (!hasNotif) { const el = document.getElementById('menuNotifs'); if(el) el.style.display = 'none'; }
-                if (!hasStud) { const el = document.getElementById('menuStudents'); if(el) el.style.display = 'none'; }
             }
         }
 
@@ -706,11 +681,6 @@
         }
 
         window.switchTab = function(tab) {
-            if (tab === 'admins' && currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
-                showToast('عذراً، ليس لديك صلاحية لدخول قسم الأعضاء الإداريين', 'error');
-                return;
-            }
-
             sessionStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
@@ -721,48 +691,24 @@
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
-                
-                const box = document.getElementById('materialCardBox');
-                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('materials_manage')) {
-                    if(box) box.style.display = 'none';
-                } else { if(box) box.style.display = 'block'; }
-
                 resetMaterialForm();
                 fetchMaterialsTable();
             } else if(tab === 'sections') {
                 document.getElementById('sectionSections').classList.add('active');
                 document.getElementById('menuSections').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الأقسام';
-                
-                const box = document.getElementById('sectionCardBox');
-                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('sections_manage')) {
-                    if(box) box.style.display = 'none';
-                } else { if(box) box.style.display = 'block'; }
-
                 resetSectionForm();
                 fetchSectionsTable();
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الملفات';
-                
-                const box = document.getElementById('fileCardBox');
-                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('files_manage')) {
-                    if(box) box.style.display = 'none';
-                } else { if(box) box.style.display = 'block'; }
-
                 resetFileForm();
                 fetchFilesTable();
             } else if(tab === 'notifs') {
                 document.getElementById('sectionNotifs').classList.add('active');
                 document.getElementById('menuNotifs').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الإشعارات';
-                
-                const box = document.getElementById('notifCardBox');
-                if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('notifs_manage')) {
-                    if(box) box.style.display = 'none';
-                } else { if(box) box.style.display = 'block'; }
-
                 resetNotifForm();
                 fetchNotifsTable();
             } else if(tab === 'students') {
@@ -838,12 +784,11 @@
         }
 
         window.deleteDocItem = async function(collName, docId, actionKey) {
-            if (!checkPermission(actionKey)) return;
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
                         await deleteDoc(doc(db, collName, docId));
-                        showToast('تم الحذف بنجاح', 'success');
+                        showToast('تم الحذف بنجاح من قاعدة البيانات', 'success');
                         const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
                         switchTab(currentTab);
                     } catch(e) {
@@ -857,8 +802,6 @@
         // --- 1. المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!checkPermission('materials_manage')) return;
-
             const editId = document.getElementById('matEditId').value;
             const academicYear = document.getElementById('matYear').value;
             const title = document.getElementById('matTitle').value.trim();
@@ -888,7 +831,6 @@
         };
 
         window.editMaterial = async function(id) {
-            if (!checkPermission('materials_manage')) return;
             const snap = await getDoc(doc(db, "materials", id));
             if(snap.exists()) {
                 const m = snap.data();
@@ -905,9 +847,6 @@
 
         async function fetchMaterialsTable() {
             const tbody = document.getElementById('materialsTable');
-            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('materials_delete');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('materials_manage');
-
             try {
                 const snapshot = await getDocs(collection(db, "materials"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد مواد مسجلة.</td></tr>`; return; }
@@ -919,8 +858,8 @@
                         <td><b>${m.title}</b></td>
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
-                            ${canManage ? `<button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>` : ''}
-                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>` : ''}
+                            <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -931,8 +870,6 @@
         // --- 2. الأقسام ---
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!checkPermission('sections_manage')) return;
-
             const editId = document.getElementById('secEditId').value;
             const academicYear = document.getElementById('secYear').value;
             const materialTitle = document.getElementById('secMaterial').value;
@@ -961,7 +898,6 @@
         };
 
         window.editSection = async function(id) {
-            if (!checkPermission('sections_manage')) return;
             const snap = await getDoc(doc(db, "materialSections", id));
             if(snap.exists()) {
                 const s = snap.data();
@@ -977,9 +913,6 @@
 
         async function fetchSectionsTable() {
             const tbody = document.getElementById('sectionsTable');
-            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('sections_delete');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('sections_manage');
-
             try {
                 const snapshot = await getDocs(collection(db, "materialSections"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد أقسام مسجلة.</td></tr>`; return; }
@@ -991,8 +924,8 @@
                         <td>${s.materialTitle}</td>
                         <td><b>${s.sectionName}</b></td>
                         <td>
-                            ${canManage ? `<button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>` : ''}
-                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>` : ''}
+                            <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1003,8 +936,6 @@
         // --- 3. الملفات ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!checkPermission('files_manage')) return;
-
             const editId = document.getElementById('fileEditId').value;
             const academicYear = document.getElementById('fileYear').value;
             const materialTitle = document.getElementById('fileMaterial').value;
@@ -1014,14 +945,11 @@
             const fileUrl = document.getElementById('fileUrl').value.trim();
 
             try {
-                let fileData = { academicYear, materialTitle, sectionName, targetRole, title, fileUrl, publisherName: currentAdminName };
                 if (editId) {
-                    await updateDoc(doc(db, "materialContents", editId), fileData);
+                    await updateDoc(doc(db, "materialContents", editId), { academicYear, materialTitle, sectionName, targetRole, title, fileUrl });
                     showToast('تم تعديل الملف بنجاح!', 'success');
                 } else {
-                    fileData.createdAt = new Date().toISOString();
-                    await addDoc(collection(db, "materialContents"), fileData);
-                    // إشعار نظام مخصص للطلاب بظهور صحيح
+                    // نشر الملف وإرسال إشعار مباشر لجدول notifications ليظهر عند الطالب ويتم حذفه من نفس الجدول
                     await addDoc(collection(db, "notifications"), {
                         title: `تم نشر محتوى جديد: ${title}`,
                         message: `المادة: ${materialTitle} (${sectionName})`,
@@ -1045,7 +973,6 @@
         };
 
         window.editFile = async function(id) {
-            if (!checkPermission('files_manage')) return;
             const snap = await getDoc(doc(db, "materialContents", id));
             if(snap.exists()) {
                 const f = snap.data();
@@ -1064,9 +991,6 @@
 
         async function fetchFilesTable() {
             const tbody = document.getElementById('filesTable');
-            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('files_delete');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('files_manage');
-
             try {
                 const snapshot = await getDocs(collection(db, "materialContents"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد ملفات منشورة.</td></tr>`; return; }
@@ -1080,8 +1004,8 @@
                         <td>${roleText}</td>
                         <td><a href="${f.fileUrl}" target="_blank">رابط الملف</a></td>
                         <td>
-                            ${canManage ? `<button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>` : ''}
-                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', 'files_delete')">حذف</button>` : ''}
+                            <button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', 'files_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1089,11 +1013,9 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. الإشعارات (متوافقة 100% مع بوابات الطلاب) ---
+        // --- 4. الإشعارات ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (!checkPermission('notifs_manage')) return;
-
             const editId = document.getElementById('notifEditId').value;
             const targetType = document.getElementById('notifTargetType').value;
             const title = document.getElementById('notifTitle').value.trim();
@@ -1132,14 +1054,9 @@
         };
 
         window.editNotif = async function(id) {
-            if (!checkPermission('notifs_manage')) return;
             const snap = await getDoc(doc(db, "notifications", id));
             if(snap.exists()) {
                 const n = snap.data();
-                if(n.type !== 'custom_admin') {
-                    showToast('إشعارات النظام التلقائية لا يمكن تعديلها.', 'warning');
-                    return;
-                }
                 document.getElementById('notifEditId').value = id;
                 document.getElementById('notifTitle').value = n.title;
                 document.getElementById('notifMessage').value = n.message;
@@ -1161,48 +1078,37 @@
 
         window.fetchNotifsTable = async function() {
             const tbody = document.getElementById('notifsTable');
-            const filterVal = document.getElementById('notifFilterSelect').value;
-            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('notifs_delete');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('notifs_manage');
-
             try {
                 const snapshot = await getDocs(collection(db, "notifications"));
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const n = d.data();
-                    let typeCategory = n.type === 'custom_admin' ? 'custom' : 'system';
-                    if(filterVal !== 'all' && filterVal !== typeCategory) return;
-
-                    let typeLabel = n.type === 'custom_admin' ? 'إشعار أدمن' : 'إشعار نظام';
                     let targetText = 'الكل';
                     if(n.target_year) targetText = `فرقة ${n.target_year}`;
                     else if(n.student_id) targetText = `طالب: ${n.student_id}`;
 
                     const dateFormatted = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-EG') : '';
                     html += `<tr>
-                        <td><span style="background: ${n.type === 'custom_admin' ? '#e0f2fe' : '#fef3c7'}; color: ${n.type === 'custom_admin' ? '#0369a1' : '#b45309'}; padding: 4px 10px; border-radius: 6px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
                         <td><b>${n.title}</b></td>
                         <td>${n.message || '-'}</td>
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
-                            ${n.type === 'custom_admin' && canManage ? `<button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>` : ''}
-                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', 'notifs_delete')">حذف</button>` : ''}
+                            <button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', 'notifs_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
-                tbody.innerHTML = html || `<tr><td colspan="6" class="no-data">لا توجد نتائج مطابقة للفلتر.</td></tr>`;
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. إدارة الطلاب (بحث متقدم، بيانات كاملة، وفلترة دقيقة) ---
+        // --- 5. إدارة الطلاب ---
         let allStudentsCache = [];
 
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
-
             try {
                 const snapshot = await getDocs(query(collection(db, "users"), where("status", "==", "pending")));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات معلقة.</td></tr>`; return; }
@@ -1216,7 +1122,8 @@
                         <td>${u.phone || '-'}</td>
                         <td>الفرقة ${u.academicYear}</td>
                         <td>
-                            ${canManage ? `<button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
+                            <button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button>
+                            <button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button>
                         </td>
                     </tr>`;
                 });
@@ -1225,7 +1132,6 @@
         }
 
         window.updateStudentStatus = async function(docId, status) {
-            if (!checkPermission('students_manage')) return;
             try {
                 await updateDoc(doc(db, "users", docId), { status });
                 showToast(status === 'approved' ? 'تمت الموافقة' : 'تم الرفض', status === 'approved' ? 'success' : 'warning');
@@ -1236,8 +1142,6 @@
 
         async function fetchPendingEdits() {
             const tbody = document.getElementById('pendingEditsTable');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
-
             try {
                 const snapshot = await getDocs(collection(db, "pendingEdits"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد طلبات تعديل.</td></tr>`; return; }
@@ -1251,7 +1155,8 @@
                         <td>${ed.phone || '-'}</td>
                         <td>الفرقة ${ed.academicYear}</td>
                         <td>
-                            ${canManage ? `<button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button><button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
+                            <button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button>
+                            <button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button>
                         </td>
                     </tr>`;
                 });
@@ -1260,7 +1165,6 @@
         }
 
         window.approveEdit = async function(editId) {
-            if (!checkPermission('students_manage')) return;
             try {
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(!editSnap.exists()) return;
@@ -1276,7 +1180,6 @@
         }
 
         window.rejectEdit = async function(editId) {
-            if (!checkPermission('students_manage')) return;
             try {
                 const editSnap = await getDoc(doc(db, "pendingEdits", editId));
                 if(editSnap.exists()) {
@@ -1311,9 +1214,6 @@
             const yearVal = document.getElementById('studentYearFilter').value;
             const statusVal = document.getElementById('studentStatusFilter').value;
 
-            const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_delete');
-            const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
-
             let filtered = allStudentsCache.filter(u => {
                 const studentId = (u.student_id || '').toLowerCase();
                 const name = (u.fullName || '').toLowerCase();
@@ -1322,13 +1222,8 @@
                 const year = String(u.academicYear || '1');
                 const status = u.status || 'pending';
 
-                // فلتر البحث (بالاسم، ID، الهاتف، أو الإيميل)
                 const matchesSearch = !searchVal || studentId.includes(searchVal) || name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal);
-                
-                // فلتر الفرقة
                 const matchesYear = (yearVal === 'all' || year === yearVal);
-
-                // فلتر الحالة
                 const matchesStatus = (statusVal === 'all' || status === statusVal);
 
                 return matchesSearch && matchesYear && matchesStatus;
@@ -1356,8 +1251,8 @@
                         <td>الفرقة ${u.academicYear || '1'}</td>
                         <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                         <td>
-                            ${canManage ? `<button class="btn ${banBtnClass}" onclick="toggleBanStudent('${u.id}', '${newStatus}')">${banBtnText}</button>` : ''}
-                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}', 'students_delete')">حذف</button>` : ''}
+                            <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${u.id}', '${newStatus}')">${banBtnText}</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}', 'students_delete')">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -1366,7 +1261,6 @@
         }
 
         window.toggleBanStudent = async function(docId, newStatus) {
-            if (!checkPermission('students_manage')) return;
             try {
                 await updateDoc(doc(db, "users", docId), { status: newStatus });
                 showToast(newStatus === 'banned' ? 'تم حظر الطالب بنجاح' : 'تم إلغاء الحظر عن الطالب', 'warning');
@@ -1411,7 +1305,7 @@
         window.resetAdminForm = function() {
             document.getElementById('adminCreateForm').reset();
             document.getElementById('adminEditId').value = '';
-            document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد (مدير أو مشرف)';
+            document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد';
             document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري';
             const group = document.getElementById('permissionsGroup');
             if(group) group.style.display = 'none';
