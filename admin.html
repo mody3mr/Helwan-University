@@ -366,7 +366,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الإشعارات -->
+        <!-- 4. إدارة الإشعارات (تظهر للطلاب بضبط target_group و target_year) -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -438,7 +438,7 @@
             </div>
         </div>
 
-        <!-- 5. إدارة الطلاب -->
+        <!-- 5. إدارة الطلاب (مع بيانات كاملة، بحث شامل، وفلترة متقدمة) -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
@@ -483,21 +483,40 @@
             </div>
 
             <div class="card-box">
-                <div class="card-header">قائمة جميع طلاب الجامعة (إدارة كاملة وحظر)</div>
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span>قائمة جميع طلاب الجامعة (بيانات كاملة وبحث وفلترة)</span>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم، الـ ID، أو الهاتف..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+                            <option value="all">جميع الفرق</option>
+                            <option value="1">الفرقة الأولى</option>
+                            <option value="2">الفرقة الثانية</option>
+                            <option value="3">الفرقة الثالثة</option>
+                            <option value="4">الفرقة الرابعة</option>
+                        </select>
+                        <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+                            <option value="all">جميع الحالات</option>
+                            <option value="approved">النشطون (المقبولون)</option>
+                            <option value="banned">المحظورون</option>
+                            <option value="pending">قيد الانتظار</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>الرقم التعريفي</th>
+                                <th>الرقم التعريفي (ID)</th>
                                 <th>الاسم الرباعي</th>
                                 <th>البريد الإلكتروني</th>
+                                <th>رقم الهاتف</th>
                                 <th>الفرقة</th>
                                 <th>الحالة</th>
-                                <th>تحكم الحساب</th>
+                                <th>الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="allStudentsTable">
-                            <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="7" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -583,7 +602,7 @@
 
     </div>
 
-    <!-- المنطق البرمجي والتحقق من الصلاحيات -->
+    <!-- المنطق البرمجي والتحقق العالي الأمان -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -600,17 +619,20 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const currentAdminName = localStorage.getItem('currentAdminName');
-        const currentAdminRole = localStorage.getItem('currentAdminRole');
-        const adminPermissions = JSON.parse(localStorage.getItem('adminPermissions') || '[]');
+        // --- حماية عالية الأمان وتسجيل خروج تلقائي عبر sessionStorage ---
+        const currentAdminName = sessionStorage.getItem('currentAdminName');
+        const currentAdminRole = sessionStorage.getItem('currentAdminRole');
+        const adminPermissions = JSON.parse(sessionStorage.getItem('adminPermissions') || '[]');
 
         if (!currentAdminName) {
             location.href = 'admin-login.html';
         } else {
-            document.getElementById('adminNameDisplay').innerText = currentAdminName;
+            const nameDisplay = document.getElementById('adminNameDisplay');
+            if(nameDisplay) nameDisplay.innerText = currentAdminName;
             
             if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
-                document.getElementById('menuAdmins').style.display = 'none';
+                const adminMenu = document.getElementById('menuAdmins');
+                if(adminMenu) adminMenu.style.display = 'none';
 
                 const hasMat = adminPermissions.some(p => p.startsWith('materials_'));
                 const hasSec = adminPermissions.some(p => p.startsWith('sections_'));
@@ -618,11 +640,11 @@
                 const hasNotif = adminPermissions.some(p => p.startsWith('notifs_'));
                 const hasStud = adminPermissions.some(p => p.startsWith('students_'));
 
-                if (!hasMat) document.getElementById('menuMaterials').style.display = 'none';
-                if (!hasSec) document.getElementById('menuSections').style.display = 'none';
-                if (!hasFile) document.getElementById('menuFiles').style.display = 'none';
-                if (!hasNotif) document.getElementById('menuNotifs').style.display = 'none';
-                if (!hasStud) document.getElementById('menuStudents').style.display = 'none';
+                if (!hasMat) { const el = document.getElementById('menuMaterials'); if(el) el.style.display = 'none'; }
+                if (!hasSec) { const el = document.getElementById('menuSections'); if(el) el.style.display = 'none'; }
+                if (!hasFile) { const el = document.getElementById('menuFiles'); if(el) el.style.display = 'none'; }
+                if (!hasNotif) { const el = document.getElementById('menuNotifs'); if(el) el.style.display = 'none'; }
+                if (!hasStud) { const el = document.getElementById('menuStudents'); if(el) el.style.display = 'none'; }
             }
         }
 
@@ -666,14 +688,14 @@
         }
 
         window.logoutAdmin = function() {
-            localStorage.clear();
+            sessionStorage.clear();
             location.href = 'admin-login.html';
         }
 
         window.toggleRolePermissions = function() {
             const role = document.getElementById('admRole').value;
             const group = document.getElementById('permissionsGroup');
-            group.style.display = (role === 'supervisor') ? 'block' : 'none';
+            if(group) group.style.display = (role === 'supervisor') ? 'block' : 'none';
         }
 
         function checkPermission(actionKey) {
@@ -689,21 +711,21 @@
                 return;
             }
 
-            localStorage.setItem('adminActiveTab', tab);
+            sessionStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
-            document.getElementById('adminDropdown').classList.remove('show');
+            const dropdown = document.getElementById('adminDropdown');
+            if(dropdown) dropdown.classList.remove('show');
 
             if(tab === 'materials') {
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
                 
+                const box = document.getElementById('materialCardBox');
                 if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('materials_manage')) {
-                    document.getElementById('materialCardBox').style.display = 'none';
-                } else {
-                    document.getElementById('materialCardBox').style.display = 'block';
-                }
+                    if(box) box.style.display = 'none';
+                } else { if(box) box.style.display = 'block'; }
 
                 resetMaterialForm();
                 fetchMaterialsTable();
@@ -712,11 +734,10 @@
                 document.getElementById('menuSections').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الأقسام';
                 
+                const box = document.getElementById('sectionCardBox');
                 if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('sections_manage')) {
-                    document.getElementById('sectionCardBox').style.display = 'none';
-                } else {
-                    document.getElementById('sectionCardBox').style.display = 'block';
-                }
+                    if(box) box.style.display = 'none';
+                } else { if(box) box.style.display = 'block'; }
 
                 resetSectionForm();
                 fetchSectionsTable();
@@ -725,11 +746,10 @@
                 document.getElementById('menuFiles').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الملفات';
                 
+                const box = document.getElementById('fileCardBox');
                 if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('files_manage')) {
-                    document.getElementById('fileCardBox').style.display = 'none';
-                } else {
-                    document.getElementById('fileCardBox').style.display = 'block';
-                }
+                    if(box) box.style.display = 'none';
+                } else { if(box) box.style.display = 'block'; }
 
                 resetFileForm();
                 fetchFilesTable();
@@ -738,11 +758,10 @@
                 document.getElementById('menuNotifs').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الإشعارات';
                 
+                const box = document.getElementById('notifCardBox');
                 if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager' && !adminPermissions.includes('notifs_manage')) {
-                    document.getElementById('notifCardBox').style.display = 'none';
-                } else {
-                    document.getElementById('notifCardBox').style.display = 'block';
-                }
+                    if(box) box.style.display = 'none';
+                } else { if(box) box.style.display = 'block'; }
 
                 resetNotifForm();
                 fetchNotifsTable();
@@ -763,7 +782,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            let savedTab = localStorage.getItem('adminActiveTab') || 'materials';
+            let savedTab = sessionStorage.getItem('adminActiveTab') || 'materials';
             switchTab(savedTab);
         });
 
@@ -825,7 +844,7 @@
                     try {
                         await deleteDoc(doc(db, collName, docId));
                         showToast('تم الحذف بنجاح', 'success');
-                        const currentTab = localStorage.getItem('adminActiveTab') || 'materials';
+                        const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
                         switchTab(currentTab);
                     } catch(e) {
                         console.error("Delete error:", e);
@@ -902,7 +921,6 @@
                         <td>
                             ${canManage ? `<button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>` : ''}
                             ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>` : ''}
-                            ${!canManage && !canDelete ? `<span style="color:#94a3b8; font-size:12px;">للرؤية فقط</span>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -1003,14 +1021,16 @@
                 } else {
                     fileData.createdAt = new Date().toISOString();
                     await addDoc(collection(db, "materialContents"), fileData);
+                    // إشعار نظام مخصص للطلاب بظهور صحيح
                     await addDoc(collection(db, "notifications"), {
                         title: `تم نشر محتوى جديد: ${title}`,
                         message: `المادة: ${materialTitle} (${sectionName})`,
                         type: 'system',
+                        target_group: 'year',
                         target_year: academicYear,
                         createdAt: new Date().toISOString()
                     });
-                    showToast('تم نشر الملف وإرسال الإشعار بنجاح!', 'success');
+                    showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
                 }
                 resetFileForm();
                 fetchFilesTable();
@@ -1069,7 +1089,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. الإشعارات ---
+        // --- 4. الإشعارات (متوافقة 100% مع بوابات الطلاب) ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!checkPermission('notifs_manage')) return;
@@ -1080,9 +1100,15 @@
             const message = document.getElementById('notifMessage').value.trim();
 
             let notifData = { title, message, type: 'custom_admin', createdAt: new Date().toISOString() };
-            if(targetType === 'all') notifData.target_group = 'all';
-            else if(targetType === 'year') notifData.target_year = document.getElementById('notifYear').value;
-            else if(targetType === 'student') notifData.student_id = document.getElementById('notifStudentId').value.trim();
+            if(targetType === 'all') {
+                notifData.target_group = 'all';
+            } else if(targetType === 'year') {
+                notifData.target_group = 'year';
+                notifData.target_year = document.getElementById('notifYear').value;
+            } else if(targetType === 'student') {
+                notifData.target_group = 'student';
+                notifData.student_id = document.getElementById('notifStudentId').value.trim();
+            }
 
             try {
                 if (editId) {
@@ -1090,7 +1116,7 @@
                     showToast('تم تعديل الإشعار بنجاح!', 'success');
                 } else {
                     await addDoc(collection(db, "notifications"), notifData);
-                    showToast('تم إرسال الإشعار بنجاح!', 'success');
+                    showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
                 }
                 resetNotifForm();
                 fetchNotifsTable();
@@ -1119,10 +1145,10 @@
                 document.getElementById('notifMessage').value = n.message;
                 if(n.target_group === 'all') {
                     document.getElementById('notifTargetType').value = 'all';
-                } else if(n.target_year) {
+                } else if(n.target_group === 'year' || n.target_year) {
                     document.getElementById('notifTargetType').value = 'year';
-                    document.getElementById('notifYear').value = n.target_year;
-                } else if(n.student_id) {
+                    document.getElementById('notifYear').value = n.target_year || n.target_group;
+                } else if(n.target_group === 'student' || n.student_id) {
                     document.getElementById('notifTargetType').value = 'student';
                     document.getElementById('notifStudentId').value = n.student_id;
                 }
@@ -1170,7 +1196,9 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. الطلاب ---
+        // --- 5. إدارة الطلاب (بحث متقدم، بيانات كاملة، وفلترة دقيقة) ---
+        let allStudentsCache = [];
+
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
@@ -1185,7 +1213,7 @@
                         <td><b>${u.student_id}</b></td>
                         <td>${u.fullName}</td>
                         <td>${u.email}</td>
-                        <td>${u.phone}</td>
+                        <td>${u.phone || '-'}</td>
                         <td>الفرقة ${u.academicYear}</td>
                         <td>
                             ${canManage ? `<button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">موافقة</button><button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
@@ -1219,8 +1247,8 @@
                     html += `<tr>
                         <td><b>${ed.student_id}</b></td>
                         <td>${ed.fullName}</td>
-                        <td>${ed.phone}</td>
                         <td>${ed.email}</td>
+                        <td>${ed.phone || '-'}</td>
                         <td>الفرقة ${ed.academicYear}</td>
                         <td>
                             ${canManage ? `<button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button><button class="btn btn-reject" onclick="rejectEdit('${d.id}')">رفض</button>` : '<span style="color:#94a3b8;">للرؤية فقط</span>'}
@@ -1262,38 +1290,79 @@
         }
 
         async function fetchAllStudents() {
+            try {
+                const snapshot = await getDocs(collection(db, "users"));
+                allStudentsCache = [];
+                snapshot.forEach(d => {
+                    allStudentsCache.push({ id: d.id, ...d.data() });
+                });
+                filterStudentsTable();
+            } catch(e) { 
+                const tbody = document.getElementById('allStudentsTable');
+                if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="no-data" style="color:red;">خطأ في تحميل الطلاب.</td></tr>`; 
+            }
+        }
+
+        window.filterStudentsTable = function() {
             const tbody = document.getElementById('allStudentsTable');
+            if (!tbody) return;
+
+            const searchVal = (document.getElementById('studentSearchInput').value || '').toLowerCase().trim();
+            const yearVal = document.getElementById('studentYearFilter').value;
+            const statusVal = document.getElementById('studentStatusFilter').value;
+
             const canDelete = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_delete');
             const canManage = currentAdminRole === 'super_admin' || currentAdminRole === 'manager' || adminPermissions.includes('students_manage');
 
-            try {
-                const snapshot = await getDocs(collection(db, "users"));
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا يوجد طلاب مسجلين.</td></tr>`; return; }
-                let html = '';
-                snapshot.forEach(d => {
-                    const u = d.data();
-                    const statusText = u.status === 'approved' ? 'مقبول ونشط' : (u.status === 'banned' ? 'محظور' : 'قيد الانتظار');
-                    const statusColor = u.status === 'approved' ? 'green' : (u.status === 'banned' ? 'red' : 'orange');
-                    const banBtnText = u.status === 'banned' ? 'إلغاء الحظر' : 'حظر الطالب';
-                    const banBtnClass = u.status === 'banned' ? 'btn-approve' : 'btn-reject';
-                    const newStatus = u.status === 'banned' ? 'approved' : 'banned';
+            let filtered = allStudentsCache.filter(u => {
+                const studentId = (u.student_id || '').toLowerCase();
+                const name = (u.fullName || '').toLowerCase();
+                const phone = (u.phone || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const year = String(u.academicYear || '1');
+                const status = u.status || 'pending';
 
-                    html += `
-                        <tr>
-                            <td><b>${u.student_id || 'غير متوفر'}</b></td>
-                            <td>${u.fullName}</td>
-                            <td>${u.email}</td>
-                            <td>الفرقة ${u.academicYear || '1'}</td>
-                            <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
-                            <td>
-                                ${canManage ? `<button class="btn ${banBtnClass}" onclick="toggleBanStudent('${d.id}', '${newStatus}')">${banBtnText}</button>` : ''}
-                                ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('users', '${d.id}', 'students_delete')">حذف</button>` : ''}
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في تحميل الطلاب.</td></tr>`; }
+                // فلتر البحث (بالاسم، ID، الهاتف، أو الإيميل)
+                const matchesSearch = !searchVal || studentId.includes(searchVal) || name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal);
+                
+                // فلتر الفرقة
+                const matchesYear = (yearVal === 'all' || year === yearVal);
+
+                // فلتر الحالة
+                const matchesStatus = (statusVal === 'all' || status === statusVal);
+
+                return matchesSearch && matchesYear && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="no-data">لا توجد نتائج مطابقة للبحث أو الفلترة.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(u => {
+                const statusText = u.status === 'approved' ? 'مقبول ونشط' : (u.status === 'banned' ? 'محظور' : 'قيد الانتظار');
+                const statusColor = u.status === 'approved' ? 'green' : (u.status === 'banned' ? 'red' : 'orange');
+                const banBtnText = u.status === 'banned' ? 'إلغاء الحظر' : 'حظر الطالب';
+                const banBtnClass = u.status === 'banned' ? 'btn-approve' : 'btn-reject';
+                const newStatus = u.status === 'banned' ? 'approved' : 'banned';
+
+                html += `
+                    <tr>
+                        <td><b>${u.student_id || 'غير متوفر'}</b></td>
+                        <td>${u.fullName || '-'}</td>
+                        <td>${u.email || '-'}</td>
+                        <td>${u.phone || '-'}</td>
+                        <td>الفرقة ${u.academicYear || '1'}</td>
+                        <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
+                        <td>
+                            ${canManage ? `<button class="btn ${banBtnClass}" onclick="toggleBanStudent('${u.id}', '${newStatus}')">${banBtnText}</button>` : ''}
+                            ${canDelete ? `<button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}', 'students_delete')">حذف</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
         }
 
         window.toggleBanStudent = async function(docId, newStatus) {
@@ -1344,7 +1413,8 @@
             document.getElementById('adminEditId').value = '';
             document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد (مدير أو مشرف)';
             document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري';
-            document.getElementById('permissionsGroup').style.display = 'none';
+            const group = document.getElementById('permissionsGroup');
+            if(group) group.style.display = 'none';
         };
 
         window.editAdmin = async function(id) {
