@@ -37,13 +37,44 @@
             color: white;
             padding: 35px;
             border-radius: 16px;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
             box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
         }
         .material-header h1 { font-size: 26px; margin-bottom: 8px; font-weight: 700; }
         .material-header p { font-size: 15px; opacity: 0.85; }
 
-        /* الأقسام المنشورة */
+        /* تَبويبات التبديل (Tabs) بين الدكتور والمعيد */
+        .tabs-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .tab-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .tab-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+        }
+
+        /* الأقسام والملفات */
         .section-box {
             background: white;
             border-radius: 16px;
@@ -53,7 +84,7 @@
             border: 1px solid #e2e8f0;
         }
         .section-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: #0f172a;
             margin-bottom: 20px;
@@ -80,7 +111,7 @@
             transition: all 0.2s;
         }
         .content-card:hover { border-color: #cbd5e1; background: #fff; }
-        .content-info h3 { font-size: 16px; color: #0f172a; margin-bottom: 5px; font-weight: 700; }
+        .content-info h3 { font-size: 15px; color: #0f172a; margin-bottom: 5px; font-weight: 700; }
         .content-info p { font-size: 13px; color: #64748b; }
         .btn-download {
             background: #22c55e;
@@ -94,6 +125,8 @@
         }
         .btn-download:hover { background: #16a34a; }
         .no-data { text-align: center; color: #94a3b8; padding: 25px; font-size: 14px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
@@ -109,10 +142,23 @@
             <p id="materialProfDisplay">أستاذ المادة: جاري التحميل...</p>
         </div>
 
-        <!-- الأقسام الحقيقية المنشورة للمادة -->
-        <div id="sectionsContainer">
-            <div class="section-box">
-                <div class="no-data">جاري تحميل أقسام ومحتويات المادة...</div>
+        <!-- أزرار التبديل (Tabs) -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('professor')">👨‍🏫 أستاذ المادة (الدكتور)</button>
+            <button class="tab-btn" onclick="switchTab('assistant')">👨‍💻 المعيد (المساعد)</button>
+        </div>
+
+        <!-- محتوى تاب الدكتور -->
+        <div id="professorTab" class="tab-content active">
+            <div id="profSectionsContainer">
+                <div class="section-box"><div class="no-data">جاري التحميل...</div></div>
+            </div>
+        </div>
+
+        <!-- محتوى تاب المعيد -->
+        <div id="assistantTab" class="tab-content">
+            <div id="assistSectionsContainer">
+                <div class="section-box"><div class="no-data">جاري التحميل...</div></div>
             </div>
         </div>
     </div>
@@ -141,13 +187,26 @@
             location.href = 'student.html';
         } else {
             document.getElementById('materialTitleDisplay').innerText = materialTitle;
-            fetchMaterialInfoAndSections(materialTitle);
+            initMaterialPage(materialTitle);
         }
 
-        // جلب بيانات المادة والأقسام بشكل لحظي (Real-time)
-        async function fetchMaterialInfoAndSections(title) {
+        // التحكم في التبويبات (Tabs)
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'professor') {
+                document.querySelector('.tabs-container button:nth-child(1)').classList.add('active');
+                document.getElementById('professorTab').classList.add('active');
+            } else {
+                document.querySelector('.tabs-container button:nth-child(2)').classList.add('active');
+                document.getElementById('assistantTab').classList.add('active');
+            }
+        }
+
+        async function initMaterialPage(title) {
             try {
-                // 1. جلب بيانات الدكتور والمعيد للمادة الأساسية
+                // جلب بيانات الدكتور والمعيد
                 const matQuery = query(collection(db, "materials"), where("title", "==", title));
                 const matSnap = await getDocs(matQuery);
                 let profName = 'غير محدد';
@@ -159,72 +218,72 @@
                 });
                 document.getElementById('materialProfDisplay').innerText = `أستاذ المادة: ${profName} | المعيد: ${assistName}`;
 
-                // 2. الاستماع اللحظي للأقسام المنشورة لهذه المادة
+                // الاستماع اللحظي للأقسام والملفات
                 const secQuery = query(collection(db, "materialSections"), where("materialTitle", "==", title));
-                
-                onSnapshot(secQuery, async (secSnapshot) => {
-                    const container = document.getElementById('sectionsContainer');
+                const filesQuery = query(collection(db, "materialContents"), where("materialTitle", "==", title));
 
-                    if (secSnapshot.empty) {
-                        container.innerHTML = `
-                            <div class="section-box">
-                                <div class="no-data">لا توجد أقسام منشورة لهذه المادة حتى الآن.</div>
-                            </div>
-                        `;
-                        return;
-                    }
+                onSnapshot(secQuery, (secSnap) => {
+                    getDocs(filesQuery).then(filesSnap => {
+                        let sections = [];
+                        secSnap.forEach(s => sections.push(s.data()));
 
-                    // جلب الملفات التابعة للمادة لعرضها داخل الأقسام
-                    const filesQuery = query(collection(db, "materialContents"), where("materialTitle", "==", title));
-                    const filesSnap = await getDocs(filesQuery);
-                    let allFiles = [];
-                    filesSnap.forEach(f => allFiles.push(f.data()));
+                        let allFiles = [];
+                        filesSnap.forEach(f => allFiles.push(f.data()));
 
-                    let sectionsHtml = '';
-                    secSnapshot.forEach(secDoc => {
-                        const sec = secDoc.data();
-                        const secName = sec.sectionName;
+                        renderTabContent('professor', sections, allFiles, 'profSectionsContainer');
+                        renderTabContent('assistant', sections, allFiles, 'assistSectionsContainer');
+                    });
+                });
 
-                        // تصفية الملفات التي تنتمي لهذا القسم بالذات
-                        const sectionFiles = allFiles.filter(f => f.sectionName === secName);
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
-                        let filesHtml = '';
-                        if (sectionFiles.length > 0) {
-                            sectionFiles.forEach(item => {
-                                const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
-                                const roleLabel = item.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
+        function renderTabContent(roleTarget, sections, allFiles, containerId) {
+            const container = document.getElementById(containerId);
+            
+            // فلترة الملفات الخاصة بالدور ده (دكتور أو معيد)
+            const roleFiles = allFiles.filter(f => f.targetRole === roleTarget);
 
-                                filesHtml += `
-                                    <div class="content-card">
-                                        <div class="content-info">
-                                            <h3>📂 ${item.title}</h3>
-                                            <p>بواسطة (${roleLabel}): <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
-                                        </div>
-                                        <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">عرض / تحميل</a>
-                                    </div>
-                                `;
-                            });
-                        } else {
-                            filesHtml = `<div class="no-data">لا توجد ملفات مرفوعة في هذا القسم حالياً.</div>`;
-                        }
+            if (sections.length === 0 && roleFiles.length === 0) {
+                container.innerHTML = `<div class="section-box"><div class="no-data">لا توجد محتويات منشورة في هذا القسم حالياً.</div></div>`;
+                return;
+            }
 
-                        sectionsHtml += `
-                            <div class="section-box">
-                                <div class="section-title">📁 ${secName}</div>
-                                <div class="content-grid">
-                                    ${filesHtml}
+            let html = '';
+            sections.forEach(sec => {
+                const secName = sec.sectionName;
+                // جلب الملفات الخاصة بالقسم ده واللي بتتبع للرول (دكتور/معيد)
+                const matchedFiles = roleFiles.filter(f => f.sectionName === secName);
+
+                if (matchedFiles.length > 0) {
+                    let filesHtml = '';
+                    matchedFiles.forEach(item => {
+                        const dateFormatted = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG') : '';
+                        filesHtml += `
+                            <div class="content-card">
+                                <div class="content-info">
+                                    <h3>📁 ${item.title}</h3>
+                                    <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
                                 </div>
+                                <a href="${item.fileUrl || '#'}" target="_blank" class="btn-download">عرض / تحميل</a>
                             </div>
                         `;
                     });
 
-                    container.innerHTML = sectionsHtml;
-                });
+                    html += `
+                        <div class="section-box">
+                            <div class="section-title">📂 ${secName}</div>
+                            <div class="content-grid">
+                                ${filesHtml}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
 
-            } catch (e) {
-                console.error("Error fetching material details:", e);
-                document.getElementById('sectionsContainer').innerHTML = `<div class="section-box"><div class="no-data" style="color:red;">حدث خطأ أثناء تحميل محتويات المادة.</div></div>`;
-            }
+            container.innerHTML = html !== '' ? html : `<div class="section-box"><div class="no-data">لا توجد أقسام أو ملفات مرفوعة هنا حالياً.</div></div>`;
         }
     </script>
 
