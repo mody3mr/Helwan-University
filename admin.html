@@ -75,6 +75,13 @@
             border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
+        /* تنسيق قسم إضافة الأسئلة للامتحان التفاعلي */
+        .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
+        .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
+        .btn-add-q { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 5px; }
+        .btn-add-q:hover { background: #1d4ed8; }
+        .btn-remove-q { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: left; }
+
         .permissions-box {
             background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
         }
@@ -294,7 +301,7 @@
             </div>
         </div>
 
-        <!-- 3. إدارة الملفات -->
+        <!-- 3. إدارة الملفات ونشر المحتوى -->
         <div id="sectionFiles" class="tab-section">
             <div class="card-box" id="fileCardBox">
                 <div class="card-header" id="fileCardHeader">رفع ونشر الملفات والمحتوى</div>
@@ -332,15 +339,35 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="fileTitle">عنوان الملف / المحتوى</label>
-                                <input type="text" id="fileTitle" placeholder="مثال: شابتر 1" required>
+                                <label for="contentType">نوع المحتوى</label>
+                                <select id="contentType" required onchange="toggleContentTypeFields()">
+                                    <option value="file" selected>ملف / كتاب / ملخص / امتحان سابق (PDF أو صورة)</option>
+                                    <option value="assignment">تكليف (أسايمنت)</option>
+                                    <option value="skill_quiz">امتحان مهارة تفاعلي (أسئلة بوقيت وتصحيح تلقائي)</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label for="fileUrl">رابط الملف (Google Drive / PDF / Video)</label>
+                                <label for="fileTitle">عنوان المحتوى / الامتحان</label>
+                                <input type="text" id="fileTitle" placeholder="مثال: شابتر 1 أو امتحان المهارة الأول" required>
+                            </div>
+                            <div class="form-group" id="urlInputGroup">
+                                <label for="fileUrl">رابط الملف (Google Drive / PDF / صورة)</label>
                                 <input type="url" id="fileUrl" placeholder="https://..." required>
                             </div>
+                            <div class="form-group" id="quizDurationGroup" style="display: none;">
+                                <label for="quizDuration">مدة الامتحان (بالدقائق)</label>
+                                <input type="number" id="quizDuration" value="15" min="1" placeholder="15">
+                            </div>
                         </div>
-                        <button type="submit" class="btn-submit" id="fileSubmitBtn" style="margin-top: 10px;">نشر الملف وإرسال إشعار فوري</button>
+
+                        <!-- واجهة إدخال الأسئلة لامتحان المهارة -->
+                        <div id="quizBuilderContainer" style="display: none;" class="quiz-builder-box">
+                            <label style="font-weight: 700; color: #0f172a; margin-bottom: 12px; display: block;">أسئلة امتحان المهارة:</label>
+                            <div id="questionsList"></div>
+                            <button type="button" class="btn-add-q" onclick="addQuestionField()">+ إضافة سؤال جديد</button>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="fileSubmitBtn" style="margin-top: 20px;">نشر المحتوى وإرسال إشعار فوري</button>
                     </form>
                 </div>
             </div>
@@ -353,8 +380,8 @@
                             <tr>
                                 <th>المادة / القسم</th>
                                 <th>العنوان</th>
+                                <th>النوع</th>
                                 <th>يتبع لـ</th>
-                                <th>رابط الملف</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
@@ -410,9 +437,7 @@
             </div>
 
             <div class="card-box">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>سجل جميع الإشعارات المرسلة</span>
-                </div>
+                <div class="card-header">سجل جميع الإشعارات المرسلة</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -435,7 +460,7 @@
         <!-- 5. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header">طلبات إنشاء الحسابات الجديدة (Pending Accounts)</div>
+                <div class="card-header">طلبات إنشاء الحسابات الجديدة</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -456,7 +481,7 @@
             </div>
 
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header">طلبات تعديل البيانات الشخصية (Pending Edits)</div>
+                <div class="card-header">طلبات تعديل البيانات الشخصية</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -582,7 +607,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminsTable">
-                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -695,7 +720,7 @@
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة الملفات';
+                document.getElementById('pageTitle').innerText = 'إدارة الملفات والمحتوى';
                 resetFileForm();
                 fetchFilesTable();
             } else if(tab === 'notifs') {
@@ -776,12 +801,78 @@
             } catch(e) { console.error(e); }
         }
 
-        // دالة الحذف العامة (مع حذف الإشعار المرتبط أوتوماتيك لو كان الملف من materialContents)
+        // --- التحكم بحقول نوع المحتوى (ملف vs امتحان مهارة) ---
+        window.toggleContentTypeFields = function() {
+            const type = document.getElementById('contentType').value;
+            const urlGroup = document.getElementById('urlInputGroup');
+            const durationGroup = document.getElementById('quizDurationGroup');
+            const quizBuilder = document.getElementById('quizBuilderContainer');
+            const urlInput = document.getElementById('fileUrl');
+
+            if (type === 'skill_quiz') {
+                urlGroup.style.display = 'none';
+                durationGroup.style.display = 'block';
+                quizBuilder.style.display = 'block';
+                urlInput.removeAttribute('required');
+                if (document.getElementById('questionsList').innerHTML === '') {
+                    addQuestionField();
+                }
+            } else {
+                urlGroup.style.display = 'block';
+                durationGroup.style.display = 'none';
+                quizBuilder.style.display = 'none';
+                urlInput.setAttribute('required', 'required');
+            }
+        }
+
+        // إضافة سؤال جديد في نموذج الامتحان التفاعلي
+        window.addQuestionField = function() {
+            const list = document.getElementById('questionsList');
+            const qIndex = list.children.length;
+
+            const qDiv = document.createElement('div');
+            qDiv.className = 'question-builder-item';
+            qDiv.innerHTML = `
+                <button type="button" class="btn-remove-q" onclick="this.parentElement.remove()">حذف السؤال</button>
+                <div class="form-group" style="margin-top:25px;">
+                    <label>نص السؤال ${qIndex + 1}</label>
+                    <input type="text" class="q-text" placeholder="اكتب نص السؤال هنا..." required>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>الخيار الأول</label>
+                        <input type="text" class="opt-0" placeholder="الخيار أ" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الخيار الثاني</label>
+                        <input type="text" class="opt-1" placeholder="الخيار ب" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الخيار الثالث</label>
+                        <input type="text" class="opt-2" placeholder="الخيار ج" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الخيار الرابع</label>
+                        <input type="text" class="opt-3" placeholder="الخيار د" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>رقم الإجابة الصحيحة (0 للخيار الأول، 1 للثاني، إلخ)</label>
+                    <select class="correct-opt" required>
+                        <option value="0">الخيار الأول</option>
+                        <option value="1">الخيار الثاني</option>
+                        <option value="2">الخيار الثالث</option>
+                        <option value="3">الخيار الرابع</option>
+                    </select>
+                </div>
+            `;
+            list.appendChild(qDiv);
+        }
+
         window.deleteDocItem = async function(collName, docId, actionKey) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
-                        // لو بنحذف ملف من materialContents، نبحث ونحذف الإشعار المرتبط به تلقائياً
                         if (collName === 'materialContents') {
                             const fileSnap = await getDoc(doc(db, "materialContents", docId));
                             if (fileSnap.exists()) {
@@ -797,7 +888,6 @@
                             }
                         }
 
-                        // حذف العنصر الأساسي
                         await deleteDoc(doc(db, collName, docId));
                         showToast('تم الحذف بنجاح والإشعار المرتبط اختفى', 'success');
                         const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
@@ -944,7 +1034,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات ---
+        // --- 3. الملفات وامتحانات المهارة ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('fileEditId').value;
@@ -952,22 +1042,44 @@
             const materialTitle = document.getElementById('fileMaterial').value;
             const sectionName = document.getElementById('fileSection').value;
             const targetRole = document.getElementById('fileTarget').value;
+            const contentType = document.getElementById('contentType').value;
             const title = document.getElementById('fileTitle').value.trim();
             const fileUrl = document.getElementById('fileUrl').value.trim();
 
+            let fileData = { academicYear, materialTitle, sectionName, targetRole, contentType, title, fileUrl, publisherName: currentAdminName };
+
+            // لو امتحان مهارة، نقوم بجمع الأسئلة والوقت
+            if (contentType === 'skill_quiz') {
+                fileData.durationMinutes = parseInt(document.getElementById('quizDuration').value) || 15;
+                let questions = [];
+                document.querySelectorAll('.question-builder-item').forEach(item => {
+                    const questionText = item.querySelector('.q-text').value.trim();
+                    const options = [
+                        item.querySelector('.opt-0').value.trim(),
+                        item.querySelector('.opt-1').value.trim(),
+                        item.querySelector('.opt-2').value.trim(),
+                        item.querySelector('.opt-3').value.trim()
+                    ];
+                    const correctOptionIndex = parseInt(item.querySelector('.correct-opt').value);
+                    if (questionText) {
+                        questions.push({ questionText, options, correctOptionIndex });
+                    }
+                });
+                fileData.questions = questions;
+            }
+
             try {
-                let fileData = { academicYear, materialTitle, sectionName, targetRole, title, fileUrl, publisherName: currentAdminName };
                 if (editId) {
                     await updateDoc(doc(db, "materialContents", editId), fileData);
-                    showToast('تم تعديل الملف بنجاح!', 'success');
+                    showToast('تم التعديل بنجاح!', 'success');
                 } else {
                     fileData.createdAt = new Date().toISOString();
-                    // 1. حفظ الملف في قاعدة البيانات
                     await addDoc(collection(db, "materialContents"), fileData);
 
-                    // 2. إرسال الإشعار لـ notifications
+                    // إرسال إشعار فوري
+                    let notifTitle = contentType === 'skill_quiz' ? `تم نشر امتحان مهارة جديد: ${title}` : `تم نشر محتوى جديد: ${title}`;
                     await addDoc(collection(db, "notifications"), {
-                        title: `تم نشر محتوى جديد: ${title}`,
+                        title: notifTitle,
                         message: `المادة: ${materialTitle} (${sectionName})`,
                         type: 'system',
                         target_group: 'year',
@@ -975,7 +1087,7 @@
                         createdAt: new Date().toISOString()
                     });
 
-                    showToast('تم نشر الملف وإرسال الإشعار للطلاب بنجاح!', 'success');
+                    showToast('تم النشر وإرسال الإشعار للطلاب بنجاح!', 'success');
                 }
                 resetFileForm();
                 fetchFilesTable();
@@ -989,42 +1101,30 @@
             document.getElementById('fileForm').reset();
             document.getElementById('fileEditId').value = '';
             document.getElementById('fileCardHeader').innerText = 'رفع ونشر الملفات والمحتوى';
-            document.getElementById('fileSubmitBtn').innerText = 'نشر الملف وإرسال إشعار فوري';
-        };
-
-        window.editFile = async function(id) {
-            const snap = await getDoc(doc(db, "materialContents", id));
-            if(snap.exists()) {
-                const f = snap.data();
-                document.getElementById('fileEditId').value = id;
-                document.getElementById('fileYear').value = f.academicYear;
-                await populateMaterialsDropdown(f.academicYear, 'fileMaterial', f.materialTitle);
-                await populateSectionsDropdown(f.materialTitle, f.sectionName);
-                document.getElementById('fileTarget').value = f.targetRole;
-                document.getElementById('fileTitle').value = f.title;
-                document.getElementById('fileUrl').value = f.fileUrl;
-                document.getElementById('fileCardHeader').innerText = 'تعديل الملف المنشور';
-                document.getElementById('fileSubmitBtn').innerText = 'تعديل الملف';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            document.getElementById('fileSubmitBtn').innerText = 'نشر المحتوى وإرسال إشعار فوري';
+            document.getElementById('questionsList').innerHTML = '';
+            toggleContentTypeFields();
         };
 
         async function fetchFilesTable() {
             const tbody = document.getElementById('filesTable');
             try {
                 const snapshot = await getDocs(collection(db, "materialContents"));
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد ملفات منشورة.</td></tr>`; return; }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد محتويات منشورة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const f = d.data();
                     const roleText = f.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
+                    let typeLabel = 'ملف عادي';
+                    if (f.contentType === 'skill_quiz') typeLabel = 'امتحان مهارة تفاعلي';
+                    else if (f.contentType === 'assignment') typeLabel = 'تكليف (أسايمنت)';
+
                     html += `<tr>
                         <td>${f.materialTitle} (${f.sectionName})</td>
                         <td><b>${f.title}</b></td>
+                        <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
                         <td>${roleText}</td>
-                        <td><a href="${f.fileUrl}" target="_blank">رابط الملف</a></td>
                         <td>
-                            <button class="btn btn-edit" onclick="editFile('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', 'files_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -1036,7 +1136,6 @@
         // --- 4. الإشعارات ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const editId = document.getElementById('notifEditId').value;
             const targetType = document.getElementById('notifTargetType').value;
             const title = document.getElementById('notifTitle').value.trim();
             const message = document.getElementById('notifMessage').value.trim();
@@ -1053,48 +1152,13 @@
             }
 
             try {
-                if (editId) {
-                    await updateDoc(doc(db, "notifications", editId), notifData);
-                    showToast('تم تعديل الإشعار بنجاح!', 'success');
-                } else {
-                    await addDoc(collection(db, "notifications"), notifData);
-                    showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
-                }
-                resetNotifForm();
-                fetchNotifsTable();
-            } catch(e) { showToast('حدث خطأ أثناء حفظ الإشعار', 'error'); }
-        });
-
-        window.resetNotifForm = function() {
-            document.getElementById('customNotifForm').reset();
-            document.getElementById('notifEditId').value = '';
-            document.getElementById('notifCardHeader').innerText = 'إرسال إشعار مخصص للطلاب';
-            document.getElementById('notifSubmitBtn').innerText = 'إرسال الإشعار الآن';
-            toggleNotifTargetInput();
-        };
-
-        window.editNotif = async function(id) {
-            const snap = await getDoc(doc(db, "notifications", id));
-            if(snap.exists()) {
-                const n = snap.data();
-                document.getElementById('notifEditId').value = id;
-                document.getElementById('notifTitle').value = n.title;
-                document.getElementById('notifMessage').value = n.message;
-                if(n.target_group === 'all') {
-                    document.getElementById('notifTargetType').value = 'all';
-                } else if(n.target_group === 'year' || n.target_year) {
-                    document.getElementById('notifTargetType').value = 'year';
-                    document.getElementById('notifYear').value = n.target_year || n.target_group;
-                } else if(n.target_group === 'student' || n.student_id) {
-                    document.getElementById('notifTargetType').value = 'student';
-                    document.getElementById('notifStudentId').value = n.student_id;
-                }
+                await addDoc(collection(db, "notifications"), notifData);
+                showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
+                document.getElementById('customNotifForm').reset();
                 toggleNotifTargetInput();
-                document.getElementById('notifCardHeader').innerText = 'تعديل الإشعار المخصص';
-                document.getElementById('notifSubmitBtn').innerText = 'تعديل الإشعار';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        };
+                fetchNotifsTable();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        });
 
         window.fetchNotifsTable = async function() {
             const tbody = document.getElementById('notifsTable');
@@ -1115,7 +1179,6 @@
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
-                            <button class="btn btn-edit" onclick="editNotif('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', 'notifs_delete')">حذف</button>
                         </td>
                     </tr>`;
@@ -1124,9 +1187,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
-        // --- 5. إدارة الطلاب ---
-        let allStudentsCache = [];
-
+        // --- 5. إدارة الطلاب والأعضاء ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -1212,24 +1273,19 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
+        let allStudentsCache = [];
         async function fetchAllStudents() {
             try {
                 const snapshot = await getDocs(collection(db, "users"));
                 allStudentsCache = [];
-                snapshot.forEach(d => {
-                    allStudentsCache.push({ id: d.id, ...d.data() });
-                });
+                snapshot.forEach(d => { allStudentsCache.push({ id: d.id, ...d.data() }); });
                 filterStudentsTable();
-            } catch(e) { 
-                const tbody = document.getElementById('allStudentsTable');
-                if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="no-data" style="color:red;">خطأ في تحميل الطلاب.</td></tr>`; 
-            }
+            } catch(e) { console.error(e); }
         }
 
         window.filterStudentsTable = function() {
             const tbody = document.getElementById('allStudentsTable');
             if (!tbody) return;
-
             const searchVal = (document.getElementById('studentSearchInput').value || '').toLowerCase().trim();
             const yearVal = document.getElementById('studentYearFilter').value;
             const statusVal = document.getElementById('studentStatusFilter').value;
@@ -1245,12 +1301,11 @@
                 const matchesSearch = !searchVal || studentId.includes(searchVal) || name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal);
                 const matchesYear = (yearVal === 'all' || year === yearVal);
                 const matchesStatus = (statusVal === 'all' || status === statusVal);
-
                 return matchesSearch && matchesYear && matchesStatus;
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="no-data">لا توجد نتائج مطابقة للبحث أو الفلترة.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="no-data">لا توجد نتائج مطابقة.</td></tr>`;
                 return;
             }
 
@@ -1283,93 +1338,45 @@
         window.toggleBanStudent = async function(docId, newStatus) {
             try {
                 await updateDoc(doc(db, "users", docId), { status: newStatus });
-                showToast(newStatus === 'banned' ? 'تم حظر الطالب بنجاح' : 'تم إلغاء الحظر عن الطالب', 'warning');
+                showToast(newStatus === 'banned' ? 'تم حظر الطالب' : 'تم إلغاء الحظر', 'warning');
                 fetchAllStudents();
                 fetchPendingStudents();
-            } catch(e) { showToast('حدث خطأ', 'error'); }
+            } catch(e) { showToast('خطأ', 'error'); }
         }
 
         // --- 6. الأعضاء الإداريين ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const editId = document.getElementById('adminEditId').value;
             const name = document.getElementById('admName').value.trim();
             const email = document.getElementById('admEmail').value.trim();
             const password = document.getElementById('admPassword').value.trim();
             const role = document.getElementById('admRole').value;
 
-            let permissions = [];
+            let permissions = role === 'supervisor' ? [] : ['materials_manage', 'materials_delete', 'sections_manage', 'sections_delete', 'files_manage', 'files_delete', 'notifs_manage', 'notifs_delete', 'students_manage', 'students_delete'];
             if (role === 'supervisor') {
-                document.querySelectorAll('input[name="perm"]:checked').forEach(el => {
-                    permissions.push(el.value);
-                });
-            } else {
-                permissions = ['materials_manage', 'materials_delete', 'sections_manage', 'sections_delete', 'files_manage', 'files_delete', 'notifs_manage', 'notifs_delete', 'students_manage', 'students_delete'];
+                document.querySelectorAll('input[name="perm"]:checked').forEach(el => permissions.push(el.value));
             }
 
             try {
-                if(editId) {
-                    await updateDoc(doc(db, "admins", editId), { name, email, password, role, permissions });
-                    showToast('تم تعديل بيانات الصلاحيات بنجاح!', 'success');
-                } else {
-                    await addDoc(collection(db, "admins"), {
-                        name, email, password, role, permissions, status: 'active', createdAt: new Date().toISOString()
-                    });
-                    showToast('تم إنشاء الحساب الإداري وصلاحياته بنجاح!', 'success');
-                }
-                resetAdminForm();
-                fetchAdminsTable();
-            } catch(e) { showToast('حدث خطأ أثناء الحفظ', 'error'); }
-        });
-
-        window.resetAdminForm = function() {
-            document.getElementById('adminCreateForm').reset();
-            document.getElementById('adminEditId').value = '';
-            document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد';
-            document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري';
-            const group = document.getElementById('permissionsGroup');
-            if(group) group.style.display = 'none';
-        };
-
-        window.editAdmin = async function(id) {
-            const snap = await getDoc(doc(db, "admins", id));
-            if(snap.exists()) {
-                const adm = snap.data();
-                document.getElementById('adminEditId').value = id;
-                document.getElementById('admName').value = adm.name;
-                document.getElementById('admEmail').value = adm.email;
-                document.getElementById('admPassword').value = adm.password;
-                document.getElementById('admRole').value = adm.role;
-                
+                await addDoc(collection(db, "admins"), { name, email, password, role, permissions, status: 'active', createdAt: new Date().toISOString() });
+                showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
+                document.getElementById('adminCreateForm').reset();
                 toggleRolePermissions();
-
-                if (adm.role === 'supervisor' && adm.permissions) {
-                    document.querySelectorAll('input[name="perm"]').forEach(el => {
-                        el.checked = adm.permissions.includes(el.value);
-                    });
-                }
-
-                document.getElementById('adminCardHeader').innerText = 'تعديل صلاحيات العضو الإداري';
-                document.getElementById('adminSubmitBtn').innerText = 'تعديل الحساب';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        };
+                fetchAdminsTable();
+            } catch(e) { showToast('حدث خطأ', 'error'); }
+        });
 
         async function fetchAdminsTable() {
             const tbody = document.getElementById('adminsTable');
             try {
                 const snapshot = await getDocs(collection(db, "admins"));
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد حسابات إدارية مسجلة.</td></tr>`; return; }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد حسابات إدارية.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const adm = d.data();
                     const roleText = adm.role === 'manager' ? 'مدير عام' : 'مشرف';
                     const statusText = adm.status === 'active' ? 'نشط' : 'موقف';
                     const statusColor = adm.status === 'active' ? 'green' : 'red';
-                    const actionBtnText = adm.status === 'active' ? 'إيقاف' : 'تفعيل';
-                    const actionBtnClass = adm.status === 'active' ? 'btn-reject' : 'btn-approve';
-                    const newStatus = adm.status === 'active' ? 'suspended' : 'active';
-
                     html += `
                         <tr>
                             <td><b>${adm.name}</b></td>
@@ -1377,23 +1384,13 @@
                             <td>${roleText}</td>
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
-                                <button class="btn ${actionBtnClass}" onclick="toggleAdminStatus('${d.id}', '${newStatus}')">${actionBtnText}</button>
-                                <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
                                 <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}', 'admins_delete')">حذف</button>
                             </td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = html;
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في تحميل المشرفين</td></tr>`; }
-        }
-
-        window.toggleAdminStatus = async function(docId, newStatus) {
-            try {
-                await updateDoc(doc(db, "admins", docId), { status: newStatus });
-                showToast('تم تحديث حالة العضو الإداري بنجاح', 'success');
-                fetchAdminsTable();
-            } catch(e) { showToast('حدث خطأ', 'error'); }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
     </script>
 
