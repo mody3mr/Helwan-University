@@ -346,17 +346,16 @@
             document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + student.fullName;
             document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
 
-            fetchMaterials(student.academicYear);
+            fetchMaterialsRealtime(student.academicYear);
             fetchNotifications(student);
         }
 
-        // جلب المواد مع عرض اسم الدكتور والمساعد
-        async function fetchMaterials(year) {
+        // جلب المواد الدراسية بشكل لحظي (Real-time) بـ onSnapshot لتتحدث أوتوماتيك من غير ريفريش
+        function fetchMaterialsRealtime(year) {
             const grid = document.getElementById('materialsGrid');
-            try {
-                const q = query(collection(db, "materials"), where("academicYear", "==", year));
-                const querySnapshot = await getDocs(q);
+            const q = query(collection(db, "materials"), where("academicYear", "==", year));
 
+            onSnapshot(q, (querySnapshot) => {
                 if (querySnapshot.empty) {
                     grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; background:white; border-radius:14px; border: 1px solid #e2e8f0;">لا توجد مواد منشورة لهذه الفرقة حتى الآن.</div>`;
                     return;
@@ -376,11 +375,10 @@
                     `;
                 });
                 grid.innerHTML = html;
-
-            } catch (error) {
-                console.error("Error fetching materials: ", error);
+            }, (error) => {
+                console.error("Error fetching materials in real-time: ", error);
                 grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: red; padding: 40px;">حدث خطأ أثناء تحميل المواد الدراسية.</div>`;
-            }
+            });
         }
 
         // جلب الإشعارات
@@ -408,10 +406,8 @@
                     }
 
                     if (isForThisStudent) {
-                        // استخراج اسم المادة أوتوماتيك من نص الرسالة أو العنوان لو الرابط مش موجود
                         let inferredLink = item.link || '#';
                         if (inferredLink === '#' && item.message) {
-                            // لو الرسالة فيها شكل "المادة: [اسم المادة]"
                             const match = item.message.match(/المادة:\s*([^(]+)/);
                             if (match && match[1]) {
                                 const matName = match[1].trim();
@@ -435,7 +431,6 @@
                     return;
                 }
 
-                // استرجاع الإشعارات المقروءة سابقاً
                 const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
 
                 let html = '';
@@ -466,7 +461,6 @@
             });
         }
 
-        // عند النقر على الإشعار: تعليمه كمقروء وتوجيهه لصفحة المادة مباشرة
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
