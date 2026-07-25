@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جامعة حلوان - البوابة الطلابية</title>
-    <!-- استدعاء خط Cairo الشيك -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -260,7 +259,6 @@
             const academicYear = document.getElementById('academicYear').value;
             const nationalId = document.getElementById('nationalId').value.trim();
 
-            // التحقق من الحقول الفارغة برسالة احترافية
             if (!fullName || !phone || !email || !password || !academicYear || !nationalId) {
                 showToast('يرجى ملء جميع الحقول المطلوبة بدقة!', 'error');
                 return;
@@ -330,7 +328,6 @@
             try {
                 const usersRef = collection(db, "users");
                 
-                // 1. فحص هل الإيميل مسجل أساساً في قاعدة البيانات أم لا
                 const qEmailCheck = query(usersRef, where("email", "==", email));
                 const emailSnapshot = await getDocs(qEmailCheck);
 
@@ -339,7 +336,6 @@
                     return;
                 }
 
-                // 2. فحص مطابقة الإيميل مع الباسورد
                 const qLogin = query(usersRef, where("email", "==", email), where("password", "==", password));
                 const querySnapshot = await getDocs(qLogin);
 
@@ -359,6 +355,10 @@
                     showToast('عذراً، تم رفض طلب إنشاء هذا الحساب من الإدارة.', 'error');
                 } else if (userData.status === 'approved') {
                     showToast('تم تسجيل الدخول بنجاح! أهلاً بك يا ' + userData.fullName, 'success');
+                    localStorage.setItem('currentStudent', JSON.stringify(userData));
+                    setTimeout(() => {
+                        location.href = 'student.html';
+                    }, 1500);
                 }
 
             } catch (error) {
