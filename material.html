@@ -144,7 +144,7 @@
             fetchMaterialInfoAndSections(materialTitle);
         }
 
-        // جلب معلومات المادة (الدكتور والمعيد) والأقسام والملفات بشكل لحظي (Real-time)
+        // جلب بيانات المادة والأقسام بشكل لحظي (Real-time)
         async function fetchMaterialInfoAndSections(title) {
             try {
                 // 1. جلب بيانات الدكتور والمعيد للمادة الأساسية
@@ -157,7 +157,6 @@
                     if(m.professorName) profName = m.professorName;
                     if(m.assistantName) assistName = m.assistantName;
                 });
-                document.getElementById('materialProfDisplayinnerHTML') = '';
                 document.getElementById('materialProfDisplay').innerText = `أستاذ المادة: ${profName} | المعيد: ${assistName}`;
 
                 // 2. الاستماع اللحظي للأقسام المنشورة لهذه المادة
