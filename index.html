@@ -127,12 +127,83 @@
         .toast.success { background-color: #2ecc71; }
         .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f39c12; }
+
+        /* نافذة التنبيه الاحترافية (Custom Professional Modal) للرفض والانتظار */
+        #customAlertOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            padding: 20px;
+        }
+        .custom-alert-box {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            animation: modalScale 0.3s ease;
+        }
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .custom-alert-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+        .custom-alert-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+        .custom-alert-msg {
+            font-size: 14.5px;
+            color: #475569;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .custom-alert-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .custom-alert-btn:hover {
+            background: #1d4ed8;
+        }
     </style>
 </head>
 <body>
 
     <!-- حاوية الـ Toast Messages -->
     <div id="toast-container"></div>
+
+    <!-- نافذة التنبيه الاحترافية -->
+    <div id="customAlertOverlay">
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon" id="alertIcon">⚠️</div>
+            <div class="custom-alert-title" id="alertTitle">تنبيه هام</div>
+            <div class="custom-alert-msg" id="alertMessage">رسالة التنبيه هنا...</div>
+            <button class="custom-alert-btn" onclick="closeCustomAlert()">حسناً، فهمت</button>
+        </div>
+    </div>
 
     <div class="card-container">
         
@@ -235,6 +306,17 @@
             }, 4000);
         }
 
+        window.showAlert = function(title, message, icon = '⚠️') {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertIcon').innerText = icon;
+            document.getElementById('customAlertOverlay').style.display = 'flex';
+        }
+
+        window.closeCustomAlert = function() {
+            document.getElementById('customAlertOverlay').style.display = 'none';
+        }
+
         window.switchForm = function(target) {
             const loginSec = document.getElementById('loginSection');
             const regSec = document.getElementById('registerSection');
@@ -300,12 +382,14 @@
                     createdAt: new Date().toISOString()
                 });
 
-                showToast('تم إرسال طلبك بنجاح! رقم الـ ID الخاص بك هو: ' + studentId, 'success');
+                showAlert(
+                    'تم إرسال الطلب',
+                    `تم تسجيل بياناتك بنجاح! رقم الـ ID الخاص بك هو:\n\n${studentId}\n\nيرجى الانتظار حتى يتم مراجعة وتفعيل الحساب من قبل الإدارة.`,
+                    '✅'
+                );
+
                 document.getElementById('registerForm').reset();
-                
-                setTimeout(() => {
-                    switchForm('login');
-                }, 3000);
+                switchForm('login');
 
             } catch (error) {
                 console.error("Error adding document: ", error);
@@ -350,9 +434,17 @@
                 });
 
                 if (userData.status === 'pending') {
-                    showToast('حسابك قيد المراجعة ولم يتم اعتماده من الإدارة بعد.', 'warning');
-                } else if (userData.status === 'rejected') {
-                    showToast('عذراً، تم رفض طلب إنشاء هذا الحساب من الإدارة.', 'error');
+                    showAlert(
+                        'حسابك قيد المراجعة',
+                        'مرحباً بك، الحساب الخاص بك لم يتم اعتماده وتفعيله من الإدارة بعد. يرجى الانتظار والمحاولة لاحقاً.',
+                        '⏳'
+                    );
+                } else if (userData.status === 'rejected' || userData.status === 'banned') {
+                    showAlert(
+                        'تم رفض / حظر الحساب',
+                        'عذراً، تم رفض طلب إنشاء هذا الحساب أو حظره من قبل الإدارة. يرجى مراجعة شؤون الطلاب.',
+                        '🚫'
+                    );
                 } else if (userData.status === 'approved') {
                     showToast('تم تسجيل الدخول بنجاح! أهلاً بك يا ' + userData.fullName, 'success');
                     localStorage.setItem('currentStudent', JSON.stringify(userData));
