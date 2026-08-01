@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جامعة حلوان - لوحة التحكم الإدارية الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- إضافة مكتبة تصدير الإكسيل SheetJS -->
+    <!-- مكتبة تصدير الإكسيل SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -16,86 +16,48 @@
             flex-direction: column; justify-content: flex-start; padding: 20px 15px;
             position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
         }
-        .sidebar-brand {
-            font-size: 20px; font-weight: 700; text-align: center;
-            padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8;
-        }
-        .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-        .sidebar-menu li {
-            padding: 12px 15px; border-radius: 10px; background: #1e293b;
-            font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease;
-        }
+        .sidebar-brand { font-size: 20px; font-weight: 700; text-align: center; padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8; }
+        .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+        .sidebar-menu li { padding: 12px 15px; border-radius: 10px; background: #1e293b; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease; }
         .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
 
         .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); height: 100vh; }
-        .header-top {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; background: white; padding: 20px 30px;
-            border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%;
-        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 30px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%; }
         .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
         
         .admin-menu-container { position: relative; cursor: pointer; }
-        .admin-profile {
-            display: flex; align-items: center; gap: 10px; background: #f8fafc;
-            padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0;
-            font-weight: 600; color: #1e293b; font-size: 14px;
-        }
-        .dropdown-menu {
-            position: absolute; left: 0; top: 50px; background: white; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none;
-            flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000;
-        }
+        .admin-profile { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; font-size: 14px; }
+        .dropdown-menu { position: absolute; left: 0; top: 50px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000; }
         .dropdown-menu.show { display: flex; }
-        .dropdown-menu a {
-            padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block;
-        }
+        .dropdown-menu a { padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block; }
         .dropdown-menu a:hover { background: #f8fafc; }
 
         .tab-section { display: none; width: 100%; }
         .tab-section.active { display: block; }
 
-        .card-box {
-            background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%;
-        }
-        .card-header {
-            padding: 20px 25px; border-bottom: 1px solid #f1f5f9;
-            font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc;
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-        }
+        .card-box { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%; }
+        .card-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .card-body { padding: 25px; }
         
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; }
         .form-group { margin-bottom: 20px; }
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px;
-            font-size: 14px; outline: none; transition: all 0.3s; background: #fff;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: all 0.3s; background: #fff; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
 
         .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
         .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
         .btn-add-q { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 5px; }
-        .btn-add-q:hover { background: #1d4ed8; }
         .btn-remove-q { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: left; }
 
-        .permissions-box {
-            background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px;
-        }
+        .permissions-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px; }
         .permissions-box label.main-lbl { font-weight: 700; color: #0f172a; margin-bottom: 15px; display: block; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
         .perm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
         .perm-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; cursor: pointer; }
         .perm-item input { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
 
-        .btn-submit {
-            background: #2563eb; color: white; padding: 14px 24px; border: none;
-            border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%;
-        }
+        .btn-submit { background: #2563eb; color: white; padding: 14px 24px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; }
         .btn-submit:hover { background: #1d4ed8; }
 
         .table-responsive { width: 100%; overflow-x: auto; }
@@ -105,59 +67,31 @@
         
         .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; margin: 2px; }
         .btn-approve { background: #22c55e; color: white; }
-        .btn-approve:hover { background: #16a34a; }
         .btn-reject { background: #ef4444; color: white; }
-        .btn-reject:hover { background: #dc2626; }
         .btn-delete { background: #ef4444; color: white; }
-        .btn-delete:hover { background: #dc2626; }
         .btn-edit { background: #3b82f6; color: white; }
-        .btn-edit:hover { background: #2563eb; }
         .btn-warning { background: #f59e0b; color: white; }
-        .btn-warning:hover { background: #d97706; }
         .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
-        #reportModalOverlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px;
-        }
-        .report-modal {
-            background: white; width: 100%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
+        #reportModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; }
+        .report-modal { background: white; width: 100%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
 
-        #toast-container {
-            position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
-            z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px;
-        }
-        .toast {
-            padding: 16px 22px; border-radius: 14px; color: white; font-size: 14px; font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px);
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        #toast-container { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
+        .toast { padding: 16px 22px; border-radius: 14px; color: white; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px); display: flex; align-items: center; justify-content: space-between; }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
         .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-        #customModalOverlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-            display: none; justify-content: center; align-items: center; z-index: 99998;
-        }
-        .custom-modal {
-            background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px;
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease;
-        }
-        @keyframes modalScale {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        #customModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99998; }
+        .custom-modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease; }
+        @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .custom-modal h3 { color: #0f172a; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
         .custom-modal p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
         .custom-modal-actions { display: flex; gap: 12px; justify-content: center; }
         .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
         .btn-confirm-yes { background: #ef4444; color: white; transition: background 0.2s; }
-        .btn-confirm-yes:hover { background: #dc2626; }
         .btn-confirm-no { background: #f1f5f9; color: #475569; transition: background 0.2s; }
-        .btn-confirm-no:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -167,6 +101,10 @@
     <div id="reportModalOverlay">
         <div class="report-modal">
             <h3 id="reportStudentName" style="color:#0f172a; margin-bottom:15px; font-size:20px;">تقرير أداء الطالب</h3>
+            
+            <!-- إضافة شريط بحث للطالب في التقرير الشامل -->
+            <input type="text" id="modalStudentSearch" placeholder="ابحث باسم الطالب أو ה-ID..." onkeyup="filterModalReport()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Cairo';">
+
             <div id="reportModalBody" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; font-size: 14px; color: #334155;"></div>
             <button class="btn-submit" onclick="document.getElementById('reportModalOverlay').style.display='none'">إغلاق التقرير</button>
         </div>
@@ -194,7 +132,7 @@
                 <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
                 <li id="menuAdmins" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
-                <!-- إضافة تاب السجل -->
+                <!-- إضافة تاب السجل هنا -->
                 <li id="menuAuditLogs" onclick="switchTab('auditLogs')">📜 سجل الأحداث والنشاطات</li>
             </ul>
         </div>
@@ -364,8 +302,7 @@
                                 <label for="contentType">نوع المحتوى</label>
                                 <select id="contentType" required onchange="toggleContentTypeFields()">
                                     <option value="file" selected>ملف / كتاب / ملخص / امتحان سابق (PDF أو صورة)</option>
-                                    <!-- تم إضافة التكليف هنا -->
-                                    <option value="assignment">تكليف (أسايمنت بحد أقصى للتسليم)</option>
+                                    <option value="assignment">تكليف (أسايمنت)</option>
                                     <option value="skill_quiz">امتحان مهارة تفاعلي (أسئلة بوقيت وتصحيح تلقائي)</option>
                                 </select>
                             </div>
@@ -374,14 +311,22 @@
                                 <input type="text" id="fileTitle" placeholder="مثال: شابتر 1 أو امتحان المهارة الأول" required>
                             </div>
                             <div class="form-group" id="urlInputGroup">
-                                <label for="fileUrl">رابط الملف (Google Drive / PDF / صورة)</label>
+                                <label for="fileUrl">رابط الملف (اختياري في حالة كتابة نص الأسايمنت)</label>
                                 <input type="url" id="fileUrl" placeholder="https://...">
                             </div>
-                            <!-- إضافة حقل الموعد النهائي للأسايمنت -->
+
+                            <!-- إضافة مربع نص للأسايمنت -->
+                            <div class="form-group full-width" id="textContentGroup" style="display: none;">
+                                <label for="fileText">نص التكليف (اختياري)</label>
+                                <textarea id="fileText" rows="4" placeholder="اكتب تفاصيل أو نص الأسايمنت هنا..."></textarea>
+                            </div>
+                            
+                            <!-- إضافة الموعد النهائي للأسايمنت -->
                             <div class="form-group" id="assignmentDeadlineGroup" style="display: none;">
                                 <label for="assignmentDeadline">آخر موعد لتسليم الأسايمنت</label>
                                 <input type="datetime-local" id="assignmentDeadline">
                             </div>
+
                             <div class="form-group" id="quizDurationGroup" style="display: none;">
                                 <label for="quizDuration">مدة الامتحان (بالدقائق)</label>
                                 <input type="number" id="quizDuration" value="15" min="1" placeholder="15">
@@ -408,33 +353,33 @@
                                 <th>المادة / القسم</th>
                                 <th>العنوان</th>
                                 <th>النوع</th>
-                                <th>يتبع لـ</th>
                                 <th>تاريخ الانتهاء</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="filesTable">
-                            <tr><td colspan="6" class="no-data">جاري التحميل...</td></tr>
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- 4. تقارير ونتائج الطلاب -->
+        <!-- 4. تقارير ونتائج الطلاب (محدثة بالبحث والفلترة والاكسيل) -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <span>سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <input type="text" id="reportSearchInput" placeholder="بحث باسم الطالب أو الـ ID..." onkeyup="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        
                         <!-- إضافة فلتر أعلى وأقل درجة -->
                         <select id="scoreFilterSelect" onchange="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
                             <option value="all">جميع الدرجات</option>
                             <option value="highest">أعلى درجة أولاً</option>
                             <option value="lowest">أقل درجة أولاً</option>
                         </select>
-                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px;" onclick="exportQuizResultsToExcel()">📥 تصدير ملف إكسيل</button>
+                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px;" onclick="exportQuizResultsToExcel()">📥 تصدير لـ Excel</button>
                         <button class="btn btn-edit" style="padding: 6px 14px; font-size:12.5px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
                     </div>
                 </div>
@@ -511,7 +456,7 @@
                                 <th>العنوان</th>
                                 <th>الرسالة / التفاصيل</th>
                                 <th>المستهدف</th>
-                                <th>التاريخ</th>
+                                <th>التاريخ والوقت</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
@@ -526,7 +471,7 @@
         <!-- 6. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
-                <div class="card-header">طلبات إنشاء الحسابات الجديدة</div>
+                <div class="card-header">طلبات إنشاء الحسابات الجديدة (تحتاج مراجعة)</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -536,7 +481,7 @@
                                 <th>البريد الإلكتروني</th>
                                 <th>الهاتف</th>
                                 <th>الفرقة</th>
-                                <th>الإجراءات</th>
+                                <th>الإجراء الأول</th>
                             </tr>
                         </thead>
                         <tbody id="pendingStudentsTable">
@@ -569,7 +514,7 @@
 
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>قائمة جميع طلاب الجامعة</span>
+                    <span>قائمة جميع طلاب الجامعة والحظر والتعديل</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو الـ ID..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
                         <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
@@ -596,7 +541,7 @@
                                 <th>البريد الإلكتروني</th>
                                 <th>رقم الهاتف</th>
                                 <th>الفرقة</th>
-                                <th>الحالة</th>
+                                <th>الحالة الحالية</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
@@ -625,7 +570,7 @@
                                 <input type="email" id="admEmail" placeholder="admin@helwan.edu.eg" required>
                             </div>
                             <div class="form-group">
-                                <label for="admPassword">كلمة المرور</label>
+                                <label for="admPassword">كلمة المرور (6 أحرف/أرقام على الأقل)</label>
                                 <input type="password" id="admPassword" placeholder="كلمة المرور" required>
                             </div>
                             <div class="form-group">
@@ -635,9 +580,10 @@
                                     <option value="supervisor">مشرف (صلاحيات مخصصة)</option>
                                 </select>
                             </div>
+
                             <!-- إضافة تخصيص الفرقة للمشرف -->
                             <div class="form-group" id="admYearGroup" style="display:none;">
-                                <label for="admAssignedYear">الفرقة المخصصة للنشر</label>
+                                <label for="admAssignedYear">الفرقة المخصصة للنشر (للمشرف)</label>
                                 <select id="admAssignedYear">
                                     <option value="all">جميع الفرق الدراسية</option>
                                     <option value="1">الفرقة الأولى فقط</option>
@@ -649,7 +595,7 @@
                             
                             <div class="form-group full-width" id="permissionsGroup" style="display: none;">
                                 <div class="permissions-box">
-                                    <label class="main-lbl">حدد الصلاحيات المسموح بها:</label>
+                                    <label class="main-lbl">حدد الصلاحيات المسموح بها للمشرف:</label>
                                     <div class="perm-grid">
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_manage"> 📚 إضافة وتعديل المواد</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_delete"> 🗑️ حذف المواد</label>
@@ -665,7 +611,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top: 10px;">إنشاء الحساب الإداري</button>
+                        <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top: 10px;">إنشاء الحساب الإداري بالـ Auth</button>
                     </form>
                 </div>
             </div>
@@ -692,19 +638,19 @@
             </div>
         </div>
 
-        <!-- 8. سجل النشاطات -->
+        <!-- 8. سجل النشاطات والأحداث -->
         <div id="sectionAuditLogs" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>📜 سجل الأحداث والنشاطات</span>
+                    <span>📜 سجل الأحداث والنشاطات باللوحة</span>
                     <button class="btn btn-delete" onclick="clearAuditLogs()">🗑️ مسح السجل بالكامل</button>
                 </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>المسؤول</th>
-                                <th>الإجراء</th>
+                                <th>المسؤول (من قام بالإجراء)</th>
+                                <th>نوع الإجراء</th>
                                 <th>التفاصيل</th>
                                 <th>التاريخ والوقت</th>
                             </tr>
@@ -739,6 +685,11 @@
 
         const currentAdminName = sessionStorage.getItem('currentAdminName');
         const currentAdminRole = sessionStorage.getItem('currentAdminRole');
+        const assignedYear = sessionStorage.getItem('assignedYear') || 'all';
+
+        // قراءة الصلاحيات من الجلسة لمعرفة ماذا نُخفي للمشرف
+        let adminPerms = [];
+        try { adminPerms = JSON.parse(sessionStorage.getItem('adminPermissions') || '[]'); } catch(e){}
 
         if (!currentAdminName) {
             location.href = 'admin-login.html';
@@ -746,26 +697,51 @@
             const nameDisplay = document.getElementById('adminNameDisplay');
             if(nameDisplay) nameDisplay.innerText = currentAdminName;
             
-            if (currentAdminRole !== 'super_admin' && currentAdminRole !== 'manager') {
+            // إخفاء القوائم عن المشرف
+            if (currentAdminRole === 'supervisor' || currentAdminRole === 'مشرف') {
                 const adminMenu = document.getElementById('menuAdmins');
                 const auditMenu = document.getElementById('menuAuditLogs');
                 if(adminMenu) adminMenu.style.display = 'none';
                 if(auditMenu) auditMenu.style.display = 'none';
+
+                if(!adminPerms.includes('notifs_manage')) {
+                    const notifMenu = document.getElementById('menuNotifs');
+                    if(notifMenu) notifMenu.style.display = 'none';
+                }
             }
         }
 
-        // دالة تسجيل النشاطات 
+        // دالة لإجبار المشرف على التعامل مع الفرقة المخصصة له فقط
+        function enforceAssignedYear() {
+            if (currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                const yearFields = ['matYear', 'secYear', 'fileYear', 'notifYear'];
+                yearFields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.value = assignedYear;
+                        Array.from(el.options).forEach(opt => {
+                            if(opt.value !== assignedYear && opt.value !== "") {
+                                opt.disabled = true;
+                                opt.style.display = 'none';
+                            }
+                        });
+                        // لتحديث القوائم المعتمدة عليها
+                        el.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+        }
+
+        // دالة لتسجيل النشاطات 
         async function logActivity(actionType, details) {
             try {
                 await addDoc(collection(db, "auditLogs"), {
-                    performedBy: currentAdminName || 'مسؤول غير معروف',
+                    performedBy: currentAdminName || 'مسؤول',
                     actionType: actionType,
                     details: details,
                     timestamp: new Date().toISOString()
                 });
-            } catch (e) {
-                console.error("Error logging activity:", e);
-            }
+            } catch (e) { console.error("Logging error:", e); }
         }
 
         window.showToast = function(message, type = 'success') {
@@ -842,7 +818,7 @@
             } else if(tab === 'files') {
                 document.getElementById('sectionFiles').classList.add('active');
                 document.getElementById('menuFiles').classList.add('active');
-                document.getElementById('pageTitle').innerText = 'إدارة المحتوى والملفات';
+                document.getElementById('pageTitle').innerText = 'إدارة المحتوى والملفات والأسايمنت';
                 resetFileForm();
                 fetchFilesTable();
             } else if(tab === 'reports') {
@@ -881,12 +857,15 @@
         window.addEventListener('DOMContentLoaded', () => {
             let savedTab = sessionStorage.getItem('adminActiveTab') || 'materials';
             switchTab(savedTab);
+            // تطبيق قيد الفرقة بعد تحميل الصفحة بقليل لضمان تواجد العناصر
+            setTimeout(enforceAssignedYear, 300);
         });
 
         window.toggleNotifTargetInput = function() {
             const val = document.getElementById('notifTargetType').value;
             document.getElementById('yearInputGroup').style.display = val === 'year' ? 'block' : 'none';
             document.getElementById('studentInputGroup').style.display = val === 'student' ? 'block' : 'none';
+            enforceAssignedYear();
         }
 
         async function populateMaterialsDropdown(yearId, dropdownId, selectedValue = "") {
@@ -934,16 +913,19 @@
             } catch(e) { console.error(e); }
         }
 
+        // إظهار وإخفاء حقول الأسايمنت والامتحانات
         window.toggleContentTypeFields = function() {
             const type = document.getElementById('contentType').value;
             const urlGroup = document.getElementById('urlInputGroup');
+            const textGroup = document.getElementById('textContentGroup');
+            const deadlineGroup = document.getElementById('assignmentDeadlineGroup');
             const durationGroup = document.getElementById('quizDurationGroup');
             const quizBuilder = document.getElementById('quizBuilderContainer');
-            const deadlineGroup = document.getElementById('assignmentDeadlineGroup');
             const urlInput = document.getElementById('fileUrl');
 
             if (type === 'skill_quiz') {
                 urlGroup.style.display = 'none';
+                if(textGroup) textGroup.style.display = 'none';
                 deadlineGroup.style.display = 'none';
                 durationGroup.style.display = 'block';
                 quizBuilder.style.display = 'block';
@@ -953,12 +935,14 @@
                 }
             } else if (type === 'assignment') {
                 urlGroup.style.display = 'block';
+                if(textGroup) textGroup.style.display = 'block';
                 deadlineGroup.style.display = 'block';
                 durationGroup.style.display = 'none';
                 quizBuilder.style.display = 'none';
-                urlInput.setAttribute('required', 'required');
+                urlInput.removeAttribute('required'); // رابط الملف اختياري لأن في نص
             } else {
                 urlGroup.style.display = 'block';
+                if(textGroup) textGroup.style.display = 'none';
                 deadlineGroup.style.display = 'none';
                 durationGroup.style.display = 'none';
                 quizBuilder.style.display = 'none';
@@ -1047,6 +1031,7 @@
                 return !searchVal || name.includes(searchVal) || sId.includes(searchVal) || title.includes(searchVal) || mat.includes(searchVal);
             });
 
+            // فلترة أعلى وأقل درجة
             if (scoreFilter === 'highest') {
                 filtered.sort((a,b) => (b.score || 0) - (a.score || 0));
             } else if (scoreFilter === 'lowest') {
@@ -1090,6 +1075,7 @@
             tbody.innerHTML = html;
         }
 
+        // تصدير التقارير كملف Excel
         window.exportQuizResultsToExcel = function() {
             if(allQuizResultsCache.length === 0) { showToast('لا توجد بيانات لتصديرها!', 'warning'); return; }
             let excelRows = [];
@@ -1123,6 +1109,7 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
+        // تقرير الأداء الشامل
         window.openOverallStudentReport = async function() {
             const resultsSnap = await getDocs(collection(db, "quizResults"));
             if(resultsSnap.empty) { alert('لا توجد نتائج مسجلة لعمل تقرير.'); return; }
@@ -1138,7 +1125,7 @@
                 studentMap[r.studentId].examsCount += 1;
             });
 
-            let reportHtml = `<table style="width:100%; border-collapse:collapse; text-align:right;">
+            let reportHtml = `<table style="width:100%; border-collapse:collapse; text-align:right;" id="modalReportTable">
                 <thead><tr style="background:#f8fafc;"><th style="padding:10px; border-bottom:1px solid #cbd5e1;">اسم الطالب</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">الامتحانات</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">النسبة العامة</th></tr></thead><tbody>`;
 
             for(let id in studentMap) {
@@ -1152,17 +1139,25 @@
             }
             reportHtml += `</tbody></table>`;
 
-            document.getElementById('reportStudentName').innerText = "تقرير أداء الطلاب الشامل والنسب العامة";
             document.getElementById('reportModalBody').innerHTML = reportHtml;
             document.getElementById('reportModalOverlay').style.display = 'flex';
         }
 
-        // تم إصلاح دالة الحذف لمنع رسائل الخطأ الحمراء
+        // الفلترة والبحث بداخل نافذة التقرير الشامل
+        window.filterModalReport = function() {
+            const input = document.getElementById('modalStudentSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#modalReportTable tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        // تم إصلاح دالة الحذف المباشرة بدون الرسائل الحمراء
         window.deleteDocItem = async function(collName, docId) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
-                        // إبقاء منطق الإشعارات المرتبطة لو كان محتوى مادة
                         if (collName === 'materialContents') {
                             const fileSnap = await getDoc(doc(db, "materialContents", docId));
                             if (fileSnap.exists()) {
@@ -1182,7 +1177,6 @@
                         logActivity('حذف عنصر', `تم حذف عنصر من ${collName} رقم ${docId}`);
                         showToast('تم الحذف بنجاح', 'success');
                         
-                        // لا حاجة لعمل ريفرش إذا كانت القوائم تعمل بـ onSnapshot
                         if(collName !== 'notifications' && collName !== 'admins') {
                             const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
                             switchTab(currentTab);
@@ -1226,6 +1220,7 @@
             document.getElementById('matEditId').value = '';
             document.getElementById('materialCardHeader').innerText = 'إضافة مادة دراسية جديدة';
             document.getElementById('matSubmitBtn').innerText = 'حفظ وإضافة المادة';
+            enforceAssignedYear();
         };
 
         window.editMaterial = async function(id) {
@@ -1246,7 +1241,12 @@
         async function fetchMaterialsTable() {
             const tbody = document.getElementById('materialsTable');
             try {
-                const snapshot = await getDocs(collection(db, "materials"));
+                let q = collection(db, "materials");
+                // تطبيق فلتر الفرقة للمشرفين
+                if(currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                    q = query(collection(db, "materials"), where("academicYear", "==", assignedYear));
+                }
+                const snapshot = await getDocs(q);
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد مواد مسجلة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
@@ -1295,6 +1295,7 @@
             document.getElementById('secEditId').value = '';
             document.getElementById('sectionCardHeader').innerText = 'إنشاء قسم جديد للمادة';
             document.getElementById('secSubmitBtn').innerText = 'إنشاء القسم';
+            enforceAssignedYear();
         };
 
         window.editSection = async function(id) {
@@ -1314,7 +1315,11 @@
         async function fetchSectionsTable() {
             const tbody = document.getElementById('sectionsTable');
             try {
-                const snapshot = await getDocs(collection(db, "materialSections"));
+                let q = collection(db, "materialSections");
+                if(currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                    q = query(collection(db, "materialSections"), where("academicYear", "==", assignedYear));
+                }
+                const snapshot = await getDocs(q);
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="no-data">لا توجد أقسام مسجلة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
@@ -1333,7 +1338,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات وامتحانات المهارة والأسايمنت ---
+        // --- 3. الملفات ونشر المحتوى والأسايمنت بالنص ---
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('fileEditId').value;
@@ -1344,9 +1349,14 @@
             const contentType = document.getElementById('contentType').value;
             const title = document.getElementById('fileTitle').value.trim();
             const fileUrl = document.getElementById('fileUrl').value.trim();
+            
+            // استلام النص كقيمة جديدة
+            const fileTextEl = document.getElementById('fileText');
+            const fileTextContent = fileTextEl ? fileTextEl.value.trim() : '';
+            
             const assignmentDeadline = document.getElementById('assignmentDeadline').value;
 
-            let fileData = { academicYear, materialTitle, sectionName, targetRole, contentType, title, fileUrl, publisherName: currentAdminName };
+            let fileData = { academicYear, materialTitle, sectionName, targetRole, contentType, title, fileUrl, fileTextContent, publisherName: currentAdminName };
 
             if (contentType === 'skill_quiz') {
                 fileData.durationMinutes = parseInt(document.getElementById('quizDuration').value) || 15;
@@ -1405,16 +1415,21 @@
         window.resetFileForm = function() {
             document.getElementById('fileForm').reset();
             document.getElementById('fileEditId').value = '';
-            document.getElementById('fileCardHeader').innerText = 'رفع ونشر الملفات والمحتوى';
+            document.getElementById('fileCardHeader').innerText = 'رفع ونشر الملفات والمحتوى والأسايمنت';
             document.getElementById('fileSubmitBtn').innerText = 'نشر المحتوى وإرسال إشعار فوري';
             document.getElementById('questionsList').innerHTML = '';
             toggleContentTypeFields();
+            enforceAssignedYear();
         };
 
         async function fetchFilesTable() {
             const tbody = document.getElementById('filesTable');
             try {
-                const snapshot = await getDocs(collection(db, "materialContents"));
+                let q = collection(db, "materialContents");
+                if(currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                    q = query(collection(db, "materialContents"), where("academicYear", "==", assignedYear));
+                }
+                const snapshot = await getDocs(q);
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد محتويات منشورة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
@@ -1441,35 +1456,68 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. الإشعارات ---
+        // --- 4. الإشعارات (تعديل + إضافة + ظهور لحظي) ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const editId = document.getElementById('notifEditId').value;
             const targetType = document.getElementById('notifTargetType').value;
             const title = document.getElementById('notifTitle').value.trim();
             const message = document.getElementById('notifMessage').value.trim();
 
-            let notifData = { title, message, type: 'custom_admin', createdAt: new Date().toISOString() };
+            let notifData = { title, message, type: 'custom_admin' };
             if(targetType === 'all') notifData.target_group = 'all';
             else if(targetType === 'year') { notifData.target_group = 'year'; notifData.target_year = document.getElementById('notifYear').value; }
             else if(targetType === 'student') { notifData.target_group = 'student'; notifData.student_id = document.getElementById('notifStudentId').value.trim(); }
 
             try {
-                await addDoc(collection(db, "notifications"), notifData);
-                logActivity('إرسال إشعار', `تم إرسال إشعار: ${title}`);
-                showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
-                document.getElementById('customNotifForm').reset();
-                toggleNotifTargetInput();
+                if (editId) {
+                    await updateDoc(doc(db, "notifications", editId), notifData);
+                    logActivity('تعديل إشعار', `تم تعديل الإشعار: ${title}`);
+                    showToast('تم التعديل بنجاح!', 'success');
+                } else {
+                    notifData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "notifications"), notifData);
+                    logActivity('إرسال إشعار', `تم إرسال إشعار: ${title}`);
+                    showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
+                }
+                resetNotifForm();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        // جلب الإشعارات لحظياً onSnapshot لكي لا تضطر لنشر إشعار جديد حتى يظهر الجدول
+        window.editNotif = async function(id) {
+            const snap = await getDoc(doc(db, "notifications", id));
+            if(snap.exists()) {
+                const n = snap.data();
+                document.getElementById('notifEditId').value = id;
+                document.getElementById('notifTitle').value = n.title;
+                document.getElementById('notifMessage').value = n.message || '';
+                document.getElementById('notifTargetType').value = n.target_group || 'all';
+                toggleNotifTargetInput();
+                
+                if (n.target_group === 'year') document.getElementById('notifYear').value = n.target_year;
+                if (n.target_group === 'student') document.getElementById('notifStudentId').value = n.student_id;
+                
+                document.getElementById('notifCardHeader').innerText = 'تعديل الإشعار';
+                document.getElementById('notifSubmitBtn').innerText = 'حفظ التعديلات';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        window.resetNotifForm = function() {
+            document.getElementById('customNotifForm').reset();
+            document.getElementById('notifEditId').value = '';
+            document.getElementById('notifCardHeader').innerText = 'إرسال إشعار مخصص للطلاب';
+            document.getElementById('notifSubmitBtn').innerText = 'إرسال الإشعار الآن';
+            toggleNotifTargetInput();
+        }
+
         window.fetchNotifsTable = function() {
             const tbody = document.getElementById('notifsTable');
             onSnapshot(collection(db, "notifications"), (snapshot) => {
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
                 let sortedDocs = [];
                 snapshot.forEach(d => sortedDocs.push({ id: d.id, ...d.data() }));
-                // الترتيب من الأحدث للأقدم
+                // ترتيب الإشعارات من الأحدث للأقدم
                 sortedDocs.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 
                 let html = '';
@@ -1485,6 +1533,7 @@
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
+                            <button class="btn btn-edit" onclick="editNotif('${n.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${n.id}')">حذف</button>
                         </td>
                     </tr>`;
@@ -1493,12 +1542,7 @@
             });
         };
 
-        window.resetNotifForm = function() {
-            document.getElementById('customNotifForm').reset();
-            toggleNotifTargetInput();
-        }
-
-        // --- 5. إدارة الطلاب والأعضاء ---
+        // --- 5. إدارة الطلاب (مراجعة وقبول وتعديل) ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -1514,9 +1558,9 @@
                         <td>${u.phone || '-'}</td>
                         <td>الفرقة ${u.academicYear}</td>
                         <td>
-                            <button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">قبول</button>
-                            <button class="btn btn-warning" onclick="updateStudentStatus('${d.id}', 'banned')">حظر</button>
-                            <button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض</button>
+                            <button class="btn btn-approve" onclick="updateStudentStatus('${d.id}', 'approved')">قبول الطلب</button>
+                            <button class="btn btn-warning" onclick="updateStudentStatus('${d.id}', 'banned')">حظر الطالب</button>
+                            <button class="btn btn-reject" onclick="updateStudentStatus('${d.id}', 'rejected')">رفض الطلب</button>
                         </td>
                     </tr>`;
                 });
@@ -1659,7 +1703,7 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين (Real-time و Secondary App) ---
+        // --- 6. الأعضاء الإداريين (إنشاء وتفعيل/تعطيل بصلاحيات الـ Secondary Auth) ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('admName').value.trim();
@@ -1674,7 +1718,6 @@
             }
 
             try {
-                // إنشاء الحساب الإداري في الـ Auth بشكل تلقائي
                 const secApp = initializeSecondaryApp(firebaseConfig, "SecondaryApp_" + Date.now());
                 const secAuth = getSecondaryAuth(secApp);
                 const cred = await createUserWithEmailAndPassword(secAuth, email, password);
@@ -1689,11 +1732,6 @@
                 toggleRolePermissions();
             } catch(e) { showToast('حدث خطأ: ' + e.message, 'error'); }
         });
-
-        window.resetAdminForm = function() {
-            document.getElementById('adminCreateForm').reset();
-            toggleRolePermissions();
-        }
 
         window.toggleAdminStatus = async function(docId, newStatus) {
             try {
@@ -1722,8 +1760,7 @@
                         `<button class="btn btn-approve" onclick="toggleAdminStatus('${d.id}', 'active')">تفعيل</button>` : 
                         `<button class="btn btn-warning" onclick="toggleAdminStatus('${d.id}', 'suspended')">تعطيل</button>`;
 
-                    html += `
-                        <tr>
+                    html += `<tr>
                             <td><b>${adm.name}</b></td>
                             <td>${adm.email}</td>
                             <td>${roleText} (${assignedYearText})</td>
@@ -1733,8 +1770,7 @@
                                 ${toggleBtn}
                                 <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
                             </td>
-                        </tr>
-                    `;
+                        </tr>`;
                 });
                 tbody.innerHTML = html;
             });
