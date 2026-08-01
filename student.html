@@ -279,7 +279,6 @@
             line-height: 1.5; 
         }
 
-        /* النوافذ المنبثقة للخدمات (متوافقة تماماً مع الموبايل) */
         .service-modal-overlay {
             position: fixed;
             top: 0;
@@ -408,23 +407,12 @@
         .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f39c12; }
 
-        /* تعديلات خاصة بالشاشات الصغيرة جداً (الموبايلات) */
         @media (max-width: 480px) {
-            header {
-                padding: 12px 15px;
-            }
-            .logo-area {
-                font-size: 16px;
-            }
-            .welcome-banner {
-                padding: 20px 15px;
-            }
-            .welcome-banner h1 {
-                font-size: 19px;
-            }
-            .user-profile span {
-                display: none; /* إخفاء الاسم الطويل لو الشاشة ضيقة جداً وعرض سهم القائمة فقط */
-            }
+            header { padding: 12px 15px; }
+            .logo-area { font-size: 16px; }
+            .welcome-banner { padding: 20px 15px; }
+            .welcome-banner h1 { font-size: 19px; }
+            .user-profile span { display: none; }
         }
     </style>
 </head>
@@ -685,9 +673,13 @@
             });
         }
 
+        // --- دالة فتح نافذة الحضور مباشر (تستخدم أيضاً عند الضغط على إشعار بدء المحاضرة) ---
         window.openAttendanceModal = function(event) {
-            event.stopPropagation();
-            document.getElementById('userDropdown').classList.remove('show');
+            if (event) event.stopPropagation();
+            const userDropdown = document.getElementById('userDropdown');
+            if (userDropdown) userDropdown.classList.remove('show');
+            const notifDropdown = document.getElementById('notifDropdown');
+            if (notifDropdown) notifDropdown.classList.remove('show');
             
             const overlay = document.getElementById('attendanceModalOverlay');
             const bodyEl = document.getElementById('attendanceModalBody');
@@ -705,6 +697,7 @@
                     return;
                 }
 
+                // جلب السجلات في نفس اللحظة عشان نتأكد من التحديث الفوري للزرار
                 const myRecordsQ = query(collection(db, "attendanceRecords"), where("studentId", "==", currentStudent.student_id));
                 const myRecordsSnap = await getDocs(myRecordsQ);
                 let attendedSessionIds = [];
@@ -717,14 +710,16 @@
                     const alreadyAttended = attendedSessionIds.includes(sId);
 
                     html += `
-                        <div style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                        <div style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" id="session-box-${sId}">
                             <h4 style="color: #0f172a; margin-bottom: 5px; font-size:15px;">📚 المادة: ${session.materialTitle}</h4>
                             <p style="font-size: 12.5px; color: #475569; margin-bottom: 12px;">المحاضر: ${session.professorName}</p>
                             
-                            ${alreadyAttended 
-                                ? `<button class="btn-disabled" disabled>✔️ لقد قمت بتسجيل حضورك</button>` 
-                                : `<button class="btn-submit" onclick="registerMyAttendance('${sId}', '${session.lateThresholdISO}', '${session.materialTitle}', ${session.adminLat}, ${session.adminLng}, ${session.radiusMeters || 50})">تسجيل حضوري الآن ✋ (يتطلب GPS)</button>`
-                            }
+                            <div id="btn-container-${sId}">
+                                ${alreadyAttended 
+                                    ? `<button class="btn-disabled" disabled>✔️ لقد قمت بتسجيل حضورك</button>` 
+                                    : `<button class="btn-submit" onclick="registerMyAttendance('${sId}', '${session.lateThresholdISO}', '${session.materialTitle}', ${session.adminLat}, ${session.adminLng}, ${session.radiusMeters || 50})">تسجيل حضوري الآن ✋ (يتطلب GPS)</button>`
+                                }
+                            </div>
                         </div>
                     `;
                 });
@@ -790,6 +785,13 @@
                     });
                     
                     showToast(`✔️ تم تسجيل حضورك بنجاح (${status})`, 'success');
+                    
+                    // تحديث فوري لشكل الزرار جوه الدايلوج من غير ما نعمل Refresh
+                    const btnContainer = document.getElementById(`btn-container-${sessionId}`);
+                    if (btnContainer) {
+                        btnContainer.innerHTML = `<button class="btn-disabled" disabled>✔️ لقد قمت بتسجيل حضورك</button>`;
+                    }
+
                 } catch(e) {
                     showToast('حدث خطأ أثناء التسجيل. يرجى المحاولة.', 'error');
                 }
@@ -823,7 +825,10 @@
 
                     if (isForThisStudent) {
                         let inferredLink = item.link || '#';
-                        if (inferredLink === '#' && item.message) {
+                        // لو الإشعار خاص ببدء المحاضرة، نخليه يفتح نافذة الحضور أوتوماتيك
+                        if (item.title && item.title.includes("محاضرة جديدة بدأت")) {
+                            inferredLink = 'attendance_action';
+                        } else if (inferredLink === '#' && item.message) {
                             const match = item.message.match(/المادة:\s*([^(]+)/);
                             if (match && match[1]) {
                                 inferredLink = `material.html?title=${encodeURIComponent(match[1].trim())}`;
@@ -890,13 +895,17 @@
             fetchNotifications(currentStudent);
         }
 
+        // التعامل مع الضغط على الإشعار وتوجيهه لتسجيل الحضور لو المحاضرة بدأت
         window.handleNotificationClick = function(notifId, link, studentId) {
             let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + studentId) || '[]');
             if (!readNotifs.includes(notifId)) {
                 readNotifs.push(notifId);
                 localStorage.setItem('readNotifications_' + studentId, JSON.stringify(readNotifs));
             }
-            if (link && link !== '#') {
+            
+            if (link === 'attendance_action') {
+                openAttendanceModal();
+            } else if (link && link !== '#') {
                 location.href = link;
             }
         }
