@@ -336,6 +336,7 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const phone = document.getElementById('phone').value.trim();
+            // استخدام toLowerCase لتوحيد حالة الأحرف للإيميل
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value.trim();
             const academicYear = document.getElementById('academicYear').value;
@@ -401,7 +402,8 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = document.getElementById('loginEmail').value.trim();
+            // استخدام toLowerCase لتوحيد حالة الأحرف للإيميل ومطابقته مع التسجيل
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value.trim();
 
             if (!email || !password) {
