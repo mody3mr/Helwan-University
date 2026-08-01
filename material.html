@@ -46,9 +46,9 @@
         }
         .content-card:hover { border-color: #cbd5e1; background: #fff; }
         .content-info h3 { font-size: 15px; color: #0f172a; margin-bottom: 5px; font-weight: 700; }
-        .content-info p { font-size: 13px; color: #64748b; }
+        .content-info p { font-size: 13px; color: #64748b; line-height: 1.5; }
         
-        .card-actions { display: flex; gap: 10px; }
+        .card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-view {
             background: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
         }
@@ -151,7 +151,6 @@
         }
 
         if (!materialTitle) {
-            alert('لم يتم تحديد المادة!');
             location.href = 'student.html';
         } else {
             document.getElementById('materialTitleDisplay').innerText = materialTitle;
@@ -181,16 +180,13 @@
 
         window.openFileModal = function(title, fileUrl) {
             const overlay = document.getElementById('fileModalOverlay');
-            const titleEl = document.getElementById('modalFileTitle');
+            document.getElementById('modalFileTitle').innerText = title;
             const bodyContainer = document.getElementById('modalBodyContainer');
-
-            titleEl.innerText = title;
-            const embedUrl = getEmbeddableUrl(fileUrl);
 
             if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) || fileUrl.includes('image')) {
                 bodyContainer.innerHTML = `<img src="${fileUrl}" alt="${title}">`;
             } else {
-                bodyContainer.innerHTML = `<iframe src="${embedUrl}" allow="autoplay"></iframe>`;
+                bodyContainer.innerHTML = `<iframe src="${getEmbeddableUrl(fileUrl)}" allow="autoplay"></iframe>`;
             }
 
             overlay.style.display = 'flex';
@@ -214,7 +210,6 @@
                 });
                 document.getElementById('materialProfDisplay').innerText = `أستاذ المادة: ${profName} | المعيد: ${assistName}`;
 
-                // جلب نتائج امتحانات الطالب الحالية للتحقق من حالة الامتحان (هل أداه وتم السماح بإعادته أم لا)
                 const resultsQuery = query(
                     collection(db, "quizResults"),
                     where("studentId", "==", currentStudent.student_id || currentStudent.email)
@@ -222,24 +217,31 @@
                 const resultsSnap = await getDocs(resultsQuery);
                 let studentResults = {};
                 resultsSnap.forEach(rDoc => {
-                    const r = rDoc.data();
-                    studentResults[r.quizId] = r; // تخزين حالة الامتحان للطالب
+                    studentResults[rDoc.data().quizId] = rDoc.data();
                 });
 
+                // جلب الأقسام والملفات بشكل متزامن لحظي بدون تأخير
                 const secQuery = query(collection(db, "materialSections"), where("materialTitle", "==", title));
                 const filesQuery = query(collection(db, "materialContents"), where("materialTitle", "==", title));
 
+                let currentSections = [];
+                let currentFiles = [];
+
+                const renderBothTabs = () => {
+                    renderTabContent('professor', currentSections, currentFiles, 'profSectionsContainer', studentResults);
+                    renderTabContent('assistant', currentSections, currentFiles, 'assistSectionsContainer', studentResults);
+                };
+
                 onSnapshot(secQuery, (secSnap) => {
-                    getDocs(filesQuery).then(filesSnap => {
-                        let sections = [];
-                        secSnap.forEach(s => sections.push(s.data()));
+                    currentSections = [];
+                    secSnap.forEach(s => currentSections.push(s.data()));
+                    renderBothTabs();
+                });
 
-                        let allFiles = [];
-                        filesSnap.forEach(f => allFiles.push({ id: f.id, ...f.data() }));
-
-                        renderTabContent('professor', sections, allFiles, 'profSectionsContainer', studentResults);
-                        renderTabContent('assistant', sections, allFiles, 'assistSectionsContainer', studentResults);
-                    });
+                onSnapshot(filesQuery, (filesSnap) => {
+                    currentFiles = [];
+                    filesSnap.forEach(f => currentFiles.push({ id: f.id, ...f.data() }));
+                    renderBothTabs();
                 });
 
             } catch (e) {
@@ -269,12 +271,34 @@
                         let actionButtons = '';
                         if (item.contentType === 'skill_quiz') {
                             const quizResult = studentResults[item.id];
-                            // لو الطالب امتحن الامتحان من قبل، ولم يقم الأدمن بالسماح له بالإعادة (canRetake !== true)
                             if (quizResult && !quizResult.canRetake) {
                                 actionButtons = `<button class="btn-disabled" disabled>لقد أديت الامتحان بالفعل</button>`;
                             } else {
                                 actionButtons = `<a href="quiz.html?id=${item.id}" class="btn-view" style="background:#f59e0b;">بدء الامتحان</a>`;
                             }
+                        } else if (item.contentType === 'assignment') {
+                            // عرض نص الأسايمنت أو زرار التحميل والرابط لو موجود
+                            let textHtml = item.fileTextContent ? `<p style="margin-top:6px; color:#334155;"><b>تفاصيل التكليف:</b> ${item.fileTextContent}</p>` : '';
+                            let deadlineHtml = item.assignmentDeadline ? `<p style="margin-top:4px; font-size:12px; color:#ef4444;">⏰ آخر موعد للتسليم: ${new Date(item.assignmentDeadline).toLocaleString('ar-EG')}</p>` : '';
+                            
+                            let linkBtn = item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="btn-view">رابط المرفق</a>` : '';
+                            
+                            actionButtons = `${linkBtn}`;
+                            
+                            filesHtml += `
+                                <div class="content-card">
+                                    <div class="content-info" style="width: 100%;">
+                                        <h3>📋 ${item.title} <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; margin-right:8px;">أسايمنت</span></h3>
+                                        ${textHtml}
+                                        ${deadlineHtml}
+                                        <p style="margin-top:6px; font-size:11.5px; color:#94a3b8;">تاريخ النشر: ${dateFormatted}</p>
+                                    </div>
+                                    <div class="card-actions" style="margin-top:10px;">
+                                        ${actionButtons}
+                                    </div>
+                                </div>
+                            `;
+                            return; // تخطي الـ template العادي لو هو أسايمنت
                         } else {
                             actionButtons = `
                                 <button class="btn-view" onclick="openFileModal('${item.title.replace(/'/g, "\\'")}', '${item.fileUrl}')">عرض الملف</button>
@@ -286,7 +310,7 @@
                             <div class="content-card">
                                 <div class="content-info">
                                     <h3>📁 ${item.title}</h3>
-                                    <p>بواسطة: <b>${item.publisherName || 'الإدارة'}</b> | التاريخ: ${dateFormatted}</p>
+                                    <p>التاريخ: ${dateFormatted}</p>
                                 </div>
                                 <div class="card-actions">
                                     ${actionButtons}
