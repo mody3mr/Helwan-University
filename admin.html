@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جامعة حلوان - لوحة التحكم الإدارية الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- إضافة مكتبة تصدير الإكسيل SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -16,72 +15,40 @@
             flex-direction: column; justify-content: flex-start; padding: 20px 15px;
             position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
         }
-        .sidebar-brand {
-            font-size: 20px; font-weight: 700; text-align: center;
-            padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8;
-        }
-        /* تم التعديل هنا: overflow: hidden لإخفاء السكرول بار */
+        .sidebar-brand { font-size: 20px; font-weight: 700; text-align: center; padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8; }
         .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-        .sidebar-menu li {
-            padding: 12px 15px; border-radius: 10px; background: #1e293b;
-            font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease;
-        }
+        .sidebar-menu li { padding: 12px 15px; border-radius: 10px; background: #1e293b; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease; }
         .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
 
         .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); height: 100vh; }
-        .header-top {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; background: white; padding: 20px 30px;
-            border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%;
-        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 30px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%; }
         .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
         
         .admin-menu-container { position: relative; cursor: pointer; }
-        .admin-profile {
-            display: flex; align-items: center; gap: 10px; background: #f8fafc;
-            padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0;
-            font-weight: 600; color: #1e293b; font-size: 14px;
-        }
-        .dropdown-menu {
-            position: absolute; left: 0; top: 50px; background: white; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none;
-            flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000;
-        }
+        .admin-profile { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; font-size: 14px; }
+        .dropdown-menu { position: absolute; left: 0; top: 50px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000; }
         .dropdown-menu.show { display: flex; }
-        .dropdown-menu a {
-            padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block;
-        }
+        .dropdown-menu a { padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block; }
         .dropdown-menu a:hover { background: #f8fafc; }
 
         .tab-section { display: none; width: 100%; }
         .tab-section.active { display: block; }
 
-        .card-box {
-            background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%;
-        }
-        .card-header {
-            padding: 20px 25px; border-bottom: 1px solid #f1f5f9;
-            font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc;
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-        }
+        .card-box { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%; }
+        .card-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .card-body { padding: 25px; }
         
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; }
         .form-group { margin-bottom: 20px; }
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px;
-            font-size: 14px; outline: none; transition: all 0.3s; background: #fff;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: all 0.3s; background: #fff; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
 
         .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
         .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
         .btn-add-q { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 5px; }
+        .btn-add-q:hover { background: #1d4ed8; }
         .btn-remove-q { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: left; }
 
         .permissions-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px; }
@@ -90,10 +57,7 @@
         .perm-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; cursor: pointer; }
         .perm-item input { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
 
-        .btn-submit {
-            background: #2563eb; color: white; padding: 14px 24px; border: none;
-            border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%;
-        }
+        .btn-submit { background: #2563eb; color: white; padding: 14px 24px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; }
         .btn-submit:hover { background: #1d4ed8; }
 
         .table-responsive { width: 100%; overflow-x: auto; }
@@ -127,7 +91,9 @@
         .custom-modal-actions { display: flex; gap: 12px; justify-content: center; }
         .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
         .btn-confirm-yes { background: #ef4444; color: white; transition: background 0.2s; }
+        .btn-confirm-yes:hover { background: #dc2626; }
         .btn-confirm-no { background: #f1f5f9; color: #475569; transition: background 0.2s; }
+        .btn-confirm-no:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -138,8 +104,7 @@
         <div class="report-modal">
             <h3 id="reportStudentName" style="color:#0f172a; margin-bottom:15px; font-size:20px;">تقرير أداء الطالب</h3>
             
-            <!-- شريط بحث للطالب في التقرير الشامل -->
-            <input type="text" id="modalStudentSearch" placeholder="ابحث باسم الطالب أو الـ ID..." onkeyup="filterModalReport()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Cairo';">
+            <input type="text" id="modalStudentSearch" placeholder="ابحث باسم الطالب أو الـ ID..." onkeyup="filterModalReport()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Cairo'; outline: none;">
 
             <div id="reportModalBody" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; font-size: 14px; color: #334155;"></div>
             <button class="btn-submit" onclick="document.getElementById('reportModalOverlay').style.display='none'">إغلاق التقرير</button>
@@ -165,9 +130,9 @@
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
                 <li id="menuReports" onclick="switchTab('reports')">📊 تقارير ونتائج الطلاب</li>
-                <li id="menuNotifs" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
+                <!-- تعديل: إضافة style="display: none;" لتاب الإشعارات لمنع الوميض -->
+                <li id="menuNotifs" style="display: none;" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
-                <!-- تعديل الأمان: إضافة style="display: none;" للقوائم لمنع الوميض -->
                 <li id="menuAdmins" style="display: none;" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
                 <li id="menuAuditLogs" style="display: none;" onclick="switchTab('auditLogs')">📜 سجل الأحداث والنشاطات</li>
             </ul>
@@ -214,8 +179,9 @@
                                 <input type="text" id="matProf" placeholder="مثال: د. أحمد محمد" required>
                             </div>
                             <div class="form-group">
-                                <label for="matAssist">المعيد</label>
-                                <input type="text" id="matAssist" placeholder="مثال: م. محمود علي" required>
+                                <!-- تعديل: إزالة الإجبار من حقل المعيد -->
+                                <label for="matAssist">المعيد (اختياري)</label>
+                                <input type="text" id="matAssist" placeholder="مثال: م. محمود علي">
                             </div>
                         </div>
                         <button type="submit" class="btn-submit" id="matSubmitBtn" style="margin-top: 10px;">حفظ وإضافة المادة</button>
@@ -727,19 +693,18 @@
             const nameDisplay = document.getElementById('adminNameDisplay');
             if(nameDisplay) nameDisplay.innerText = currentAdminName;
             
-            // إظهار القوائم للمدير العام فقط
+            // إظهار وإخفاء القوائم بناءً على الصلاحيات لضمان عدم وجود وميض
+            const adminMenu = document.getElementById('menuAdmins');
+            const auditMenu = document.getElementById('menuAuditLogs');
+            const notifMenu = document.getElementById('menuNotifs');
+
             if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') {
-                const adminMenu = document.getElementById('menuAdmins');
-                const auditMenu = document.getElementById('menuAuditLogs');
                 if(adminMenu) adminMenu.style.display = 'block';
                 if(auditMenu) auditMenu.style.display = 'block';
-            }
-
-            // إخفاء الإشعارات عن المشرف إذا لم يملك صلاحية
-            if (currentAdminRole === 'supervisor' || currentAdminRole === 'مشرف') {
-                if(!adminPerms.includes('notifs_manage')) {
-                    const notifMenu = document.getElementById('menuNotifs');
-                    if(notifMenu) notifMenu.style.display = 'none';
+                if(notifMenu) notifMenu.style.display = 'block';
+            } else if (currentAdminRole === 'supervisor' || currentAdminRole === 'مشرف') {
+                if (adminPerms.includes('notifs_manage')) {
+                    if(notifMenu) notifMenu.style.display = 'block';
                 }
             }
         }
@@ -967,7 +932,7 @@
                 deadlineGroup.style.display = 'block';
                 durationGroup.style.display = 'none';
                 quizBuilder.style.display = 'none';
-                urlInput.removeAttribute('required');
+                urlInput.removeAttribute('required'); 
             } else {
                 urlGroup.style.display = 'block';
                 if(textGroup) textGroup.style.display = 'none';
@@ -1455,9 +1420,7 @@
                 snapshot.forEach(d => {
                     const f = d.data();
                     const roleText = f.targetRole === 'professor' ? 'الدكتور' : 'المعيد';
-                    let typeLabel = 'ملف عادي';
-                    if (f.contentType === 'skill_quiz') typeLabel = 'امتحان مهارة';
-                    else if (f.contentType === 'assignment') typeLabel = 'أسايمنت';
+                    let typeLabel = f.contentType === 'assignment' ? 'أسايمنت' : (f.contentType === 'skill_quiz' ? 'امتحان مهارة' : 'ملف عادي');
 
                     let deadlineText = f.assignmentDeadline ? new Date(f.assignmentDeadline).toLocaleString('ar-EG') : 'غير محدد';
 
