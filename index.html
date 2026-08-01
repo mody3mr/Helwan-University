@@ -28,6 +28,7 @@
             width: 100%;
             max-width: 500px;
             transition: all 0.3s ease;
+            position: relative;
         }
         h2 {
             text-align: center;
@@ -58,6 +59,23 @@
             border-color: #3498db;
             box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
         }
+        
+        /* تنسيق زر نسيت كلمة المرور */
+        .forgot-password-link {
+            text-align: left;
+            margin-top: -8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .forgot-password-link span {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .forgot-password-link span:hover {
+            text-decoration: underline;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 12px;
@@ -69,7 +87,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s ease;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         .btn-submit:hover {
             background: #2980b9;
@@ -91,6 +109,24 @@
         }
         .hidden {
             display: none;
+        }
+
+        /* حقوق الملكية الفكرية المشفرة في الأسفل */
+        .system-footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 12.5px;
+            color: #64748b;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 15px;
+        }
+        .system-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .system-footer a:hover {
+            text-decoration: underline;
         }
 
         /* تصميم الـ Toast Messages الاحترافية */
@@ -128,7 +164,7 @@
         .toast.error { background-color: #e74c3c; }
         .toast.warning { background-color: #f39c12; }
 
-        /* نافذة التنبيه الاحترافية (Custom Professional Modal) للرفض والانتظار */
+        /* نافذة التنبيه الاحترافية (Custom Professional Modal) */
         #customAlertOverlay {
             position: fixed;
             top: 0;
@@ -192,7 +228,6 @@
 </head>
 <body>
 
-    <!-- حاوية الـ Toast Messages -->
     <div id="toast-container"></div>
 
     <!-- نافذة التنبيه الاحترافية -->
@@ -219,6 +254,12 @@
                     <label for="loginPassword">كلمة المرور</label>
                     <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور">
                 </div>
+                
+                <!-- زر نسيت كلمة المرور -->
+                <div class="forgot-password-link">
+                    <span onclick="openForgotPasswordModal()">نسيت كلمة المرور؟</span>
+                </div>
+
                 <button type="submit" class="btn-submit">دخول</button>
                 <div class="switch-text">
                     ليس لديك حساب؟ <span onclick="switchForm('register')">انشئ حساب جديد</span>
@@ -267,12 +308,32 @@
             </form>
         </div>
 
+        <!-- حقوق الملكية الفكرية المشفرة والمحمية -->
+        <div class="system-footer" id="systemFooterContainer">
+            تم تطوير هذا النظام بواسطة <a href="https://wa.me/201012345678" target="_blank" id="creatorLink">المهندس محمد عمرو</a> © 2026
+        </div>
+
     </div>
 
-    <!-- سكربتات ربط Firebase والمنطق البرمجي -->
+    <!-- سكربتات ربط Firebase والحماية المشفرة -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // --- نظام الحماية المشفر لحقوق الملكية (Mohamed Amr) ---
+        (function checkSystemIntegrity() {
+            try {
+                const footer = document.getElementById('systemFooterContainer');
+                const link = document.getElementById('creatorLink');
+                if (!footer || !link || !link.innerText.includes('محمد عمرو') || !link.href.includes('wa.me')) {
+                    document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; color:#ef4444; font-size:22px; font-family:Cairo; font-weight:bold; text-align:center; padding:20px;">⚠️ تنبيه أمني: تم تعديل حقوق الملكية الفكرية الخاصة بالمنشئ (محمد عمرو). تم تعطيل الصفحة لحماية النظام.</div>';
+                    throw new Error("Integrity check failed.");
+                }
+            } catch (err) {
+                document.write('');
+                window.stop();
+            }
+        })();
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -317,6 +378,15 @@
             document.getElementById('customAlertOverlay').style.display = 'none';
         }
 
+        // دالة عرض رسالة نسيت كلمة المرور
+        window.openForgotPasswordModal = function() {
+            showAlert(
+                'استعادة كلمة المرور',
+                'في حال نسيت كلمة المرور، الرجاء التواصل مع ليدر الدفعة أو منشئ النظام (المهندس محمد عمرو) لحل مشكلتك.',
+                '🔑'
+            );
+        }
+
         window.switchForm = function(target) {
             const loginSec = document.getElementById('loginSection');
             const regSec = document.getElementById('registerSection');
@@ -336,7 +406,6 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const phone = document.getElementById('phone').value.trim();
-            // استخدام toLowerCase لتوحيد حالة الأحرف للإيميل
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value.trim();
             const academicYear = document.getElementById('academicYear').value;
@@ -402,7 +471,6 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // استخدام toLowerCase لتوحيد حالة الأحرف للإيميل ومطابقته مع التسجيل
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value.trim();
 
