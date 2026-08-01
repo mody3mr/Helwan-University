@@ -1015,8 +1015,9 @@
         }
 
         document.getElementById('fileMaterial').addEventListener('change', async function() {
-            populateSectionsDropdown(this.value);
-            checkMaterialAssistantStatus(this.value);
+            const matTitle = this.value;
+            populateSectionsDropdown(matTitle);
+            checkMaterialAssistantStatus(matTitle);
         });
 
         async function checkMaterialAssistantStatus(matTitle) {
@@ -1206,30 +1207,56 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
         }
 
-        // --- 9. إدارة الحضور ---
+        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS) ---
         const attendanceForm = document.getElementById('attendanceForm');
         if (attendanceForm) {
             attendanceForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
                 const academicYear = document.getElementById('attYear').value;
                 const materialTitle = document.getElementById('attMaterial').value;
                 const professorName = document.getElementById('attProf').value.trim();
                 const lateMins = parseInt(document.getElementById('attLateMins').value);
 
-                const now = new Date();
-                const lateThreshold = new Date(now.getTime() + lateMins * 60000);
+                // إظهار رسالة إننا بنسحب الموقع
+                showToast('جاري تحديد موقع القاعة تلقائياً...', 'warning');
 
-                try {
-                    await addDoc(collection(db, "attendanceSessions"), {
-                        academicYear, materialTitle, professorName, lateThresholdISO: lateThreshold.toISOString(),
-                        isActive: true, createdBy: currentAdminName, createdAt: now.toISOString()
-                    });
-                    logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle}`);
-                    showToast('تم فتح الجلسة، يمكن للطلاب تسجيل الحضور الآن.', 'success');
-                    document.getElementById('attendanceForm').reset();
-                    enforceAssignedYear();
-                    fetchAttendanceSessions();
-                } catch(e) { showToast('حدث خطأ', 'error'); }
+                // سحب موقع الدكتور (الأدمن) أوتوماتيكياً
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const adminLat = position.coords.latitude;
+                        const adminLng = position.coords.longitude;
+                        
+                        const now = new Date();
+                        const lateThreshold = new Date(now.getTime() + lateMins * 60000);
+
+                        try {
+                            await addDoc(collection(db, "attendanceSessions"), {
+                                academicYear, 
+                                materialTitle, 
+                                professorName, 
+                                lateThresholdISO: lateThreshold.toISOString(),
+                                adminLat: adminLat, // تم حفظ خط العرض
+                                adminLng: adminLng, // تم حفظ خط الطول
+                                radiusMeters: 50, // النطاق المسموح 50 متر
+                                isActive: true, 
+                                createdBy: currentAdminName, 
+                                createdAt: now.toISOString()
+                            });
+                            logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle} (تم ربط الـ GPS)`);
+                            showToast('تم تحديد الموقع وفتح الجلسة بنجاح، يمكن للطلاب التسجيل الآن.', 'success');
+                            document.getElementById('attendanceForm').reset();
+                            enforceAssignedYear();
+                            fetchAttendanceSessions();
+                        } catch(e) { 
+                            showToast('حدث خطأ أثناء فتح الجلسة', 'error'); 
+                        }
+                    }, (error) => {
+                        showToast('❌ عذراً، يجب السماح للمتصفح بالوصول لموقعك (GPS) لفتح جلسة الحضور.', 'error');
+                    }, { enableHighAccuracy: true });
+                } else {
+                    showToast('متصفحك لا يدعم تحديد الموقع.', 'error');
+                }
             });
         }
 
