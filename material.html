@@ -282,6 +282,10 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            transition: background 0.2s; 
+        }
+        .close-modal:hover { 
+            background: #dc2626; 
         }
         .modal-body { 
             flex-grow: 1; 
@@ -323,8 +327,8 @@
         </div>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab('professor')">👨‍🏫 أستاذ المادة (الدكتور)</button>
-            <button class="tab-btn" onclick="switchTab('assistant')">👨‍💻 المعيد (المساعد)</button>
+            <button class="tab-btn active" id="profTabBtn" onclick="switchTab('professor')">👨‍🏫 أستاذ المادة (الدكتور)</button>
+            <button class="tab-btn" id="assistTabBtn" onclick="switchTab('assistant')">👨‍💻 المعيد (المساعد)</button>
         </div>
 
         <div id="professorTab" class="tab-content active">
@@ -375,10 +379,10 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
             if (tabName === 'professor') {
-                document.querySelector('.tabs-container button:nth-child(1)').classList.add('active');
+                document.getElementById('profTabBtn').classList.add('active');
                 document.getElementById('professorTab').classList.add('active');
             } else {
-                document.querySelector('.tabs-container button:nth-child(2)').classList.add('active');
+                document.getElementById('assistTabBtn').classList.add('active');
                 document.getElementById('assistantTab').classList.add('active');
             }
         }
@@ -411,14 +415,27 @@
             try {
                 const matQuery = query(collection(db, "materials"), where("title", "==", title));
                 const matSnap = await getDocs(matQuery);
-                let profName = 'غير محدد', assistName = 'غير محدد';
+                let profName = 'غير محدد', assistName = '';
                 
                 matSnap.forEach(d => {
                     const m = d.data();
                     if(m.professorName) profName = m.professorName;
-                    if(m.assistantName) assistName = m.assistantName;
+                    if(m.assistantName) assistName = m.assistantName.trim();
                 });
-                document.getElementById('materialProfDisplay').innerText = `أستاذ المادة: ${profName} | المعيد: ${assistName}`;
+                
+                let displayTxt = `أستاذ المادة: ${profName}`;
+                const assistTabBtn = document.getElementById('assistTabBtn');
+                
+                // إخفاء تاب المعيد لو مفيش معيد متسجل في الداتا بيز
+                if (assistName && assistName !== '') {
+                    displayTxt += ` | المعيد: ${assistName}`;
+                    assistTabBtn.style.display = 'block';
+                } else {
+                    assistTabBtn.style.display = 'none';
+                    switchTab('professor'); // إجبار تفعيل تاب الدكتور
+                }
+
+                document.getElementById('materialProfDisplay').innerText = displayTxt;
 
                 const resultsQuery = query(collection(db, "quizResults"), where("studentId", "==", currentStudent.student_id || currentStudent.email));
                 const resultsSnap = await getDocs(resultsQuery);
@@ -433,7 +450,9 @@
 
                 const renderBothTabs = () => {
                     renderTabContent('professor', currentSections, currentFiles, 'profSectionsContainer', studentResults);
-                    renderTabContent('assistant', currentSections, currentFiles, 'assistSectionsContainer', studentResults);
+                    if (assistName !== '') {
+                        renderTabContent('assistant', currentSections, currentFiles, 'assistSectionsContainer', studentResults);
+                    }
                 };
 
                 onSnapshot(secQuery, (secSnap) => {
@@ -483,7 +502,7 @@
                         } else if (item.contentType === 'assignment') {
                             let textHtml = item.fileTextContent ? `<p style="margin-top:6px; color:#334155;"><b>تفاصيل التكليف:</b> ${item.fileTextContent}</p>` : '';
                             
-                            // التحقق مما إذا كان موعد التسليم قد انتهى مقارنة بوقت الجهاز الحالي
+                            // التحقق مما إذا كان موعد التسليم قد انتهى
                             let isExpired = false;
                             let deadlineFormatted = '';
                             if (item.assignmentDeadline) {
