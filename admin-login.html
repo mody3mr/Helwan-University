@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جامعة حلوان - تسجيل دخول الإدارة الآمن</title>
+    <title>جامعة حلوان - تسجيل دخول الإدارة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -76,7 +76,7 @@
 
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const emailVal = document.getElementById('adminEmail').value.trim();
+            const emailVal = document.getElementById('adminEmail').value.trim().toLowerCase();
             const passwordVal = document.getElementById('adminPassword').value.trim();
             const submitBtn = document.getElementById('submitBtn');
 
@@ -84,7 +84,6 @@
             submitBtn.innerText = "جاري التحقق والأمان...";
 
             try {
-                // 1. الفحص الصارم من Firebase Auth (لو الحساب معطل أو محذوف يتوقف فوراً)
                 let user = null;
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, emailVal, passwordVal);
@@ -93,54 +92,49 @@
                     console.error("Auth error:", authError);
                     let msg = 'بيانات الدخول غير صحيحة أو الحساب غير موجود!';
                     if (authError.code === 'auth/user-disabled') {
-                        msg = 'عذراً، هذا الحساب معطل من قبل إدارة Firebase!';
+                        msg = 'عذراً، هذا الحساب معطل من قبل إدارة النظام!';
                     } else if (authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found' || authError.code === 'auth/wrong-password') {
                         msg = 'البريد الإلكتروني أو كلمة المرور غير صحيحة!';
-                    } else if (authError.code === 'auth/too-many-requests') {
-                        msg = 'تم حظر المحاولات مؤقتاً بسبب التكرار الخاطئ. حاول لاحقاً.';
                     }
                     showToast(msg, 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "دخول لوحة التحكم";
-                    return; // ⛔ خروج فوراً وعدم الانتقال لفحص قاعدة البيانات
+                    return;
                 }
 
-                // 2. التحقق من وجود بيانات الأدمن وصلاحياته في Firestore
                 let adminDocData = null;
-                
-                // البحث باستخدام UID المستند أولاً
                 const docRef = doc(db, "admins", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     adminDocData = docSnap.data();
                 } else {
-                    // البحث بالبريد الإلكتروني كبديل
-                    const qEmail = query(collection(db, "admins"), where("email", "==", emailVal));
-                    const snapEmail = await getDocs(qEmail);
-                    if (!snapEmail.empty) {
-                        adminDocData = snapEmail.docs[0].data();
-                    }
+                    const allAdminsSnap = await getDocs(collection(db, "admins"));
+                    allAdminsSnap.forEach(d => {
+                        const data = d.data();
+                        if (data.email && data.email.trim().toLowerCase() === emailVal) {
+                            adminDocData = data;
+                        }
+                    });
                 }
 
-                // لو الحساب غير موجود في الكولكشن أو معطل من Firestore
                 if (!adminDocData) {
-                    showToast('تم التحقق ولكن حسابك غير مسجل كعضو إداري في النظام!', 'error');
+                    showToast('الحساب مفعل ولكنك غير مسجل كعضو إداري في النظام!', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "دخول لوحة التحكم";
                     return;
                 }
 
                 if (adminDocData.status === 'suspended' || adminDocData.status === 'inactive') {
-                    showToast('عذراً، هذا الحساب الإداري موقوف حالياً من قاعدة البيانات.', 'error');
+                    showToast('عذراً، هذا الحساب الإداري موقوف حالياً.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "دخول لوحة التحكم";
                     return;
                 }
 
-                // 3. تخزين الجلسة وتوجيه الأدمن للداش بورد
                 sessionStorage.setItem('currentAdminName', adminDocData.name || 'عضو إداري');
                 sessionStorage.setItem('currentAdminRole', adminDocData.role || 'manager');
+                sessionStorage.setItem('assignedYear', adminDocData.assignedYear || 'all');
                 sessionStorage.setItem('adminPermissions', JSON.stringify(adminDocData.permissions || []));
                 
                 showToast('تم تسجيل الدخول بنجاح، مرحباً ' + (adminDocData.name || ''), 'success');
