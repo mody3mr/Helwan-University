@@ -310,7 +310,7 @@
 
         <!-- حقوق الملكية الفكرية المشفرة والمحمية -->
         <div class="system-footer" id="systemFooterContainer">
-            تم تطوير هذا النظام بواسطة <a href="https://wa.me/201012345678" target="_blank" id="creatorLink">المهندس محمد عمرو</a> © 2026
+            تم تطوير هذا النظام بواسطة <a href="https://wa.me/201094264206" target="_blank" id="creatorLink">Mohamed Amr Ibrahim</a> © 2026[cite: 2]
         </div>
 
     </div>
@@ -320,13 +320,13 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --- نظام الحماية المشفر لحقوق الملكية (Mohamed Amr) ---
+        // --- نظام الحماية المشفر لحقوق الملكية (Mohamed Amr Ibrahim) ---
         (function checkSystemIntegrity() {
             try {
                 const footer = document.getElementById('systemFooterContainer');
                 const link = document.getElementById('creatorLink');
-                if (!footer || !link || !link.innerText.includes('محمد عمرو') || !link.href.includes('wa.me')) {
-                    document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; color:#ef4444; font-size:22px; font-family:Cairo; font-weight:bold; text-align:center; padding:20px;">⚠️ تنبيه أمني: تم تعديل حقوق الملكية الفكرية الخاصة بالمنشئ (محمد عمرو). تم تعطيل الصفحة لحماية النظام.</div>';
+                if (!footer || !link || !link.innerText.includes('Mohamed Amr Ibrahim') || !link.href.includes('wa.me/201094264206')) {
+                    document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; color:#ef4444; font-size:22px; font-family:Cairo; font-weight:bold; text-align:center; padding:20px;">⚠️ تنبيه أمني: تم تعديل حقوق الملكية الفكرية الخاصة بالمنشئ (Mohamed Amr Ibrahim). تم تعطيل الصفحة لحماية النظام.</div>';
                     throw new Error("Integrity check failed.");
                 }
             } catch (err) {
@@ -382,7 +382,7 @@
         window.openForgotPasswordModal = function() {
             showAlert(
                 'استعادة كلمة المرور',
-                'في حال نسيت كلمة المرور، الرجاء التواصل مع ليدر الدفعة أو منشئ النظام (المهندس محمد عمرو) لحل مشكلتك.',
+                'في حال نسيت كلمة المرور، الرجاء التواصل مع ليدر الدفعة أو منشئ النظام (Mohamed Amr Ibrahim) لحل مشكلتك.',
                 '🔑'
             );
         }
