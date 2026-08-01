@@ -36,7 +36,9 @@
             font-weight: 700;
             color: #0f172a;
         }
-        .logo-area span { color: #3b82f6; }
+        .logo-area span { 
+            color: #3b82f6; 
+        }
         .header-right {
             display: flex;
             align-items: center;
@@ -62,7 +64,9 @@
             transition: background 0.2s;
             position: relative;
         }
-        .bell-btn:hover { background: #e2e8f0; }
+        .bell-btn:hover { 
+            background: #e2e8f0; 
+        }
         .badge {
             position: absolute;
             top: -2px;
@@ -94,7 +98,9 @@
             z-index: 1100;
             border: 1px solid #f1f5f9;
         }
-        .notifications-dropdown.show { display: flex; }
+        .notifications-dropdown.show { 
+            display: flex; 
+        }
         .notif-header {
             padding: 12px 15px;
             font-weight: 700;
@@ -115,7 +121,9 @@
             cursor: pointer;
             font-family: 'Cairo';
         }
-        .btn-read-all:hover { text-decoration: underline; }
+        .btn-read-all:hover { 
+            text-decoration: underline; 
+        }
 
         .notif-item {
             padding: 12px 15px;
@@ -125,11 +133,30 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .notif-item:hover { background: #f8fafc; }
-        .notif-item.unread { background: #eff6ff; border-right: 3px solid #3b82f6; }
-        .notif-item p { margin-bottom: 3px; font-weight: 700; color: #0f172a; }
-        .notif-item span.subtitle { font-size: 12.5px; color: #475569; display: block; margin-top: 2px; }
-        .notif-item span.time { font-size: 11px; color: #94a3b8; display: block; margin-top: 6px; }
+        .notif-item:hover { 
+            background: #f8fafc; 
+        }
+        .notif-item.unread { 
+            background: #eff6ff; 
+            border-right: 3px solid #3b82f6; 
+        }
+        .notif-item p { 
+            margin-bottom: 3px; 
+            font-weight: 700; 
+            color: #0f172a; 
+        }
+        .notif-item span.subtitle { 
+            font-size: 12.5px; 
+            color: #475569; 
+            display: block; 
+            margin-top: 2px; 
+        }
+        .notif-item span.time { 
+            font-size: 11px; 
+            color: #94a3b8; 
+            display: block; 
+            margin-top: 6px; 
+        }
 
         /* بروفايل المستخدم */
         .user-menu-container {
@@ -155,13 +182,16 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 180px;
+            width: 190px;
             display: none;
             flex-direction: column;
             overflow: hidden;
             border: 1px solid #f1f5f9;
+            z-index: 1100;
         }
-        .dropdown-menu.show { display: flex; }
+        .dropdown-menu.show { 
+            display: flex; 
+        }
         .dropdown-menu a {
             padding: 12px 18px;
             text-decoration: none;
@@ -169,11 +199,15 @@
             font-size: 14px;
             font-weight: 600;
             transition: background 0.2s;
+            border-bottom: 1px solid #f8fafc;
         }
-        .dropdown-menu a:hover { background: #f8fafc; }
+        .dropdown-menu a:hover { 
+            background: #f8fafc; 
+        }
         .dropdown-menu a.logout {
             color: #ef4444;
-            border-top: 1px solid #f1f5f9;
+            border-bottom: none;
+            border-top: 1px solid #e2e8f0;
         }
 
         .container {
@@ -189,8 +223,14 @@
             margin-bottom: 35px;
             box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
         }
-        .welcome-banner h1 { font-size: 26px; margin-bottom: 8px; }
-        .welcome-banner p { font-size: 15px; opacity: 0.9; }
+        .welcome-banner h1 { 
+            font-size: 26px; 
+            margin-bottom: 8px; 
+        }
+        .welcome-banner p { 
+            font-size: 15px; 
+            opacity: 0.9; 
+        }
 
         .section-title {
             font-size: 20px;
@@ -228,15 +268,111 @@
             box-shadow: 0 12px 20px rgba(0,0,0,0.06);
             border-color: #cbd5e1;
         }
-        .material-card h3 { font-size: 18px; color: #1e293b; margin-bottom: 8px; }
-        .material-card p { font-size: 13px; color: #64748b; line-height: 1.6; }
+        .material-card h3 { 
+            font-size: 18px; 
+            color: #1e293b; 
+            margin-bottom: 8px; 
+        }
+        .material-card p { 
+            font-size: 13px; 
+            color: #64748b; 
+            line-height: 1.6; 
+        }
+
+        /* النوافذ المنبثقة للخدمات (الجداول والحضور) */
+        .service-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            padding: 20px;
+        }
+        .service-modal {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: modalScale 0.3s ease;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .service-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+        .service-modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .close-service-modal {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .close-service-modal:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .service-modal-body {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .btn-submit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+        .btn-disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: not-allowed;
+            font-size: 14px;
+        }
 
         #toast-container {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 9999;
+            z-index: 999999;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -257,12 +393,37 @@
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background-color: #22c55e; }
         .toast.error { background-color: #e74c3c; }
-        .toast.warning { background-color: #f59e0b; }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+
+    <!-- نافذة الجداول (محاضرات / امتحانات) -->
+    <div class="service-modal-overlay" id="schedulesModalOverlay">
+        <div class="service-modal">
+            <div class="service-modal-header">
+                <h3 id="schedulesModalTitle">الجداول</h3>
+                <button class="close-service-modal" onclick="closeServiceModals()">✕</button>
+            </div>
+            <div class="service-modal-body" id="schedulesModalBody">
+                <!-- المحتوى هيظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل الحضور -->
+    <div class="service-modal-overlay" id="attendanceModalOverlay">
+        <div class="service-modal">
+            <div class="service-modal-header">
+                <h3>✋ تسجيل الحضور اليومي</h3>
+                <button class="close-service-modal" onclick="closeServiceModals()">✕</button>
+            </div>
+            <div class="service-modal-body" id="attendanceModalBody">
+                <!-- المحاضرات النشطة هتظهر هنا -->
+            </div>
+        </div>
+    </div>
 
     <header>
         <div class="logo-area">جامعة <span>حلوان</span></div>
@@ -284,14 +445,17 @@
                 </div>
             </div>
 
-            <!-- بروفايل المستخدم -->
+            <!-- بروفايل المستخدم وقائمة الخدمات -->
             <div class="user-menu-container" onclick="toggleUserDropdown()">
                 <div class="user-profile">
                     <span id="studentNameDisplay">جاري التحميل...</span> ▾
                 </div>
                 <div class="dropdown-menu" id="userDropdown">
-                    <a href="settings.html">إعدادات الحساب</a>
-                    <a href="#" class="logout" onclick="logout()">تسجيل الخروج</a>
+                    <a href="#" onclick="openScheduleModal('lecture', event)">📅 جدول المحاضرات</a>
+                    <a href="#" onclick="openScheduleModal('exam', event)">📝 جدول الامتحانات</a>
+                    <a href="#" onclick="openAttendanceModal(event)">✋ تسجيل الحضور</a>
+                    <a href="settings.html">⚙️ إعدادات الحساب</a>
+                    <a href="#" class="logout" onclick="logout()">🚪 تسجيل الخروج</a>
                 </div>
             </div>
         </div>
@@ -313,7 +477,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -326,6 +490,19 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
 
         let currentStudent = null;
         let allNotifsCache = [];
@@ -340,12 +517,17 @@
             document.getElementById('userDropdown').classList.remove('show');
         }
 
-        // إغلاق قوائم الإشعارات والبروفايل عند الضغط في أي مكان خارجي
+        // إغلاق النوافذ المنبثقة للخدمات
+        window.closeServiceModals = function() {
+            document.getElementById('schedulesModalOverlay').style.display = 'none';
+            document.getElementById('attendanceModalOverlay').style.display = 'none';
+        }
+
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.notification-container')) {
                 document.getElementById('notifDropdown').classList.remove('show');
             }
-            if (!event.target.closest('.user-menu-container')) {
+            if (!event.target.closest('.user-menu-container') && !event.target.closest('.dropdown-menu')) {
                 document.getElementById('userDropdown').classList.remove('show');
             }
         });
@@ -364,7 +546,6 @@
         }
 
         function initStudentDashboard() {
-            // مزامنة حالة وحجم الفرقة مباشرة من قاعدة البيانات بدون الحاجة لمسح الكوكيز
             const qStudent = query(collection(db, "users"), where("student_id", "==", currentStudent.student_id));
             onSnapshot(qStudent, (snapshot) => {
                 if (!snapshot.empty) {
@@ -420,6 +601,122 @@
             });
         }
 
+        // --- الخدمات الطلابية (فتح نافذة الجداول) ---
+        window.openScheduleModal = function(type, event) {
+            event.stopPropagation();
+            document.getElementById('userDropdown').classList.remove('show');
+            
+            const overlay = document.getElementById('schedulesModalOverlay');
+            const titleEl = document.getElementById('schedulesModalTitle');
+            const bodyEl = document.getElementById('schedulesModalBody');
+
+            titleEl.innerText = type === 'lecture' ? '📅 جدول المحاضرات' : '📝 جدول الامتحانات';
+            bodyEl.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">جاري التحميل...</div>';
+            overlay.style.display = 'flex';
+
+            const q = query(collection(db, "schedules"), where("academicYear", "==", String(currentStudent.academicYear)), where("type", "==", type));
+            getDocs(q).then(snapshot => {
+                if(snapshot.empty) {
+                    bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color:#ef4444; font-weight:600;">لم يتم نشر جداول من هذا النوع لفرقتك حتى الآن.</div>`;
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const dateFormatted = data.createdAt ? new Date(data.createdAt).toLocaleDateString('ar-EG') : '';
+                    html += `
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
+                            <div>
+                                <div style="font-weight: 700; color: #0f172a; font-size:15px;">${data.title}</div>
+                                <div style="font-size: 11.5px; color: #64748b; margin-top:3px;">تاريخ النشر: ${dateFormatted}</div>
+                            </div>
+                            <a href="${data.fileUrl}" target="_blank" class="btn-submit" style="text-decoration:none;">عرض الجدول</a>
+                        </div>
+                    `;
+                });
+                bodyEl.innerHTML = html;
+            }).catch(e => {
+                bodyEl.innerHTML = '<div style="text-align:center; color:red;">حدث خطأ أثناء تحميل الجداول.</div>';
+            });
+        }
+
+        // --- الخدمات الطلابية (نافذة تسجيل الحضور) ---
+        window.openAttendanceModal = function(event) {
+            event.stopPropagation();
+            document.getElementById('userDropdown').classList.remove('show');
+            
+            const overlay = document.getElementById('attendanceModalOverlay');
+            const bodyEl = document.getElementById('attendanceModalBody');
+            bodyEl.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">جاري البحث عن محاضرات نشطة...</div>';
+            overlay.style.display = 'flex';
+
+            // البحث عن جلسات الحضور النشطة للفرقة دي
+            const q = query(collection(db, "attendanceSessions"), where("academicYear", "==", String(currentStudent.academicYear)), where("isActive", "==", true));
+            
+            onSnapshot(q, async (snapshot) => {
+                if(snapshot.empty) {
+                    bodyEl.innerHTML = `<div style="text-align:center; padding: 30px 10px; color:#64748b;">
+                        <div style="font-size:40px; margin-bottom:10px;">😴</div>
+                        <div style="font-weight:600; font-size:15px; color:#334155;">لا توجد محاضرات تطلب تسجيل الحضور حالياً.</div>
+                    </div>`;
+                    return;
+                }
+
+                // جلب سجلات حضور الطالب ده عشان منظهرلوش الزرار لو سجل قبل كده
+                const myRecordsQ = query(collection(db, "attendanceRecords"), where("studentId", "==", currentStudent.student_id));
+                const myRecordsSnap = await getDocs(myRecordsQ);
+                let attendedSessionIds = [];
+                myRecordsSnap.forEach(d => attendedSessionIds.push(d.data().sessionId));
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const session = doc.data();
+                    const sId = doc.id;
+                    const alreadyAttended = attendedSessionIds.includes(sId);
+
+                    html += `
+                        <div style="background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                            <h4 style="color: #0f172a; margin-bottom: 5px; font-size:16px;">📚 المادة: ${session.materialTitle}</h4>
+                            <p style="font-size: 13px; color: #475569; margin-bottom: 12px;">المحاضر: ${session.professorName}</p>
+                            
+                            ${alreadyAttended 
+                                ? `<button class="btn-disabled" style="width: 100%;" disabled>✔️ لقد قمت بتسجيل حضورك</button>` 
+                                : `<button class="btn-submit" style="width: 100%;" onclick="registerMyAttendance('${sId}', '${session.lateThresholdISO}', '${session.materialTitle}')">تسجيل حضوري الآن ✋</button>`
+                            }
+                        </div>
+                    `;
+                });
+                bodyEl.innerHTML = html;
+            });
+        }
+
+        // دالة إرسال الحضور للداتابيز
+        window.registerMyAttendance = async function(sessionId, lateThresholdISO, materialTitle) {
+            try {
+                const now = new Date();
+                const lateThreshold = new Date(lateThresholdISO);
+                const status = now > lateThreshold ? 'متأخر' : 'حاضر في الموعد';
+
+                await addDoc(collection(db, "attendanceRecords"), {
+                    sessionId: sessionId,
+                    materialTitle: materialTitle,
+                    studentId: currentStudent.student_id,
+                    studentName: currentStudent.fullName,
+                    academicYear: currentStudent.academicYear,
+                    timestamp: now.toISOString(),
+                    status: status
+                });
+                
+                showToast(`تم تسجيل حضورك بنجاح (${status})`, 'success');
+            } catch(e) {
+                console.error(e);
+                showToast('حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.', 'error');
+            }
+        }
+
+
+        // --- نظام الإشعارات العادي ---
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
@@ -461,7 +758,6 @@
                     }
                 });
 
-                // ترتيب الإشعارات من الأحدث للأقدم
                 allNotifs.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
                 allNotifsCache = allNotifs;
 
@@ -479,7 +775,6 @@
                     const isRead = readNotifs.includes(notif.id);
                     if (!isRead) unreadCount++;
 
-                    // صياغة التاريخ والوقت بوضوح
                     const dateObj = notif.date ? new Date(notif.date) : null;
                     const dateStr = dateObj ? dateObj.toLocaleDateString('ar-EG') : '';
                     const timeStr = dateObj ? dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '';
