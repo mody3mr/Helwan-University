@@ -569,7 +569,10 @@
             </div>
 
             <div class="card-box">
-                <div class="card-header">سجل جميع الإشعارات المرسلة</div>
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span>سجل جميع الإشعارات المرسلة</span>
+                    <button class="btn btn-delete" onclick="clearAllNotifications()">🗑️ مسح الكل</button>
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -1355,9 +1358,15 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- تصدير كشف الحضور والغياب (TXT) مع ميعاد البدء وقائمة الغياب ---
+        // --- تصدير كشف الحضور والغياب (TXT) مع ميعاد البدء والانتهاء وقائمة الغياب والمحاولات الفاشلة ---
         window.exportAttendanceTxt = async function(sessionId, matTitle, academicYear, startTime) {
             try {
+                const sessionSnap = await getDoc(doc(db, "attendanceSessions", sessionId));
+                let endTime = 'مستمرة';
+                if (sessionSnap.exists() && sessionSnap.data().endedAt) {
+                    endTime = new Date(sessionSnap.data().endedAt).toLocaleString('ar-EG');
+                }
+
                 const recQuery = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
                 const recSnap = await getDocs(recQuery);
 
@@ -1371,6 +1380,17 @@
                     const line = `ID: ${r.studentId} | Name: ${r.studentName} | Time: ${new Date(r.timestamp).toLocaleTimeString('ar-EG')}`;
                     if(r.status === 'متأخر') late.push(line);
                     else onTime.push(line);
+                });
+
+                // جلب محاولات التلاعب الفاشلة من الإشعارات الخاصة بالجلسة أو المادة
+                const notifQuery = query(collection(db, "notifications"), where("target_group", "==", "admin"));
+                const notifSnap = await getDocs(notifQuery);
+                let failedAttempts = [];
+                notifSnap.forEach(d => {
+                    const n = d.data();
+                    if (n.message && n.message.includes(matTitle)) {
+                        failedAttempts.push(n.message);
+                    }
                 });
 
                 // جلب كل طلاب الفرقة دي عشان نطلع الغياب
@@ -1391,6 +1411,7 @@
                 fileContent += ` المادة: ${matTitle}\n`;
                 fileContent += ` الفرقة الدراسية: الفرقة ${academicYear}\n`;
                 fileContent += ` ميعاد بدء المحاضرة: ${startTime}\n`;
+                fileContent += ` ميعاد انتهاء المحاضرة: ${endTime}\n`;
                 fileContent += ` تاريخ استخراج الكشف: ${new Date().toLocaleString('ar-EG')}\n`;
                 fileContent += `==================================================\n\n`;
 
@@ -1408,6 +1429,11 @@
                 fileContent += `--------------------------------------------------\n`;
                 if(absent.length === 0) fileContent += `لا يوجد غياب (الكل حضر!)\n`;
                 absent.forEach(t => fileContent += t + `\n`);
+
+                fileContent += `\n\n[ محاولات التسجيل الفاشلة (من خارج النطاق الجغرافي) ] (${failedAttempts.length})\n`;
+                fileContent += `--------------------------------------------------\n`;
+                if(failedAttempts.length === 0) fileContent += `لا توجد محاولات تلاعب مسجلة\n`;
+                failedAttempts.forEach(fa => fileContent += `- ${fa}\n`);
 
                 const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
@@ -1449,6 +1475,20 @@
                 XLSX.writeFile(workbook, `Attendance_${matTitle}.xlsx`);
                 showToast('تم تحميل شيت Excel بنجاح!', 'success');
             } catch(e) { showToast('حدث خطأ', 'error'); }
+        }
+
+
+        // --- مسح كل الإشعارات ---
+        window.clearAllNotifications = async function() {
+            showConfirmModal(async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        const snap = await getDocs(collection(db, "notifications"));
+                        snap.forEach(async (d) => { await deleteDoc(doc(db, "notifications", d.id)); });
+                        showToast('تم مسح جميع الإشعارات بنجاح', 'success');
+                    } catch(e) { showToast('خطأ في مسح الإشعارات', 'error'); }
+                }
+            });
         }
 
 
@@ -2030,10 +2070,21 @@
             onSnapshot(collection(db, "notifications"), (snapshot) => {
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
                 let sortedDocs = [];
-                snapshot.forEach(d => sortedDocs.push({ id: d.id, ...d.data() }));
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    // استبعاد إشعارات محاولات التلاعب الجغرافي من الجدول العام للإشعارات
+                    if (data.target_group !== 'admin') {
+                        sortedDocs.push({ id: d.id, ...data });
+                    }
+                });
                 
                 sortedDocs.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 
+                if (sortedDocs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`;
+                    return;
+                }
+
                 let html = '';
                 sortedDocs.forEach(n => {
                     let targetText = 'الكل';
