@@ -426,10 +426,11 @@
 
         <!-- 5. إدارة الحضور (فتح جلسة وتصدير ملف txt) -->
         <div id="sectionAttendance" class="tab-section">
-            <div class="card-box">
-                <div class="card-header">بدء تسجيل حضور لمحاضرة الآن ✋</div>
+            <div class="card-box" id="attCardBox">
+                <div class="card-header" id="attCardHeader">بدء تسجيل حضور لمحاضرة الآن ✋</div>
                 <div class="card-body">
                     <form id="attendanceForm">
+                        <input type="hidden" id="attEditId">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="attYear">الفرقة الدراسية</label>
@@ -455,8 +456,12 @@
                                 <label for="attLateMins">حساب الطالب متأخر بعد كام دقيقة؟</label>
                                 <input type="number" id="attLateMins" value="15" min="1" required>
                             </div>
+                            <div class="form-group">
+                                <label for="attRadius">النطاق الجغرافي المسموح (بالمتر)</label>
+                                <input type="number" id="attRadius" value="50" min="5" required>
+                            </div>
                         </div>
-                        <button type="submit" class="btn-submit" style="background:#8b5cf6; margin-top:10px;">فتح تسجيل الحضور للطلاب الآن</button>
+                        <button type="submit" class="btn-submit" id="attSubmitBtn" style="background:#8b5cf6; margin-top:10px;">فتح تسجيل الحضور للطلاب الآن</button>
                     </form>
                 </div>
             </div>
@@ -471,7 +476,7 @@
                                 <th>الفرقة</th>
                                 <th>وقت البدء</th>
                                 <th>حالة الجلسة</th>
-                                <th>الإجراءات (تصدير / إنهاء)</th>
+                                <th>الإجراءات (تصدير / تعديل / إنهاء)</th>
                             </tr>
                         </thead>
                         <tbody id="attendanceSessionsTable">
@@ -940,6 +945,7 @@
                 document.getElementById('sectionAttendance').classList.add('active');
                 document.getElementById('menuAttendance').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة تسجيل الحضور للمحاضرات';
+                resetAttendanceForm();
                 fetchAttendanceSessions();
             } else if(tab === 'reports') {
                 document.getElementById('sectionReports').classList.add('active');
@@ -1207,21 +1213,21 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
         }
 
-        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS) ---
+        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS وتعديل الجلسات) ---
         const attendanceForm = document.getElementById('attendanceForm');
         if (attendanceForm) {
             attendanceForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                const editId = document.getElementById('attEditId').value;
                 const academicYear = document.getElementById('attYear').value;
                 const materialTitle = document.getElementById('attMaterial').value;
                 const professorName = document.getElementById('attProf').value.trim();
                 const lateMins = parseInt(document.getElementById('attLateMins').value);
+                const radiusMeters = parseInt(document.getElementById('attRadius').value) || 50;
 
-                // إظهار رسالة إننا بنسحب الموقع
                 showToast('جاري تحديد موقع القاعة تلقائياً...', 'warning');
 
-                // سحب موقع الدكتور (الأدمن) أوتوماتيكياً
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(async (position) => {
                         const adminLat = position.coords.latitude;
@@ -1231,33 +1237,58 @@
                         const lateThreshold = new Date(now.getTime() + lateMins * 60000);
 
                         try {
-                            await addDoc(collection(db, "attendanceSessions"), {
-                                academicYear, 
-                                materialTitle, 
-                                professorName, 
-                                lateThresholdISO: lateThreshold.toISOString(),
-                                adminLat: adminLat, // تم حفظ خط العرض
-                                adminLng: adminLng, // تم حفظ خط الطول
-                                radiusMeters: 50, // النطاق المسموح 50 متر
-                                isActive: true, 
-                                createdBy: currentAdminName, 
-                                createdAt: now.toISOString()
-                            });
-                            logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle} (تم ربط الـ GPS)`);
-                            showToast('تم تحديد الموقع وفتح الجلسة بنجاح، يمكن للطلاب التسجيل الآن.', 'success');
-                            document.getElementById('attendanceForm').reset();
-                            enforceAssignedYear();
+                            if (editId) {
+                                await updateDoc(doc(db, "attendanceSessions", editId), {
+                                    academicYear, materialTitle, professorName, lateThresholdISO: lateThreshold.toISOString(),
+                                    adminLat, adminLng, radiusMeters
+                                });
+                                logActivity('تعديل حضور', `تعديل جلسة حضور مادة ${materialTitle}`);
+                                showToast('تم تعديل جلسة الحضور بنجاح!', 'success');
+                            } else {
+                                await addDoc(collection(db, "attendanceSessions"), {
+                                    academicYear, materialTitle, professorName, lateThresholdISO: lateThreshold.toISOString(),
+                                    adminLat, adminLng, radiusMeters, isActive: true, createdBy: currentAdminName, createdAt: now.toISOString()
+                                });
+                                logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle}`);
+                                showToast('تم تحديد الموقع وفتح الجلسة بنجاح!', 'success');
+                            }
+                            resetAttendanceForm();
                             fetchAttendanceSessions();
                         } catch(e) { 
-                            showToast('حدث خطأ أثناء فتح الجلسة', 'error'); 
+                            showToast('حدث خطأ أثناء حفظ الجلسة', 'error'); 
                         }
                     }, (error) => {
-                        showToast('❌ عذراً، يجب السماح للمتصفح بالوصول لموقعك (GPS) لفتح جلسة الحضور.', 'error');
+                        showToast('❌ عذراً، يجب السماح بالوصول لموقعك (GPS).', 'error');
                     }, { enableHighAccuracy: true });
                 } else {
                     showToast('متصفحك لا يدعم تحديد الموقع.', 'error');
                 }
             });
+        }
+
+        window.resetAttendanceForm = function() {
+            document.getElementById('attendanceForm').reset();
+            document.getElementById('attEditId').value = '';
+            document.getElementById('attCardHeader').innerText = 'بدء تسجيل حضور لمحاضرة الآن ✋';
+            document.getElementById('attSubmitBtn').innerText = 'فتح تسجيل الحضور للطلاب الآن';
+            document.getElementById('attRadius').value = '50';
+            enforceAssignedYear();
+        }
+
+        window.editAttendanceSession = async function(id) {
+            const snap = await getDoc(doc(db, "attendanceSessions", id));
+            if(snap.exists()) {
+                const s = snap.data();
+                document.getElementById('attEditId').value = id;
+                document.getElementById('attYear').value = s.academicYear;
+                await populateMaterialsDropdown(s.academicYear, 'attMaterial', s.materialTitle);
+                document.getElementById('attProf').value = s.professorName || '';
+                document.getElementById('attRadius').value = s.radiusMeters || 50;
+                
+                document.getElementById('attCardHeader').innerText = 'تعديل جلسة الحضور';
+                document.getElementById('attSubmitBtn').innerText = 'حفظ التعديلات';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         window.fetchAttendanceSessions = async function() {
@@ -1277,18 +1308,35 @@
 
                 let html = '';
                 sessions.forEach(s => {
-                    const statusTxt = s.isActive ? '<span style="color:green; font-weight:700;">🟢 جارية الآن</span>' : '<span style="color:red; font-weight:700;">🔴 منتهية</span>';
+                    let statusTxt = '<span style="color:green; font-weight:700;">🟢 جارية الآن</span>';
+                    if (!s.isActive) {
+                        let endedTimeStr = s.endedAt ? new Date(s.endedAt).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) : '-';
+                        let durationMinutes = s.endedAt && s.createdAt ? Math.round((new Date(s.endedAt) - new Date(s.createdAt)) / 60000) : 0;
+                        let hours = Math.floor(durationMinutes / 60);
+                        let mins = durationMinutes % 60;
+                        let durationFormatted = hours > 0 ? `${hours} ساعة و ${mins} دقيقة` : `${mins} دقيقة`;
+                        
+                        statusTxt = `<span style="color:red; font-weight:700;">🔴 منتهية</span><br><small style="color:#64748b;">وقت الانتهاء: ${endedTimeStr} | المنقضي: ${durationFormatted}</small>`;
+                    }
+                    
                     const dateFormatted = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '';
                     
+                    let deleteBtnHtml = '';
+                    if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') {
+                        deleteBtnHtml = `<button class="btn btn-delete" onclick="deleteDocItem('attendanceSessions', '${s.id}')">حذف</button>`;
+                    }
+
                     html += `<tr>
                         <td><b>${s.materialTitle}</b><br><small>المحاضر: ${s.professorName}</small></td>
                         <td>الفرقة ${s.academicYear}</td>
                         <td>${dateFormatted}</td>
                         <td>${statusTxt}</td>
                         <td>
-                            <button class="btn btn-approve" onclick="exportAttendanceTxt('${s.id}', '${s.materialTitle}')">تصدير TXT</button>
-                            ${s.isActive ? `<button class="btn btn-warning" onclick="endAttendanceSession('${s.id}')">إنهاء الجلسة</button>` : ''}
-                            <button class="btn btn-delete" onclick="deleteDocItem('attendanceSessions', '${s.id}')">حذف</button>
+                            <button class="btn btn-approve" onclick="exportAttendanceTxt('${s.id}', '${s.materialTitle}', '${s.academicYear}', '${dateFormatted}')">📄 TXT</button>
+                            <button class="btn btn-warning" onclick="exportAttendanceExcel('${s.id}', '${s.materialTitle}')">📥 Excel</button>
+                            ${s.isActive ? `<button class="btn btn-edit" onclick="editAttendanceSession('${s.id}')">تعديل</button>` : ''}
+                            ${s.isActive ? `<button class="btn" style="background:#f97316; color:white;" onclick="endAttendanceSession('${s.id}')">إنهاء</button>` : ''}
+                            ${deleteBtnHtml}
                         </td>
                     </tr>`;
                 });
@@ -1298,30 +1346,52 @@
 
         window.endAttendanceSession = async function(id) {
             try {
-                await updateDoc(doc(db, "attendanceSessions", id), { isActive: false });
-                showToast('تم إنهاء جلسة الحضور. لن يتمكن الطلاب من التسجيل.', 'warning');
+                await updateDoc(doc(db, "attendanceSessions", id), { 
+                    isActive: false,
+                    endedAt: new Date().toISOString()
+                });
+                showToast('تم إنهاء جلسة الحضور بنجاح.', 'warning');
                 fetchAttendanceSessions();
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        window.exportAttendanceTxt = async function(sessionId, matTitle) {
+        // --- تصدير كشف الحضور والغياب (TXT) مع ميعاد البدء وقائمة الغياب ---
+        window.exportAttendanceTxt = async function(sessionId, matTitle, academicYear, startTime) {
             try {
-                const q = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
-                const snap = await getDocs(q);
-                if(snap.empty) { showToast('لا يوجد أي حضور مسجل لهذه المحاضرة.', 'warning'); return; }
+                const recQuery = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
+                const recSnap = await getDocs(recQuery);
 
                 let onTime = [];
                 let late = [];
+                let attendedStudentIds = [];
 
-                snap.forEach(d => {
+                recSnap.forEach(d => {
                     const r = d.data();
+                    attendedStudentIds.push(r.studentId);
                     const line = `ID: ${r.studentId} | Name: ${r.studentName} | Time: ${new Date(r.timestamp).toLocaleTimeString('ar-EG')}`;
                     if(r.status === 'متأخر') late.push(line);
                     else onTime.push(line);
                 });
 
-                let fileContent = `كشف غياب وحضور محاضرة: ${matTitle}\n`;
-                fileContent += `تاريخ استخراج الكشف: ${new Date().toLocaleString('ar-EG')}\n`;
+                // جلب كل طلاب الفرقة دي عشان نطلع الغياب
+                const studentsQuery = query(collection(db, "users"), where("academicYear", "==", String(academicYear)), where("status", "==", "approved"));
+                const studentsSnap = await getDocs(studentsQuery);
+
+                let absent = [];
+                studentsSnap.forEach(d => {
+                    const st = d.data();
+                    if (!attendedStudentIds.includes(st.student_id)) {
+                        absent.push(`ID: ${st.student_id} | Name: ${st.fullName} | Phone: ${st.phone || '-'}`);
+                    }
+                });
+
+                let fileContent = `==================================================\n`;
+                fileContent += ` جامعة حلوان - كشف الحضور والغياب الرسمي\n`;
+                fileContent += `==================================================\n`;
+                fileContent += ` المادة: ${matTitle}\n`;
+                fileContent += ` الفرقة الدراسية: الفرقة ${academicYear}\n`;
+                fileContent += ` ميعاد بدء المحاضرة: ${startTime}\n`;
+                fileContent += ` تاريخ استخراج الكشف: ${new Date().toLocaleString('ar-EG')}\n`;
                 fileContent += `==================================================\n\n`;
 
                 fileContent += `[ الطلاب الحاضرون في الموعد ] (${onTime.length} طالب)\n`;
@@ -1334,18 +1404,51 @@
                 if(late.length === 0) fileContent += `لا يوجد\n`;
                 late.forEach(t => fileContent += t + `\n`);
 
+                fileContent += `\n\n[ الطلاب المتغيبون (الغياب) ] (${absent.length} طالب)\n`;
+                fileContent += `--------------------------------------------------\n`;
+                if(absent.length === 0) fileContent += `لا يوجد غياب (الكل حضر!)\n`;
+                absent.forEach(t => fileContent += t + `\n`);
+
                 const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `Attendance_${matTitle}_${new Date().getTime()}.txt`;
+                link.download = `Attendance_Report_${matTitle}_${new Date().getTime()}.txt`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                logActivity('تصدير حضور', `تم تصدير ملف txt لحضور مادة ${matTitle}`);
+                logActivity('تصدير حضور', `تم تصدير كشف الغياب TXT لمادة ${matTitle}`);
 
-            } catch(e) { showToast('حدث خطأ أثناء استخراج الملف', 'error'); }
+            } catch(e) { console.error(e); showToast('حدث خطأ أثناء استخراج الملف', 'error'); }
+        }
+
+        // --- تصدير شيت Excel للحضور والغياب ---
+        window.exportAttendanceExcel = async function(sessionId, matTitle) {
+            try {
+                const recQuery = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
+                const recSnap = await getDocs(recQuery);
+                if(recSnap.empty) { showToast('لا توجد سجلات حضور لتصديرها.', 'warning'); return; }
+
+                let excelRows = [];
+                recSnap.forEach(d => {
+                    const r = d.data();
+                    excelRows.push({
+                        "رقم الطالب (ID)": r.studentId,
+                        "اسم الطالب": r.studentName,
+                        "الفرقة": r.academicYear,
+                        "حالة الحضور": r.status,
+                        "وقت التسجيل": new Date(r.timestamp).toLocaleString('ar-EG'),
+                        "المسافة عن القاعة (متر)": r.distanceMeters || 0
+                    });
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(excelRows);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "سجل الحضور");
+                XLSX.writeFile(workbook, `Attendance_${matTitle}.xlsx`);
+                showToast('تم تحميل شيت Excel بنجاح!', 'success');
+            } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
 
