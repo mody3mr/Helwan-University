@@ -129,8 +129,9 @@
                 <li id="menuMaterials" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
+                <li id="menuSchedules" onclick="switchTab('schedules')">📅 إدارة الجداول</li>
+                <li id="menuAttendance" onclick="switchTab('attendance')">✋ إدارة الحضور</li>
                 <li id="menuReports" onclick="switchTab('reports')">📊 تقارير ونتائج الطلاب</li>
-                <!-- تعديل: إضافة style="display: none;" لتاب الإشعارات لمنع الوميض -->
                 <li id="menuNotifs" style="display: none;" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
                 <li id="menuAdmins" style="display: none;" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
@@ -179,7 +180,6 @@
                                 <input type="text" id="matProf" placeholder="مثال: د. أحمد محمد" required>
                             </div>
                             <div class="form-group">
-                                <!-- تعديل: إزالة الإجبار من حقل المعيد -->
                                 <label for="matAssist">المعيد (اختياري)</label>
                                 <input type="text" id="matAssist" placeholder="مثال: م. محمود علي">
                             </div>
@@ -365,7 +365,124 @@
             </div>
         </div>
 
-        <!-- 4. تقارير ونتائج الطلاب -->
+        <!-- 4. إدارة الجداول (محاضرات / امتحانات) -->
+        <div id="sectionSchedules" class="tab-section">
+            <div class="card-box">
+                <div class="card-header">رفع ونشر الجداول للطلاب</div>
+                <div class="card-body">
+                    <form id="scheduleForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="schedYear">الفرقة الدراسية</label>
+                                <select id="schedYear" required>
+                                    <option value="" disabled selected>اختر الفرقة...</option>
+                                    <option value="1">الفرقة الأولى</option>
+                                    <option value="2">الفرقة الثانية</option>
+                                    <option value="3">الفرقة الثالثة</option>
+                                    <option value="4">الفرقة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedType">نوع الجدول</label>
+                                <select id="schedType" required>
+                                    <option value="lecture">جدول محاضرات (دراسي)</option>
+                                    <option value="exam">جدول امتحانات</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedTitle">عنوان الجدول (مثال: جدول التيرم الأول)</label>
+                                <input type="text" id="schedTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedUrl">رابط ملف الجدول (صورة أو PDF على درايف)</label>
+                                <input type="url" id="schedUrl" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="margin-top: 10px;">نشر الجدول للطلاب</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="card-header">الجداول المنشورة حالياً</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الفرقة</th>
+                                <th>نوع الجدول</th>
+                                <th>العنوان</th>
+                                <th>تاريخ النشر</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedulesTable">
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. إدارة الحضور (فتح جلسة وتصدير ملف txt) -->
+        <div id="sectionAttendance" class="tab-section">
+            <div class="card-box">
+                <div class="card-header">بدء تسجيل حضور لمحاضرة الآن ✋</div>
+                <div class="card-body">
+                    <form id="attendanceForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="attYear">الفرقة الدراسية</label>
+                                <select id="attYear" required>
+                                    <option value="" disabled selected>اختر الفرقة...</option>
+                                    <option value="1">الفرقة الأولى</option>
+                                    <option value="2">الفرقة الثانية</option>
+                                    <option value="3">الفرقة الثالثة</option>
+                                    <option value="4">الفرقة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attMaterial">المادة</label>
+                                <select id="attMaterial" required>
+                                    <option value="" disabled selected>اختر الفرقة أولاً...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attProf">اسم المحاضر الحالي</label>
+                                <input type="text" id="attProf" placeholder="د. أحمد محمد" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="attLateMins">حساب الطالب متأخر بعد كام دقيقة؟</label>
+                                <input type="number" id="attLateMins" value="15" min="1" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="background:#8b5cf6; margin-top:10px;">فتح تسجيل الحضور للطلاب الآن</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="card-header">جلسات الحضور (النشطة والمنتهية) 📊</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المادة والمحاضر</th>
+                                <th>الفرقة</th>
+                                <th>وقت البدء</th>
+                                <th>حالة الجلسة</th>
+                                <th>الإجراءات (تصدير / إنهاء)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceSessionsTable">
+                            <tr><td colspan="5" class="no-data">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. تقارير ونتائج الطلاب (امتحانات المهارة) -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -403,7 +520,7 @@
             </div>
         </div>
 
-        <!-- 5. إدارة الإشعارات -->
+        <!-- 7. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
             <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
@@ -467,7 +584,7 @@
             </div>
         </div>
 
-        <!-- 6. إدارة الطلاب -->
+        <!-- 8. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة (تحتاج مراجعة)</div>
@@ -552,7 +669,7 @@
             </div>
         </div>
 
-        <!-- 7. الأعضاء الإداريين -->
+        <!-- 9. الأعضاء الإداريين -->
         <div id="sectionAdmins" class="tab-section">
             <div class="card-box" style="margin-bottom: 25px;">
                 <div class="card-header" id="adminCardHeader">إنشاء حساب إداري جديد</div>
@@ -596,15 +713,12 @@
                                     <label class="main-lbl">حدد الصلاحيات المسموح بها للمشرف:</label>
                                     <div class="perm-grid">
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_manage"> 📚 إضافة وتعديل المواد</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="materials_delete"> 🗑️ حذف المواد</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="sections_manage"> 📂 إضافة وتعديل الأقسام</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="sections_delete"> 🗑️ حذف الأقسام</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 نشر وتعديل الملفات</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_delete"> 🗑️ حذف الملفات</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 إدارة المحتوى والأسايمنت</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="schedules_manage"> 📅 إدارة الجداول</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="attendance_manage"> ✋ إدارة الحضور</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="notifs_manage"> 🔔 إرسال وتعديل الإشعارات</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="notifs_delete"> 🗑️ حذف الإشعارات</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 قبول وحظر الطلاب</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_delete"> 🗑️ حذف الطلاب</label>
                                     </div>
                                 </div>
                             </div>
@@ -636,7 +750,7 @@
             </div>
         </div>
 
-        <!-- 8. سجل الأحداث والنشاطات -->
+        <!-- 10. سجل الأحداث والنشاطات -->
         <div id="sectionAuditLogs" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -693,25 +807,26 @@
             const nameDisplay = document.getElementById('adminNameDisplay');
             if(nameDisplay) nameDisplay.innerText = currentAdminName;
             
-            // إظهار وإخفاء القوائم بناءً على الصلاحيات لضمان عدم وجود وميض
             const adminMenu = document.getElementById('menuAdmins');
             const auditMenu = document.getElementById('menuAuditLogs');
             const notifMenu = document.getElementById('menuNotifs');
+            const schedulesMenu = document.getElementById('menuSchedules');
+            const attendanceMenu = document.getElementById('menuAttendance');
 
             if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') {
                 if(adminMenu) adminMenu.style.display = 'block';
                 if(auditMenu) auditMenu.style.display = 'block';
                 if(notifMenu) notifMenu.style.display = 'block';
             } else if (currentAdminRole === 'supervisor' || currentAdminRole === 'مشرف') {
-                if (adminPerms.includes('notifs_manage')) {
-                    if(notifMenu) notifMenu.style.display = 'block';
-                }
+                if (adminPerms.includes('notifs_manage')) { if(notifMenu) notifMenu.style.display = 'block'; }
+                if (!adminPerms.includes('schedules_manage')) { if(schedulesMenu) schedulesMenu.style.display = 'none'; }
+                if (!adminPerms.includes('attendance_manage')) { if(attendanceMenu) attendanceMenu.style.display = 'none'; }
             }
         }
 
         function enforceAssignedYear() {
             if (currentAdminRole === 'supervisor' && assignedYear !== 'all') {
-                const yearFields = ['matYear', 'secYear', 'fileYear', 'notifYear'];
+                const yearFields = ['matYear', 'secYear', 'fileYear', 'notifYear', 'schedYear', 'attYear'];
                 yearFields.forEach(id => {
                     const el = document.getElementById(id);
                     if(el) {
@@ -816,6 +931,16 @@
                 document.getElementById('pageTitle').innerText = 'إدارة المحتوى والملفات والأسايمنت';
                 resetFileForm();
                 fetchFilesTable();
+            } else if(tab === 'schedules') {
+                document.getElementById('sectionSchedules').classList.add('active');
+                document.getElementById('menuSchedules').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة الجداول (محاضرات / امتحانات)';
+                fetchSchedulesTable();
+            } else if(tab === 'attendance') {
+                document.getElementById('sectionAttendance').classList.add('active');
+                document.getElementById('menuAttendance').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'إدارة تسجيل الحضور للمحاضرات';
+                fetchAttendanceSessions();
             } else if(tab === 'reports') {
                 document.getElementById('sectionReports').classList.add('active');
                 document.getElementById('menuReports').classList.add('active');
@@ -883,11 +1008,15 @@
 
         document.getElementById('secYear').addEventListener('change', function() { populateMaterialsDropdown(this.value, 'secMaterial'); });
         document.getElementById('fileYear').addEventListener('change', function() { populateMaterialsDropdown(this.value, 'fileMaterial'); });
+        
+        const attYearEl = document.getElementById('attYear');
+        if (attYearEl) {
+            attYearEl.addEventListener('change', function() { populateMaterialsDropdown(this.value, 'attMaterial'); });
+        }
 
         document.getElementById('fileMaterial').addEventListener('change', async function() {
-            const matTitle = this.value;
-            populateSectionsDropdown(matTitle);
-            checkMaterialAssistantStatus(matTitle);
+            populateSectionsDropdown(this.value);
+            checkMaterialAssistantStatus(this.value);
         });
 
         async function checkMaterialAssistantStatus(matTitle) {
@@ -904,7 +1033,7 @@
                 
                 const targetSelect = document.getElementById('fileTarget');
                 if (!hasAssistant) {
-                    targetSelect.value = 'professor'; // إجبار النشر على الدكتور
+                    targetSelect.value = 'professor'; 
                     Array.from(targetSelect.options).forEach(opt => {
                         if (opt.value === 'assistant') {
                             opt.disabled = true;
@@ -1020,6 +1149,180 @@
             list.appendChild(qDiv);
         }
 
+        // --- 8. إدارة الجداول (محاضرات / امتحانات) ---
+        const scheduleForm = document.getElementById('scheduleForm');
+        if (scheduleForm) {
+            scheduleForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const academicYear = document.getElementById('schedYear').value;
+                const type = document.getElementById('schedType').value;
+                const title = document.getElementById('schedTitle').value.trim();
+                const fileUrl = document.getElementById('schedUrl').value.trim();
+
+                try {
+                    await addDoc(collection(db, "schedules"), {
+                        academicYear, type, title, fileUrl, publisherName: currentAdminName, createdAt: new Date().toISOString()
+                    });
+                    logActivity('إضافة جدول', `تم رفع جدول: ${title}`);
+                    
+                    await addDoc(collection(db, "notifications"), {
+                        title: `تم نشر جدول جديد: ${title}`,
+                        message: `الرجاء مراجعة الجداول الدراسية.`,
+                        type: 'system', target_group: 'year', target_year: academicYear, createdAt: new Date().toISOString()
+                    });
+
+                    showToast('تم نشر الجدول وإشعار الطلاب بنجاح!', 'success');
+                    document.getElementById('scheduleForm').reset();
+                    enforceAssignedYear();
+                    fetchSchedulesTable();
+                } catch(e) { showToast('حدث خطأ أثناء الرفع', 'error'); }
+            });
+        }
+
+        window.fetchSchedulesTable = async function() {
+            const tbody = document.getElementById('schedulesTable');
+            if (!tbody) return;
+            try {
+                let q = collection(db, "schedules");
+                if(currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                    q = query(collection(db, "schedules"), where("academicYear", "==", assignedYear));
+                }
+                const snapshot = await getDocs(q);
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد جداول منشورة.</td></tr>`; return; }
+                let html = '';
+                snapshot.forEach(d => {
+                    const s = d.data();
+                    const typeTxt = s.type === 'exam' ? '📝 امتحانات' : '📅 محاضرات';
+                    const dateFormatted = s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-EG') : '';
+                    html += `<tr>
+                        <td>الفرقة ${s.academicYear}</td>
+                        <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeTxt}</span></td>
+                        <td><b>${s.title}</b></td>
+                        <td>${dateFormatted}</td>
+                        <td><button class="btn btn-delete" onclick="deleteDocItem('schedules', '${d.id}')">حذف</button></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
+        }
+
+        // --- 9. إدارة الحضور ---
+        const attendanceForm = document.getElementById('attendanceForm');
+        if (attendanceForm) {
+            attendanceForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const academicYear = document.getElementById('attYear').value;
+                const materialTitle = document.getElementById('attMaterial').value;
+                const professorName = document.getElementById('attProf').value.trim();
+                const lateMins = parseInt(document.getElementById('attLateMins').value);
+
+                const now = new Date();
+                const lateThreshold = new Date(now.getTime() + lateMins * 60000);
+
+                try {
+                    await addDoc(collection(db, "attendanceSessions"), {
+                        academicYear, materialTitle, professorName, lateThresholdISO: lateThreshold.toISOString(),
+                        isActive: true, createdBy: currentAdminName, createdAt: now.toISOString()
+                    });
+                    logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle}`);
+                    showToast('تم فتح الجلسة، يمكن للطلاب تسجيل الحضور الآن.', 'success');
+                    document.getElementById('attendanceForm').reset();
+                    enforceAssignedYear();
+                    fetchAttendanceSessions();
+                } catch(e) { showToast('حدث خطأ', 'error'); }
+            });
+        }
+
+        window.fetchAttendanceSessions = async function() {
+            const tbody = document.getElementById('attendanceSessionsTable');
+            if (!tbody) return;
+            try {
+                let q = collection(db, "attendanceSessions");
+                if(currentAdminRole === 'supervisor' && assignedYear !== 'all') {
+                    q = query(collection(db, "attendanceSessions"), where("academicYear", "==", assignedYear));
+                }
+                const snapshot = await getDocs(q);
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد جلسات حضور مسجلة.</td></tr>`; return; }
+                
+                let sessions = [];
+                snapshot.forEach(d => sessions.push({id: d.id, ...d.data()}));
+                sessions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                let html = '';
+                sessions.forEach(s => {
+                    const statusTxt = s.isActive ? '<span style="color:green; font-weight:700;">🟢 جارية الآن</span>' : '<span style="color:red; font-weight:700;">🔴 منتهية</span>';
+                    const dateFormatted = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '';
+                    
+                    html += `<tr>
+                        <td><b>${s.materialTitle}</b><br><small>المحاضر: ${s.professorName}</small></td>
+                        <td>الفرقة ${s.academicYear}</td>
+                        <td>${dateFormatted}</td>
+                        <td>${statusTxt}</td>
+                        <td>
+                            <button class="btn btn-approve" onclick="exportAttendanceTxt('${s.id}', '${s.materialTitle}')">تصدير TXT</button>
+                            ${s.isActive ? `<button class="btn btn-warning" onclick="endAttendanceSession('${s.id}')">إنهاء الجلسة</button>` : ''}
+                            <button class="btn btn-delete" onclick="deleteDocItem('attendanceSessions', '${s.id}')">حذف</button>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
+        }
+
+        window.endAttendanceSession = async function(id) {
+            try {
+                await updateDoc(doc(db, "attendanceSessions", id), { isActive: false });
+                showToast('تم إنهاء جلسة الحضور. لن يتمكن الطلاب من التسجيل.', 'warning');
+                fetchAttendanceSessions();
+            } catch(e) { showToast('خطأ', 'error'); }
+        }
+
+        window.exportAttendanceTxt = async function(sessionId, matTitle) {
+            try {
+                const q = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
+                const snap = await getDocs(q);
+                if(snap.empty) { showToast('لا يوجد أي حضور مسجل لهذه المحاضرة.', 'warning'); return; }
+
+                let onTime = [];
+                let late = [];
+
+                snap.forEach(d => {
+                    const r = d.data();
+                    const line = `ID: ${r.studentId} | Name: ${r.studentName} | Time: ${new Date(r.timestamp).toLocaleTimeString('ar-EG')}`;
+                    if(r.status === 'متأخر') late.push(line);
+                    else onTime.push(line);
+                });
+
+                let fileContent = `كشف غياب وحضور محاضرة: ${matTitle}\n`;
+                fileContent += `تاريخ استخراج الكشف: ${new Date().toLocaleString('ar-EG')}\n`;
+                fileContent += `==================================================\n\n`;
+
+                fileContent += `[ الطلاب الحاضرون في الموعد ] (${onTime.length} طالب)\n`;
+                fileContent += `--------------------------------------------------\n`;
+                if(onTime.length === 0) fileContent += `لا يوجد\n`;
+                onTime.forEach(t => fileContent += t + `\n`);
+
+                fileContent += `\n\n[ الطلاب المتأخرون ] (${late.length} طالب)\n`;
+                fileContent += `--------------------------------------------------\n`;
+                if(late.length === 0) fileContent += `لا يوجد\n`;
+                late.forEach(t => fileContent += t + `\n`);
+
+                const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Attendance_${matTitle}_${new Date().getTime()}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                logActivity('تصدير حضور', `تم تصدير ملف txt لحضور مادة ${matTitle}`);
+
+            } catch(e) { showToast('حدث خطأ أثناء استخراج الملف', 'error'); }
+        }
+
+
+        // --- تقارير ونتائج الطلاب ---
         let allQuizResultsCache = [];
 
         async function fetchQuizResults() {
