@@ -84,21 +84,38 @@
             submitBtn.innerText = "جاري التحقق والأمان...";
 
             try {
-                // 1. تسجيل الدخول بـ Firebase Auth المشفر والآمن
-                const userCredential = await signInWithEmailAndPassword(auth, emailVal, passwordVal);
-                const user = userCredential.user;
+                // 1. الفحص الصارم من Firebase Auth (لو الحساب معطل أو محذوف يتوقف فوراً)
+                let user = null;
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, emailVal, passwordVal);
+                    user = userCredential.user;
+                } catch (authError) {
+                    console.error("Auth error:", authError);
+                    let msg = 'بيانات الدخول غير صحيحة أو الحساب غير موجود!';
+                    if (authError.code === 'auth/user-disabled') {
+                        msg = 'عذراً، هذا الحساب معطل من قبل إدارة Firebase!';
+                    } else if (authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found' || authError.code === 'auth/wrong-password') {
+                        msg = 'البريد الإلكتروني أو كلمة المرور غير صحيحة!';
+                    } else if (authError.code === 'auth/too-many-requests') {
+                        msg = 'تم حظر المحاولات مؤقتاً بسبب التكرار الخاطئ. حاول لاحقاً.';
+                    }
+                    showToast(msg, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "دخول لوحة التحكم";
+                    return; // ⛔ خروج فوراً وعدم الانتقال لفحص قاعدة البيانات
+                }
 
-                // 2. التحقق من وجود مستند الأدمن وصلاحياته في Firestore
+                // 2. التحقق من وجود بيانات الأدمن وصلاحياته في Firestore
                 let adminDocData = null;
                 
-                // البحث باستخدام الـ UID أولاً (الطريقة القياسية والآمنة)
+                // البحث باستخدام UID المستند أولاً
                 const docRef = doc(db, "admins", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     adminDocData = docSnap.data();
                 } else {
-                    // البحث بالبريد في حال تم إنشاء المستند باسم أو ID آخر
+                    // البحث بالبريد الإلكتروني كبديل
                     const qEmail = query(collection(db, "admins"), where("email", "==", emailVal));
                     const snapEmail = await getDocs(qEmail);
                     if (!snapEmail.empty) {
@@ -106,21 +123,22 @@
                     }
                 }
 
+                // لو الحساب غير موجود في الكولكشن أو معطل من Firestore
                 if (!adminDocData) {
-                    showToast('تم تسجيل الدخول ولكن حسابك غير مسجل كعضو إداري في النظام!', 'error');
+                    showToast('تم التحقق ولكن حسابك غير مسجل كعضو إداري في النظام!', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "دخول لوحة التحكم";
                     return;
                 }
 
                 if (adminDocData.status === 'suspended' || adminDocData.status === 'inactive') {
-                    showToast('عذراً، هذا الحساب الإداري موقوف حالياً.', 'error');
+                    showToast('عذراً، هذا الحساب الإداري موقوف حالياً من قاعدة البيانات.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "دخول لوحة التحكم";
                     return;
                 }
 
-                // 3. تخزين بيانات الجلسة وتوجيه المستخدم إلى admin.html
+                // 3. تخزين الجلسة وتوجيه الأدمن للداش بورد
                 sessionStorage.setItem('currentAdminName', adminDocData.name || 'عضو إداري');
                 sessionStorage.setItem('currentAdminRole', adminDocData.role || 'manager');
                 sessionStorage.setItem('adminPermissions', JSON.stringify(adminDocData.permissions || []));
@@ -129,14 +147,8 @@
                 setTimeout(() => { location.href = 'admin.html'; }, 1000);
 
             } catch (err) {
-                console.error("Auth error:", err);
-                let msg = 'حدث خطأ أثناء تسجيل الدخول';
-                if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-                    msg = 'البريد الإلكتروني أو كلمة المرور غير صحيحة!';
-                } else if (err.code === 'auth/too-many-requests') {
-                    msg = 'تم حظر المحاولات مؤقتاً بسبب تكرار المحاولات الخاطئة. حاول لاحقاً.';
-                }
-                showToast(msg, 'error');
+                console.error("System error:", err);
+                showToast('حدث خطأ أثناء الاتصال بالنظام', 'error');
                 submitBtn.disabled = false;
                 submitBtn.innerText = "دخول لوحة التحكم";
             }
