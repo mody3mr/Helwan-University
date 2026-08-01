@@ -1216,7 +1216,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
         }
 
-        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS وتعديل الجلسات) ---
+        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS، إرسال إشعار بدء المحاضرة، وتعديل الجلسات) ---
         const attendanceForm = document.getElementById('attendanceForm');
         if (attendanceForm) {
             attendanceForm.addEventListener('submit', async function(e) {
@@ -1229,7 +1229,7 @@
                 const lateMins = parseInt(document.getElementById('attLateMins').value);
                 const radiusMeters = parseInt(document.getElementById('attRadius').value) || 50;
 
-                showToast('جاري تحديد موقع القاعة تلقائياً...', 'warning');
+                showToast('جاري تحديد موقع القاعة وتنبيه الطلاب...', 'warning');
 
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -1252,8 +1252,19 @@
                                     academicYear, materialTitle, professorName, lateThresholdISO: lateThreshold.toISOString(),
                                     adminLat, adminLng, radiusMeters, isActive: true, createdBy: currentAdminName, createdAt: now.toISOString()
                                 });
+
+                                // إرسال إشعار فوري لجميع طلاب الفرقة أن المحاضرة بدأت
+                                await addDoc(collection(db, "notifications"), {
+                                    title: "✋ محاضرة جديدة بدأت الآن!",
+                                    message: `يرجى تسجيل الحضور لمادة ${materialTitle} مع الدكتور ${professorName}.`,
+                                    type: 'system',
+                                    target_group: 'year',
+                                    target_year: academicYear,
+                                    createdAt: now.toISOString()
+                                });
+
                                 logActivity('فتح حضور', `بدء تسجيل الحضور لمادة ${materialTitle}`);
-                                showToast('تم تحديد الموقع وفتح الجلسة بنجاح!', 'success');
+                                showToast('تم تحديد الموقع وفتح الجلسة وإرسال إشعارات للطلاب بنجاح!', 'success');
                             }
                             resetAttendanceForm();
                             fetchAttendanceSessions();
@@ -1358,7 +1369,7 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- تصدير كشف الحضور والغياب (TXT) مع ميعاد البدء والانتهاء وقائمة الغياب والمحاولات الفاشلة ---
+        // --- تصدير كشف الحضور والغياب (TXT) متطابق مع بيانات Excel ومع ميعاد البدء والانتهاء وغياب الطلاب والمحاولات الفاشلة ---
         window.exportAttendanceTxt = async function(sessionId, matTitle, academicYear, startTime) {
             try {
                 const sessionSnap = await getDoc(doc(db, "attendanceSessions", sessionId));
@@ -1377,12 +1388,12 @@
                 recSnap.forEach(d => {
                     const r = d.data();
                     attendedStudentIds.push(r.studentId);
-                    const line = `ID: ${r.studentId} | Name: ${r.studentName} | Time: ${new Date(r.timestamp).toLocaleTimeString('ar-EG')}`;
+                    const line = `ID: ${r.studentId} | Name: ${r.studentName} | Time: ${new Date(r.timestamp).toLocaleTimeString('ar-EG')} | Distance: ${r.distanceMeters || 0}m | Status: ${r.status}`;
                     if(r.status === 'متأخر') late.push(line);
                     else onTime.push(line);
                 });
 
-                // جلب محاولات التلاعب الفاشلة من الإشعارات الخاصة بالجلسة أو المادة
+                // جلب محاولات التلاعب الفاشلة من الإشعارات الموجهة للأدمن للمادة دي
                 const notifQuery = query(collection(db, "notifications"), where("target_group", "==", "admin"));
                 const notifSnap = await getDocs(notifQuery);
                 let failedAttempts = [];
@@ -1393,7 +1404,7 @@
                     }
                 });
 
-                // جلب كل طلاب الفرقة دي عشان نطلع الغياب
+                // جلب كل طلاب الفرقة النشطين لاستخراج الغياب
                 const studentsQuery = query(collection(db, "users"), where("academicYear", "==", String(academicYear)), where("status", "==", "approved"));
                 const studentsSnap = await getDocs(studentsQuery);
 
@@ -1406,7 +1417,7 @@
                 });
 
                 let fileContent = `==================================================\n`;
-                fileContent += ` جامعة حلوان - كشف الحضور والغياب الرسمي\n`;
+                fileContent += ` جامعة حلوان - كشف الحضور والغياب الرسمي والشامل\n`;
                 fileContent += `==================================================\n`;
                 fileContent += ` المادة: ${matTitle}\n`;
                 fileContent += ` الفرقة الدراسية: الفرقة ${academicYear}\n`;
@@ -1430,7 +1441,7 @@
                 if(absent.length === 0) fileContent += `لا يوجد غياب (الكل حضر!)\n`;
                 absent.forEach(t => fileContent += t + `\n`);
 
-                fileContent += `\n\n[ محاولات التسجيل الفاشلة (من خارج النطاق الجغرافي) ] (${failedAttempts.length})\n`;
+                fileContent += `\n\n[ محاولات التسجيل الفاشلة (خارج النطاق الجغرافي) ] (${failedAttempts.length})\n`;
                 fileContent += `--------------------------------------------------\n`;
                 if(failedAttempts.length === 0) fileContent += `لا توجد محاولات تلاعب مسجلة\n`;
                 failedAttempts.forEach(fa => fileContent += `- ${fa}\n`);
@@ -1444,12 +1455,12 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                logActivity('تصدير حضور', `تم تصدير كشف الغياب TXT لمادة ${matTitle}`);
+                logActivity('تصدير حضور', `تم تصدير كشف الحضور الشامل TXT لمادة ${matTitle}`);
 
             } catch(e) { console.error(e); showToast('حدث خطأ أثناء استخراج الملف', 'error'); }
         }
 
-        // --- تصدير شيت Excel للحضور والغياب ---
+        // --- تصدير شيت Excel للحضور (نفس البيانات والاتساق) ---
         window.exportAttendanceExcel = async function(sessionId, matTitle) {
             try {
                 const recQuery = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
@@ -2072,7 +2083,6 @@
                 let sortedDocs = [];
                 snapshot.forEach(d => {
                     const data = d.data();
-                    // استبعاد إشعارات محاولات التلاعب الجغرافي من الجدول العام للإشعارات
                     if (data.target_group !== 'admin') {
                         sortedDocs.push({ id: d.id, ...data });
                     }
