@@ -130,6 +130,7 @@
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
                 <li id="menuReports" onclick="switchTab('reports')">📊 تقارير ونتائج الطلاب</li>
+                <!-- تعديل: إضافة style="display: none;" لتاب الإشعارات لمنع الوميض -->
                 <li id="menuNotifs" style="display: none;" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
                 <li id="menuAdmins" style="display: none;" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
@@ -178,6 +179,7 @@
                                 <input type="text" id="matProf" placeholder="مثال: د. أحمد محمد" required>
                             </div>
                             <div class="form-group">
+                                <!-- تعديل: إزالة الإجبار من حقل المعيد -->
                                 <label for="matAssist">المعيد (اختياري)</label>
                                 <input type="text" id="matAssist" placeholder="مثال: م. محمود علي">
                             </div>
@@ -264,7 +266,7 @@
         <!-- 3. إدارة الملفات ونشر المحتوى -->
         <div id="sectionFiles" class="tab-section">
             <div class="card-box" id="fileCardBox">
-                <div class="card-header" id="fileCardHeader">رفع ونشر الملفات والمحتوى</div>
+                <div class="card-header" id="fileCardHeader">رفع ونشر الملفات والمحتوى والأسايمنت</div>
                 <div class="card-body">
                     <form id="fileForm">
                         <input type="hidden" id="fileEditId">
@@ -883,8 +885,42 @@
         document.getElementById('fileYear').addEventListener('change', function() { populateMaterialsDropdown(this.value, 'fileMaterial'); });
 
         document.getElementById('fileMaterial').addEventListener('change', async function() {
-            populateSectionsDropdown(this.value);
+            const matTitle = this.value;
+            populateSectionsDropdown(matTitle);
+            checkMaterialAssistantStatus(matTitle);
         });
+
+        async function checkMaterialAssistantStatus(matTitle) {
+            try {
+                const matQuery = query(collection(db, "materials"), where("title", "==", matTitle));
+                const matSnap = await getDocs(matQuery);
+                let hasAssistant = false;
+                matSnap.forEach(d => {
+                    const m = d.data();
+                    if(m.assistantName && m.assistantName.trim() !== '') {
+                        hasAssistant = true;
+                    }
+                });
+                
+                const targetSelect = document.getElementById('fileTarget');
+                if (!hasAssistant) {
+                    targetSelect.value = 'professor'; // إجبار النشر على الدكتور
+                    Array.from(targetSelect.options).forEach(opt => {
+                        if (opt.value === 'assistant') {
+                            opt.disabled = true;
+                            opt.style.display = 'none';
+                        }
+                    });
+                } else {
+                    Array.from(targetSelect.options).forEach(opt => {
+                        if (opt.value === 'assistant') {
+                            opt.disabled = false;
+                            opt.style.display = '';
+                        }
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
 
         async function populateSectionsDropdown(matTitle, selectedVal = "") {
             const selectSec = document.getElementById('fileSection');
@@ -1323,7 +1359,6 @@
         }
 
         // --- 3. الملفات ونشر المحتوى والأسايمنت بالنص (وتعديلهم) ---
-        
         window.editFileContent = async function(id) {
             const snap = await getDoc(doc(db, "materialContents", id));
             if(snap.exists()) {
@@ -1333,6 +1368,7 @@
                 
                 await populateMaterialsDropdown(f.academicYear, 'fileMaterial', f.materialTitle);
                 await populateSectionsDropdown(f.materialTitle, f.sectionName);
+                await checkMaterialAssistantStatus(f.materialTitle);
                 
                 document.getElementById('fileTarget').value = f.targetRole || 'professor';
                 document.getElementById('contentType').value = f.contentType || 'file';
@@ -1462,6 +1498,10 @@
             document.getElementById('fileSubmitBtn').innerText = 'نشر المحتوى وإرسال إشعار فوري';
             document.getElementById('questionsList').innerHTML = '';
             toggleContentTypeFields();
+            
+            const targetSelect = document.getElementById('fileTarget');
+            Array.from(targetSelect.options).forEach(opt => { opt.disabled = false; opt.style.display = ''; });
+            
             enforceAssignedYear();
         };
 
