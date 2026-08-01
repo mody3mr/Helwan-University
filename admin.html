@@ -408,7 +408,7 @@
             </div>
         </div>
 
-        <!-- 4. تقارير ونتائج الطلاب -->
+        <!-- 4. تقارير ونتائج الطلاب (محدثة بالبحث، الفلترة، زرار الإعادة الملون) -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -664,7 +664,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD4tMfI31ULU4gceJbA1LakSyoCIHKanQ0",
@@ -1003,7 +1003,7 @@
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
-                        await deleteDoc(doc(doc(db, "quizResults", resultId)));
+                        await deleteDoc(doc(db, "quizResults", resultId));
                         showToast('تم حذف الدرجة بنجاح', 'success');
                         fetchQuizResults();
                     } catch(e) { showToast('حدث خطأ', 'error'); }
@@ -1045,11 +1045,25 @@
             document.getElementById('reportModalOverlay').style.display = 'flex';
         }
 
-        // دالة الحذف المباشرة بدون أخطاء التعارض
-        window.deleteDocItem = async function(collName, docId) {
+        window.deleteDocItem = async function(collName, docId, actionKey) {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
                     try {
+                        if (collName === 'materialContents') {
+                            const fileSnap = await getDoc(doc(db, "materialContents", docId));
+                            if (fileSnap.exists()) {
+                                const fileData = fileSnap.data();
+                                const notifQuery = query(
+                                    collection(db, "notifications"), 
+                                    where("title", "==", `تم نشر محتوى جديد: ${fileData.title}`)
+                                );
+                                const notifSnap = await getDocs(notifQuery);
+                                notifSnap.forEach(async (nDoc) => {
+                                    await deleteDoc(doc(db, "notifications", nDoc.id));
+                                });
+                            }
+                        }
+
                         await deleteDoc(doc(db, collName, docId));
                         showToast('تم الحذف بنجاح', 'success');
                         const currentTab = sessionStorage.getItem('adminActiveTab') || 'materials';
@@ -1122,7 +1136,7 @@
                         <td>د. ${m.professorName || '-'} | معيد: ${m.assistantName || '-'}</td>
                         <td>
                             <button class="btn btn-edit" onclick="editMaterial('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}')">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materials', '${d.id}', 'materials_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1188,7 +1202,7 @@
                         <td><b>${s.sectionName}</b></td>
                         <td>
                             <button class="btn btn-edit" onclick="editSection('${d.id}')">تعديل</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}')">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialSections', '${d.id}', 'sections_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1285,7 +1299,7 @@
                         <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
                         <td>${roleText}</td>
                         <td>
-                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}')">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}', 'files_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
@@ -1293,7 +1307,7 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. الإشعارات (محدثة لحظياً Real-time) ---
+        // --- 4. الإشعارات ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const targetType = document.getElementById('notifTargetType').value;
@@ -1310,12 +1324,14 @@
                 showToast('تم إرسال الإشعار للطلاب بنجاح!', 'success');
                 document.getElementById('customNotifForm').reset();
                 toggleNotifTargetInput();
+                fetchNotifsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        function fetchNotifsTable() {
+        window.fetchNotifsTable = async function() {
             const tbody = document.getElementById('notifsTable');
-            onSnapshot(collection(db, "notifications"), (snapshot) => {
+            try {
+                const snapshot = await getDocs(collection(db, "notifications"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد إشعارات مسجلة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
@@ -1331,12 +1347,12 @@
                         <td>${targetText}</td>
                         <td>${dateFormatted}</td>
                         <td>
-                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}')">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('notifications', '${d.id}', 'notifs_delete')">حذف</button>
                         </td>
                     </tr>`;
                 });
                 tbody.innerHTML = html;
-            });
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         };
 
         // --- 5. إدارة الطلاب والأعضاء ---
@@ -1479,7 +1495,7 @@
                         <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                         <td>
                             <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${u.id}', '${newStatus}')">${banBtnText}</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}')">حذف</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}', 'students_delete')">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -1496,7 +1512,7 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين (محدثة لحظياً Real-time) ---
+        // --- 6. الأعضاء الإداريين ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('admName').value.trim();
@@ -1514,12 +1530,14 @@
                 showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
                 document.getElementById('adminCreateForm').reset();
                 toggleRolePermissions();
+                fetchAdminsTable();
             } catch(e) { showToast('حدث خطأ', 'error'); }
         });
 
-        function fetchAdminsTable() {
+        async function fetchAdminsTable() {
             const tbody = document.getElementById('adminsTable');
-            onSnapshot(collection(db, "admins"), (snapshot) => {
+            try {
+                const snapshot = await getDocs(collection(db, "admins"));
                 if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد حسابات إدارية.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
@@ -1534,13 +1552,13 @@
                             <td>${roleText}</td>
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
-                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
+                                <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}', 'admins_delete')">حذف</button>
                             </td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = html;
-            });
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
     </script>
 
