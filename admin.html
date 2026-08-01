@@ -130,7 +130,6 @@
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
                 <li id="menuReports" onclick="switchTab('reports')">📊 تقارير ونتائج الطلاب</li>
-                <!-- تعديل: إضافة style="display: none;" لتاب الإشعارات لمنع الوميض -->
                 <li id="menuNotifs" style="display: none;" onclick="switchTab('notifs')">🔔 إدارة الإشعارات</li>
                 <li id="menuStudents" onclick="switchTab('students')">👥 إدارة الطلاب</li>
                 <li id="menuAdmins" style="display: none;" onclick="switchTab('admins')">🛡️ الأعضاء الإداريين</li>
@@ -179,7 +178,6 @@
                                 <input type="text" id="matProf" placeholder="مثال: د. أحمد محمد" required>
                             </div>
                             <div class="form-group">
-                                <!-- تعديل: إزالة الإجبار من حقل المعيد -->
                                 <label for="matAssist">المعيد (اختياري)</label>
                                 <input type="text" id="matAssist" placeholder="مثال: م. محمود علي">
                             </div>
@@ -1324,7 +1322,67 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات ونشر المحتوى والأسايمنت بالنص ---
+        // --- 3. الملفات ونشر المحتوى والأسايمنت بالنص (وتعديلهم) ---
+        
+        window.editFileContent = async function(id) {
+            const snap = await getDoc(doc(db, "materialContents", id));
+            if(snap.exists()) {
+                const f = snap.data();
+                document.getElementById('fileEditId').value = id;
+                document.getElementById('fileYear').value = f.academicYear;
+                
+                await populateMaterialsDropdown(f.academicYear, 'fileMaterial', f.materialTitle);
+                await populateSectionsDropdown(f.materialTitle, f.sectionName);
+                
+                document.getElementById('fileTarget').value = f.targetRole || 'professor';
+                document.getElementById('contentType').value = f.contentType || 'file';
+                toggleContentTypeFields();
+                
+                document.getElementById('fileTitle').value = f.title || '';
+                document.getElementById('fileUrl').value = f.fileUrl || '';
+                
+                const textEl = document.getElementById('fileText');
+                if(textEl) textEl.value = f.fileTextContent || '';
+
+                if(f.assignmentDeadline) {
+                    const d = new Date(f.assignmentDeadline);
+                    const localIso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    const deadlineEl = document.getElementById('assignmentDeadline');
+                    if(deadlineEl) deadlineEl.value = localIso;
+                } else {
+                    const deadlineEl = document.getElementById('assignmentDeadline');
+                    if(deadlineEl) deadlineEl.value = '';
+                }
+
+                if (f.contentType === 'skill_quiz') {
+                    const durationEl = document.getElementById('quizDuration');
+                    if(durationEl) durationEl.value = f.durationMinutes || 15;
+                    const qList = document.getElementById('questionsList');
+                    if(qList) {
+                        qList.innerHTML = '';
+                        if(f.questions && f.questions.length > 0) {
+                            f.questions.forEach((q, idx) => {
+                                window.addQuestionField();
+                                const lastItem = qList.lastElementChild;
+                                lastItem.querySelector('.q-text').value = q.questionText || '';
+                                lastItem.querySelector('.opt-0').value = q.options[0] || '';
+                                lastItem.querySelector('.opt-1').value = q.options[1] || '';
+                                lastItem.querySelector('.opt-2').value = q.options[2] || '';
+                                lastItem.querySelector('.opt-3').value = q.options[3] || '';
+                                lastItem.querySelector('.correct-opt').value = q.correctOptionIndex || 0;
+                            });
+                        } else {
+                            window.addQuestionField();
+                        }
+                    }
+                }
+
+                document.getElementById('fileCardHeader').innerText = 'تعديل المحتوى / الأسايمنت';
+                document.getElementById('fileSubmitBtn').innerText = 'حفظ التعديلات';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
         document.getElementById('fileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('fileEditId').value;
@@ -1415,7 +1473,7 @@
                     q = query(collection(db, "materialContents"), where("academicYear", "==", assignedYear));
                 }
                 const snapshot = await getDocs(q);
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="6" class="no-data">لا توجد محتويات منشورة.</td></tr>`; return; }
+                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">لا توجد محتويات منشورة.</td></tr>`; return; }
                 let html = '';
                 snapshot.forEach(d => {
                     const f = d.data();
@@ -1428,15 +1486,15 @@
                         <td>${f.materialTitle} (${f.sectionName})</td>
                         <td><b>${f.title}</b></td>
                         <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
-                        <td>${roleText}</td>
                         <td>${deadlineText}</td>
                         <td>
+                            <button class="btn btn-edit" onclick="editFileContent('${d.id}')">تعديل</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('materialContents', '${d.id}')">حذف</button>
                         </td>
                     </tr>`;
                 });
                 tbody.innerHTML = html;
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
         // --- 4. الإشعارات (تعديل + إضافة + ظهور لحظي) ---
