@@ -102,7 +102,21 @@
             border-bottom: 1px solid #f1f5f9;
             color: #1e293b;
             background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .btn-read-all {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo';
+        }
+        .btn-read-all:hover { text-decoration: underline; }
+
         .notif-item {
             padding: 12px 15px;
             border-bottom: 1px solid #f1f5f9;
@@ -113,8 +127,9 @@
         }
         .notif-item:hover { background: #f8fafc; }
         .notif-item.unread { background: #eff6ff; border-right: 3px solid #3b82f6; }
-        .notif-item p { margin-bottom: 3px; font-weight: 600; }
-        .notif-item span { font-size: 11px; color: #94a3b8; }
+        .notif-item p { margin-bottom: 3px; font-weight: 700; color: #0f172a; }
+        .notif-item span.subtitle { font-size: 12.5px; color: #475569; display: block; margin-top: 2px; }
+        .notif-item span.time { font-size: 11px; color: #94a3b8; display: block; margin-top: 6px; }
 
         /* بروفايل المستخدم */
         .user-menu-container {
@@ -259,9 +274,12 @@
                     <span class="badge" id="notifBadge" style="display: none;">0</span>
                 </button>
                 <div class="notifications-dropdown" id="notifDropdown">
-                    <div class="notif-header">الإشعارات الجديدة</div>
+                    <div class="notif-header">
+                        الإشعارات الجديدة
+                        <button class="btn-read-all" onclick="markAllAsRead(event)">قراءة الكل ✔</button>
+                    </div>
                     <div id="notifList">
-                        <div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>
+                        <div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">جاري التحميل...</div>
                     </div>
                 </div>
             </div>
@@ -309,18 +327,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 100);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
+        let currentStudent = null;
+        let allNotifsCache = [];
 
         window.toggleUserDropdown = function() {
             document.getElementById('userDropdown').classList.toggle('show');
@@ -332,6 +340,16 @@
             document.getElementById('userDropdown').classList.remove('show');
         }
 
+        // إغلاق قوائم الإشعارات والبروفايل عند الضغط في أي مكان خارجي
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.notification-container')) {
+                document.getElementById('notifDropdown').classList.remove('show');
+            }
+            if (!event.target.closest('.user-menu-container')) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
         window.logout = function() {
             localStorage.removeItem('currentStudent');
             location.href = 'index.html';
@@ -341,19 +359,43 @@
         if (!studentDataStr) {
             location.href = 'index.html';
         } else {
-            const student = JSON.parse(studentDataStr);
-            document.getElementById('studentNameDisplay').innerText = student.fullName;
-            document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + student.fullName;
-            document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + student.academicYear;
-
-            fetchMaterialsRealtime(student.academicYear);
-            fetchNotifications(student);
+            currentStudent = JSON.parse(studentDataStr);
+            initStudentDashboard();
         }
 
-        // جلب المواد الدراسية بشكل لحظي (Real-time) بـ onSnapshot لتتحدث أوتوماتيك من غير ريفريش
+        function initStudentDashboard() {
+            // مزامنة حالة وحجم الفرقة مباشرة من قاعدة البيانات بدون الحاجة لمسح الكوكيز
+            const qStudent = query(collection(db, "users"), where("student_id", "==", currentStudent.student_id));
+            onSnapshot(qStudent, (snapshot) => {
+                if (!snapshot.empty) {
+                    const updatedData = snapshot.docs[0].data();
+                    
+                    if (updatedData.status === 'banned' || updatedData.status === 'rejected') {
+                        alert('تم حظر أو رفض حسابك من الإدارة.');
+                        logout();
+                        return;
+                    }
+
+                    if (updatedData.academicYear !== currentStudent.academicYear) {
+                        localStorage.setItem('currentStudent', JSON.stringify(updatedData));
+                        location.reload();
+                    } else {
+                        currentStudent = updatedData;
+                        localStorage.setItem('currentStudent', JSON.stringify(updatedData));
+                        document.getElementById('studentNameDisplay').innerText = updatedData.fullName;
+                        document.getElementById('welcomeTitle').innerText = 'أهلاً بك، ' + updatedData.fullName;
+                        document.getElementById('academicYearDisplay').innerText = 'الفرقة الدراسية: الفرقة ' + updatedData.academicYear;
+                    }
+                }
+            });
+
+            fetchMaterialsRealtime(currentStudent.academicYear);
+            fetchNotifications(currentStudent);
+        }
+
         function fetchMaterialsRealtime(year) {
             const grid = document.getElementById('materialsGrid');
-            const q = query(collection(db, "materials"), where("academicYear", "==", year));
+            const q = query(collection(db, "materials"), where("academicYear", "==", String(year)));
 
             onSnapshot(q, (querySnapshot) => {
                 if (querySnapshot.empty) {
@@ -375,17 +417,12 @@
                     `;
                 });
                 grid.innerHTML = html;
-            }, (error) => {
-                console.error("Error fetching materials in real-time: ", error);
-                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: red; padding: 40px;">حدث خطأ أثناء تحميل المواد الدراسية.</div>`;
             });
         }
 
-        // جلب الإشعارات
         function fetchNotifications(student) {
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
-            
             const qNotifs = query(collection(db, "notifications"));
             
             onSnapshot(qNotifs, (snapshot) => {
@@ -410,8 +447,7 @@
                         if (inferredLink === '#' && item.message) {
                             const match = item.message.match(/المادة:\s*([^(]+)/);
                             if (match && match[1]) {
-                                const matName = match[1].trim();
-                                inferredLink = `material.html?title=${encodeURIComponent(matName)}`;
+                                inferredLink = `material.html?title=${encodeURIComponent(match[1].trim())}`;
                             }
                         }
 
@@ -425,6 +461,10 @@
                     }
                 });
 
+                // ترتيب الإشعارات من الأحدث للأقدم
+                allNotifs.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+                allNotifsCache = allNotifs;
+
                 if (allNotifs.length === 0) {
                     notifList.innerHTML = `<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 13px;">لا توجد إشعارات جديدة</div>`;
                     badge.style.display = 'none';
@@ -432,7 +472,6 @@
                 }
 
                 const readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + student.student_id) || '[]');
-
                 let html = '';
                 let unreadCount = 0;
 
@@ -440,11 +479,16 @@
                     const isRead = readNotifs.includes(notif.id);
                     if (!isRead) unreadCount++;
 
+                    // صياغة التاريخ والوقت بوضوح
+                    const dateObj = notif.date ? new Date(notif.date) : null;
+                    const dateStr = dateObj ? dateObj.toLocaleDateString('ar-EG') : '';
+                    const timeStr = dateObj ? dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '';
+
                     html += `
                         <div class="notif-item ${!isRead ? 'unread' : ''}" onclick="handleNotificationClick('${notif.id}', '${notif.link}', '${student.student_id}')">
                             <p>${notif.title}</p>
-                            <span style="display:block; margin-top:2px; color:#475569;">${notif.subtitle}</span>
-                            <span>${notif.date ? new Date(notif.date).toLocaleDateString('ar-EG') : ''}</span>
+                            <span class="subtitle">${notif.subtitle}</span>
+                            <span class="time">🕒 ${dateStr} - ${timeStr}</span>
                         </div>
                     `;
                 });
@@ -456,9 +500,17 @@
                 } else {
                     badge.style.display = 'none';
                 }
-            }, (error) => {
-                console.error("Error fetching notifications in real-time:", error);
             });
+        }
+
+        window.markAllAsRead = function(e) {
+            e.stopPropagation();
+            let readNotifs = JSON.parse(localStorage.getItem('readNotifications_' + currentStudent.student_id) || '[]');
+            allNotifsCache.forEach(n => {
+                if(!readNotifs.includes(n.id)) readNotifs.push(n.id);
+            });
+            localStorage.setItem('readNotifications_' + currentStudent.student_id, JSON.stringify(readNotifs));
+            fetchNotifications(currentStudent);
         }
 
         window.handleNotificationClick = function(notifId, link, studentId) {
@@ -469,8 +521,6 @@
             }
             if (link && link !== '#') {
                 location.href = link;
-            } else {
-                location.reload();
             }
         }
 
@@ -478,6 +528,5 @@
             location.href = `material.html?title=${encodeURIComponent(materialTitle)}`;
         }
     </script>
-
 </body>
 </html>
