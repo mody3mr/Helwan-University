@@ -306,6 +306,13 @@
             display: flex;
             flex-direction: column;
         }
+        
+        /* تخصيص نافذة الجداول عشان تكون عريضة وتستوعب الـ PDF والصور براحتها */
+        #schedulesModalOverlay .service-modal {
+            max-width: 900px;
+            height: 85vh;
+        }
+
         @keyframes modalScale {
             from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
@@ -399,15 +406,15 @@
 
     <div id="toast-container"></div>
 
-    <!-- نافذة الجداول (محاضرات / امتحانات) -->
+    <!-- نافذة الجداول (محاضرات / امتحانات) - مخصصة للعرض المباشر -->
     <div class="service-modal-overlay" id="schedulesModalOverlay">
         <div class="service-modal">
             <div class="service-modal-header">
                 <h3 id="schedulesModalTitle">الجداول</h3>
                 <button class="close-service-modal" onclick="closeServiceModals()">✕</button>
             </div>
-            <div class="service-modal-body" id="schedulesModalBody">
-                <!-- المحتوى هيظهر هنا -->
+            <div class="service-modal-body" id="schedulesModalBody" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- الجدول المباشر هيظهر هنا كـ iframe أو صورة -->
             </div>
         </div>
     </div>
@@ -521,6 +528,8 @@
         window.closeServiceModals = function() {
             document.getElementById('schedulesModalOverlay').style.display = 'none';
             document.getElementById('attendanceModalOverlay').style.display = 'none';
+            // تفريغ المحتوى لمنع الصوت أو الفيديو من الاستمرار في الخلفية
+            document.getElementById('schedulesModalBody').innerHTML = '';
         }
 
         document.addEventListener('click', function(event) {
@@ -601,7 +610,14 @@
             });
         }
 
-        // --- الخدمات الطلابية (فتح نافذة الجداول) ---
+        // دالة تحويل روابط جوجل درايف للعرض المباشر (Preview)
+        function getEmbeddableUrl(url) {
+            if (!url) return '';
+            if (url.includes('drive.google.com')) return url.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview');
+            return url;
+        }
+
+        // --- الخدمات الطلابية (فتح نافذة الجداول مع العرض المباشر) ---
         window.openScheduleModal = function(type, event) {
             event.stopPropagation();
             document.getElementById('userDropdown').classList.remove('show');
@@ -611,7 +627,7 @@
             const bodyEl = document.getElementById('schedulesModalBody');
 
             titleEl.innerText = type === 'lecture' ? '📅 جدول المحاضرات' : '📝 جدول الامتحانات';
-            bodyEl.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">جاري التحميل...</div>';
+            bodyEl.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">جاري تحميل الجداول...</div>';
             overlay.style.display = 'flex';
 
             const q = query(collection(db, "schedules"), where("academicYear", "==", String(currentStudent.academicYear)), where("type", "==", type));
@@ -624,14 +640,23 @@
                 let html = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const dateFormatted = data.createdAt ? new Date(data.createdAt).toLocaleDateString('ar-EG') : '';
+                    const fileUrl = data.fileUrl || '';
+                    let mediaHtml = '';
+                    
+                    // تحديد نوع العرض: صورة أم إطار (iframe) للـ PDF
+                    if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) || fileUrl.includes('image')) {
+                        mediaHtml = `<img src="${fileUrl}" alt="جدول" style="width:100%; max-height: 65vh; object-fit: contain; border-radius: 8px;">`;
+                    } else {
+                        mediaHtml = `<iframe src="${getEmbeddableUrl(fileUrl)}" style="width:100%; height: 65vh; border:none; border-radius: 8px;" allow="autoplay"></iframe>`;
+                    }
+
                     html += `
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
-                            <div>
-                                <div style="font-weight: 700; color: #0f172a; font-size:15px;">${data.title}</div>
-                                <div style="font-size: 11.5px; color: #64748b; margin-top:3px;">تاريخ النشر: ${dateFormatted}</div>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                                <h4 style="color: #0f172a; font-size:16px;">${data.title}</h4>
+                                <a href="${fileUrl}" target="_blank" style="font-size:13px; color:#2563eb; text-decoration:none; font-weight:700; background: #eff6ff; padding: 6px 12px; border-radius: 6px;">فتح في نافذة جديدة ↗</a>
                             </div>
-                            <a href="${data.fileUrl}" target="_blank" class="btn-submit" style="text-decoration:none;">عرض الجدول</a>
+                            ${mediaHtml}
                         </div>
                     `;
                 });
