@@ -44,6 +44,7 @@
         .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: all 0.3s; background: #fff; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+        .form-group input[readonly] { background: #f1f5f9; cursor: not-allowed; }
 
         .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
         .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
@@ -83,8 +84,8 @@
         .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-        #customModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99998; }
-        .custom-modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease; }
+        #customModalOverlay, #studentEditModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99998; padding: 20px; }
+        .custom-modal { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease; }
         @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .custom-modal h3 { color: #0f172a; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
         .custom-modal p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
@@ -137,6 +138,41 @@
     
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- نافذة تعديل بيانات الطالب -->
+    <div id="studentEditModalOverlay">
+        <div class="custom-modal" style="max-width: 500px; text-align: right;">
+            <h3 style="margin-bottom: 20px; text-align: center;">تعديل بيانات الطالب</h3>
+            <form id="studentEditForm">
+                <input type="hidden" id="editStDocId">
+                <div class="form-group">
+                    <label>الاسم الرباعي</label>
+                    <input type="text" id="editStName" required>
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="editStEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="text" id="editStPhone">
+                </div>
+                <div class="form-group">
+                    <label>الفرقة الدراسية</label>
+                    <select id="editStYear" required>
+                        <option value="1">الفرقة الأولى</option>
+                        <option value="2">الفرقة الثانية</option>
+                        <option value="3">الفرقة الثالثة</option>
+                        <option value="4">الفرقة الرابعة</option>
+                    </select>
+                </div>
+                <div class="custom-modal-actions" style="margin-top: 25px;">
+                    <button type="submit" class="btn-submit" style="width: auto; flex: 1;">حفظ التعديلات</button>
+                    <button type="button" class="btn-confirm-no" onclick="document.getElementById('studentEditModalOverlay').style.display='none'" style="flex: 1;">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="reportModalOverlay">
         <div class="report-modal">
@@ -734,7 +770,7 @@
                                 <label for="admEmail">البريد الإلكتروني</label>
                                 <input type="email" id="admEmail" placeholder="admin@helwan.edu.eg" required>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="admPassGroup">
                                 <label for="admPassword">كلمة المرور (6 أحرف/أرقام على الأقل)</label>
                                 <input type="password" id="admPassword" placeholder="كلمة المرور" required>
                             </div>
@@ -772,7 +808,10 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top: 10px;">إنشاء الحساب الإداري بالـ Auth</button>
+                        <div style="display:flex; gap:10px; margin-top: 10px;">
+                            <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top:0;">إنشاء الحساب الإداري بالـ Auth</button>
+                            <button type="button" class="btn-confirm-no" id="adminCancelBtn" onclick="resetAdminForm()" style="display:none; border-radius:10px; font-weight:600; font-size:16px; padding:14px 24px; border:none; cursor:pointer;">إلغاء التعديل</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -903,7 +942,6 @@
             } catch (e) { console.error("Logging error:", e); }
         }
 
-        // --- وظيفة تفعيل وإغلاق المنيو في الموبايل ---
         window.toggleMobileMenu = function() {
             document.querySelector('.sidebar').classList.toggle('active-mobile');
             document.getElementById('sidebarOverlay').classList.toggle('active');
@@ -1019,8 +1057,7 @@
                 document.getElementById('sectionAdmins').classList.add('active');
                 document.getElementById('menuAdmins').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة الأعضاء الإداريين';
-                document.getElementById('adminCreateForm').reset();
-                toggleRolePermissions();
+                resetAdminForm();
                 fetchAdminsTable();
             } else if(tab === 'auditLogs') {
                 document.getElementById('sectionAuditLogs').classList.add('active');
@@ -1029,7 +1066,6 @@
                 fetchAuditLogsTable();
             }
             
-            // قفل المنيو أوتوماتيك لو كنا على الموبايل
             if(window.innerWidth <= 992) {
                 document.querySelector('.sidebar').classList.remove('active-mobile');
                 const overlay = document.getElementById('sidebarOverlay');
@@ -2158,6 +2194,38 @@
             });
         };
 
+        // --- وظائف نافذة تعديل بيانات الطالب ---
+        window.editStudent = function(docId) {
+            const student = allStudentsCache.find(s => s.id === docId);
+            if (student) {
+                document.getElementById('editStDocId').value = docId;
+                document.getElementById('editStName').value = student.fullName || '';
+                document.getElementById('editStEmail').value = student.email || '';
+                document.getElementById('editStPhone').value = student.phone || '';
+                document.getElementById('editStYear').value = student.academicYear || '1';
+                document.getElementById('studentEditModalOverlay').style.display = 'flex';
+            }
+        };
+
+        document.getElementById('studentEditForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const docId = document.getElementById('editStDocId').value;
+            const fullName = document.getElementById('editStName').value.trim();
+            const email = document.getElementById('editStEmail').value.trim();
+            const phone = document.getElementById('editStPhone').value.trim();
+            const academicYear = document.getElementById('editStYear').value;
+
+            try {
+                await updateDoc(doc(db, "users", docId), { fullName, email, phone, academicYear });
+                logActivity('تعديل بيانات طالب', `تم تعديل بيانات الطالب: ${fullName}`);
+                showToast('تم تعديل بيانات الطالب بنجاح', 'success');
+                document.getElementById('studentEditModalOverlay').style.display = 'none';
+                fetchAllStudents();
+            } catch(error) {
+                showToast('حدث خطأ أثناء التعديل', 'error');
+            }
+        });
+
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -2299,6 +2367,7 @@
                         <td>الفرقة ${u.academicYear || '1'}</td>
                         <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                         <td>
+                            <button class="btn btn-edit" onclick="editStudent('${u.id}')">تعديل</button>
                             <button class="btn ${banBtnClass}" onclick="toggleBanStudent('${u.id}', '${newStatus}')">${banBtnText}</button>
                             <button class="btn btn-delete" onclick="deleteDocItem('users', '${u.id}')">حذف</button>
                         </td>
@@ -2318,8 +2387,54 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
+        // --- وظائف تعديل وحفظ بيانات الأعضاء الإداريين ---
+        window.editAdmin = async function(id) {
+            const snap = await getDoc(doc(db, "admins", id));
+            if(snap.exists()) {
+                const adm = snap.data();
+                document.getElementById('adminEditId').value = id;
+                document.getElementById('admName').value = adm.name;
+                
+                // نقفل تعديل الإيميل عشان مربوط بالAuth بشكل مباشر
+                document.getElementById('admEmail').value = adm.email;
+                document.getElementById('admEmail').readOnly = true; 
+                
+                // نخفي حق الباسورد أثناء التعديل ونشيل علامة الإجباري منه
+                document.getElementById('admPassword').removeAttribute('required');
+                document.getElementById('admPassGroup').style.display = 'none'; 
+                
+                document.getElementById('admRole').value = adm.role;
+                document.getElementById('admAssignedYear').value = adm.assignedYear || 'all';
+                
+                toggleRolePermissions();
+
+                document.querySelectorAll('input[name="perm"]').forEach(cb => {
+                    cb.checked = adm.permissions && adm.permissions.includes(cb.value);
+                });
+
+                document.getElementById('adminCardHeader').innerText = 'تعديل حساب إداري';
+                document.getElementById('adminSubmitBtn').innerText = 'حفظ التعديلات';
+                document.getElementById('adminCancelBtn').style.display = 'block';
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        window.resetAdminForm = function() {
+            document.getElementById('adminCreateForm').reset();
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('admEmail').readOnly = false;
+            document.getElementById('admPassword').setAttribute('required', 'required');
+            document.getElementById('admPassGroup').style.display = 'block';
+            document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد';
+            document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري بالـ Auth';
+            document.getElementById('adminCancelBtn').style.display = 'none';
+            toggleRolePermissions();
+        };
+
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const editId = document.getElementById('adminEditId').value;
             const name = document.getElementById('admName').value.trim();
             const email = document.getElementById('admEmail').value.trim();
             const password = document.getElementById('admPassword').value.trim();
@@ -2332,18 +2447,25 @@
             }
 
             try {
-                const secApp = initializeSecondaryApp(firebaseConfig, "SecondaryApp_" + Date.now());
-                const secAuth = getSecondaryAuth(secApp);
-                const cred = await createUserWithEmailAndPassword(secAuth, email, password);
+                if (editId) {
+                    await updateDoc(doc(db, "admins", editId), { 
+                        name, role, assignedYear, permissions 
+                    });
+                    logActivity('تعديل حساب إداري', `تم تعديل حساب ${role} بالبريد: ${email}`);
+                    showToast('تم تعديل الحساب الإداري بنجاح!', 'success');
+                } else {
+                    const secApp = initializeSecondaryApp(firebaseConfig, "SecondaryApp_" + Date.now());
+                    const secAuth = getSecondaryAuth(secApp);
+                    const cred = await createUserWithEmailAndPassword(secAuth, email, password);
 
-                await setDoc(doc(db, "admins", cred.user.uid), { 
-                    name, email, role, assignedYear, permissions, status: 'active', createdAt: new Date().toISOString() 
-                });
+                    await setDoc(doc(db, "admins", cred.user.uid), { 
+                        name, email, role, assignedYear, permissions, status: 'active', createdAt: new Date().toISOString() 
+                    });
 
-                logActivity('إنشاء حساب إداري', `تم إنشاء حساب ${role} بالبريد: ${email}`);
-                showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
-                document.getElementById('adminCreateForm').reset();
-                toggleRolePermissions();
+                    logActivity('إنشاء حساب إداري', `تم إنشاء حساب ${role} بالبريد: ${email}`);
+                    showToast('تم إنشاء الحساب الإداري بنجاح!', 'success');
+                }
+                resetAdminForm();
             } catch(e) { showToast('حدث خطأ: ' + e.message, 'error'); }
         });
 
@@ -2381,6 +2503,7 @@
                             <td>${createdDate}</td>
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
+                                <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
                                 ${toggleBtn}
                                 <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
                             </td>
