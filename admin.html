@@ -34,6 +34,18 @@
         .tab-section { display: none; width: 100%; }
         .tab-section.active { display: block; }
 
+        /* Overview Cards Styles */
+        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-icon { font-size: 35px; margin-bottom: 15px; }
+        .stat-title { color: #64748b; font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+        .stat-value { color: #0f172a; font-size: 36px; font-weight: 700; }
+        .stat-card.blue .stat-icon { color: #3b82f6; }
+        .stat-card.green .stat-icon { color: #22c55e; }
+        .stat-card.orange .stat-icon { color: #f59e0b; }
+        .stat-card.purple .stat-icon { color: #a855f7; }
+
         .card-box { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%; }
         .card-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .card-body { padding: 25px; }
@@ -187,10 +199,10 @@
 
     <div id="customModalOverlay">
         <div class="custom-modal">
-            <h3>تأكيد الحذف النهائي</h3>
-            <p>هل أنت متأكد من رغبتك في حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <h3>تأكيد الإجراء</h3>
+            <p>هل أنت متأكد من رغبتك في تنفيذ هذا الإجراء؟</p>
             <div class="custom-modal-actions">
-                <button class="btn-confirm-yes" id="modalYesBtn">نعم، حذف</button>
+                <button class="btn-confirm-yes" id="modalYesBtn">نعم، تأكيد</button>
                 <button class="btn-confirm-no" id="modalNoBtn">إلغاء</button>
             </div>
         </div>
@@ -200,6 +212,9 @@
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
             <ul class="sidebar-menu">
+                <!-- تاب نظرة عامة - تظهر للمدير فقط -->
+                <li id="menuOverview" style="display:none;" onclick="switchTab('overview')">📈 نظرة عامة (الرئيسية)</li>
+                
                 <li id="menuMaterials" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
@@ -227,6 +242,36 @@
                 <div class="dropdown-menu" id="adminDropdown">
                     <a href="#" onclick="logoutAdmin()">تسجيل الخروج</a>
                 </div>
+            </div>
+        </div>
+
+        <!-- 0. نظرة عامة والإحصائيات (خاصة بالـ Manager فقط) -->
+        <div id="sectionOverview" class="tab-section">
+            <h3 style="color:#0f172a; margin-bottom: 20px;">مرحباً بك في لوحة التحكم الإدارية</h3>
+            <div class="overview-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-title">إجمالي الطلاب النشطين</div>
+                    <div class="stat-value" id="statTotalStudents">-</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-title">طلبات اشتراك معلقة</div>
+                    <div class="stat-value" id="statPendingStudents">-</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-title">إجمالي المواد الدراسية</div>
+                    <div class="stat-value" id="statTotalMaterials">-</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">✋</div>
+                    <div class="stat-title">جلسات حضور جارية الآن</div>
+                    <div class="stat-value" id="statActiveSessions">-</div>
+                </div>
+            </div>
+            <div class="card-box" style="padding: 30px; text-align: center;">
+                <p style="color: #64748b; font-size: 16px;">يمكنك التنقل بين الأقسام من القائمة الجانبية للتحكم الكامل في سير العملية التعليمية.</p>
             </div>
         </div>
 
@@ -825,8 +870,8 @@
                                 <th>اسم العضو</th>
                                 <th>البريد الإلكتروني</th>
                                 <th>الدور والفرقة</th>
-                                <th>تاريخ الإنشاء</th>
-                                <th>الحالة</th>
+                                <th>حالة الجهاز</th>
+                                <th>حالة الحساب</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
@@ -895,6 +940,7 @@
             const nameDisplay = document.getElementById('adminNameDisplay');
             if(nameDisplay) nameDisplay.innerText = currentAdminName;
             
+            const overviewMenu = document.getElementById('menuOverview');
             const adminMenu = document.getElementById('menuAdmins');
             const auditMenu = document.getElementById('menuAuditLogs');
             const notifMenu = document.getElementById('menuNotifs');
@@ -902,6 +948,7 @@
             const attendanceMenu = document.getElementById('menuAttendance');
 
             if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') {
+                if(overviewMenu) overviewMenu.style.display = 'block';
                 if(adminMenu) adminMenu.style.display = 'block';
                 if(auditMenu) auditMenu.style.display = 'block';
                 if(notifMenu) notifMenu.style.display = 'block';
@@ -999,6 +1046,30 @@
             if(yearGroup) yearGroup.style.display = (role === 'supervisor') ? 'block' : 'none';
         }
 
+        // --- جلب الإحصائيات العامة للمدير فقط ---
+        async function fetchOverviewStats() {
+            try {
+                // إجمالي الطلاب والطلبات المعلقة
+                const stuSnap = await getDocs(collection(db, "users"));
+                let activeStu = 0; let pendingStu = 0;
+                stuSnap.forEach(d => {
+                    if (d.data().status === 'approved') activeStu++;
+                    else if (d.data().status === 'pending') pendingStu++;
+                });
+                
+                // إجمالي المواد
+                const matSnap = await getDocs(collection(db, "materials"));
+                
+                // الجلسات النشطة
+                const sessSnap = await getDocs(query(collection(db, "attendanceSessions"), where("isActive", "==", true)));
+                
+                document.getElementById('statTotalStudents').innerText = activeStu;
+                document.getElementById('statPendingStudents').innerText = pendingStu;
+                document.getElementById('statTotalMaterials').innerText = matSnap.size;
+                document.getElementById('statActiveSessions').innerText = sessSnap.size;
+            } catch(e) { console.error("Error fetching overview:", e); }
+        }
+
         window.switchTab = function(tab) {
             sessionStorage.setItem('adminActiveTab', tab);
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
@@ -1006,7 +1077,12 @@
             const dropdown = document.getElementById('adminDropdown');
             if(dropdown) dropdown.classList.remove('show');
 
-            if(tab === 'materials') {
+            if(tab === 'overview') {
+                document.getElementById('sectionOverview').classList.add('active');
+                if(document.getElementById('menuOverview')) document.getElementById('menuOverview').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'نظرة عامة والإحصائيات';
+                fetchOverviewStats();
+            } else if(tab === 'materials') {
                 document.getElementById('sectionMaterials').classList.add('active');
                 document.getElementById('menuMaterials').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'إدارة المواد';
@@ -1074,8 +1150,14 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            let savedTab = sessionStorage.getItem('adminActiveTab') || 'materials';
-            switchTab(savedTab);
+            if (currentAdminRole === 'super_admin' || currentAdminRole === 'manager') {
+                let savedTab = sessionStorage.getItem('adminActiveTab') || 'overview';
+                switchTab(savedTab);
+            } else {
+                let savedTab = sessionStorage.getItem('adminActiveTab') || 'materials';
+                if(savedTab === 'overview') savedTab = 'materials';
+                switchTab(savedTab);
+            }
             setTimeout(enforceAssignedYear, 300);
         });
 
@@ -2387,50 +2469,34 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- وظائف تعديل وحفظ بيانات الأعضاء الإداريين ---
-        window.editAdmin = async function(id) {
-            const snap = await getDoc(doc(db, "admins", id));
-            if(snap.exists()) {
-                const adm = snap.data();
-                document.getElementById('adminEditId').value = id;
-                document.getElementById('admName').value = adm.name;
-                
-                // نقفل تعديل الإيميل عشان مربوط بالAuth بشكل مباشر
-                document.getElementById('admEmail').value = adm.email;
-                document.getElementById('admEmail').readOnly = true; 
-                
-                // نخفي حق الباسورد أثناء التعديل ونشيل علامة الإجباري منه
-                document.getElementById('admPassword').removeAttribute('required');
-                document.getElementById('admPassGroup').style.display = 'none'; 
-                
-                document.getElementById('admRole').value = adm.role;
-                document.getElementById('admAssignedYear').value = adm.assignedYear || 'all';
-                
-                toggleRolePermissions();
+        // --- وظائف حظر وربط أجهزة المشرفين ---
+        window.banAdminDevice = async function(deviceId, adminName) {
+            showConfirmModal(async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await setDoc(doc(db, "bannedDevices", deviceId), {
+                            bannedAt: new Date().toISOString(),
+                            adminName: adminName
+                        });
+                        logActivity('حظر جهاز', `تم حظر جهاز المشرف: ${adminName}`);
+                        showToast('تم حظر الجهاز بنجاح. لن يتمكن أي شخص من الدخول منه.', 'success');
+                    } catch(e) { showToast('خطأ في حظر الجهاز', 'error'); }
+                }
+            });
+        }
 
-                document.querySelectorAll('input[name="perm"]').forEach(cb => {
-                    cb.checked = adm.permissions && adm.permissions.includes(cb.value);
-                });
-
-                document.getElementById('adminCardHeader').innerText = 'تعديل حساب إداري';
-                document.getElementById('adminSubmitBtn').innerText = 'حفظ التعديلات';
-                document.getElementById('adminCancelBtn').style.display = 'block';
-                
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        };
-
-        window.resetAdminForm = function() {
-            document.getElementById('adminCreateForm').reset();
-            document.getElementById('adminEditId').value = '';
-            document.getElementById('admEmail').readOnly = false;
-            document.getElementById('admPassword').setAttribute('required', 'required');
-            document.getElementById('admPassGroup').style.display = 'block';
-            document.getElementById('adminCardHeader').innerText = 'إنشاء حساب إداري جديد';
-            document.getElementById('adminSubmitBtn').innerText = 'إنشاء الحساب الإداري بالـ Auth';
-            document.getElementById('adminCancelBtn').style.display = 'none';
-            toggleRolePermissions();
-        };
+        window.unlinkAdminDevice = async function(docId) {
+             showConfirmModal(async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await updateDoc(doc(db, "admins", docId), { deviceId: null });
+                        logActivity('فك جهاز', `تم فك ارتباط جهاز للمشرف`);
+                        showToast('تم فك ارتباط الجهاز. يمكن للمشرف الدخول من جهاز جديد الآن.', 'success');
+                        fetchAdminsTable();
+                    } catch(e) { showToast('خطأ', 'error'); }
+                }
+            });
+        }
 
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -2459,7 +2525,7 @@
                     const cred = await createUserWithEmailAndPassword(secAuth, email, password);
 
                     await setDoc(doc(db, "admins", cred.user.uid), { 
-                        name, email, role, assignedYear, permissions, status: 'active', createdAt: new Date().toISOString() 
+                        name, email, role, assignedYear, permissions, status: 'active', createdAt: new Date().toISOString(), deviceId: null 
                     });
 
                     logActivity('إنشاء حساب إداري', `تم إنشاء حساب ${role} بالبريد: ${email}`);
@@ -2491,6 +2557,18 @@
                     const isSuspended = adm.status === 'suspended';
                     const statusText = isSuspended ? 'موقوف' : 'نشط';
                     const statusColor = isSuspended ? 'red' : 'green';
+
+                    // --- حالة الجهاز والأزرار الجديدة ---
+                    const deviceId = adm.deviceId;
+                    const linkedText = deviceId ? '<span style="color:#2563eb; font-size:13.5px; font-weight:700;">📱 مربوط بجهاز</span>' : '<span style="color:#94a3b8; font-size:13.5px; font-weight:700;">📱 غير مربوط</span>';
+                    
+                    let deviceActions = '';
+                    if (adm.role !== 'manager' && deviceId) {
+                        deviceActions = `
+                            <button class="btn" style="background:#0f172a; color:white; width: 100%; margin-top:5px;" onclick="banAdminDevice('${deviceId}', '${adm.name}')">🚫 حظر جهازه</button>
+                            <button class="btn" style="background:#64748b; color:white; width: 100%; margin-top:5px;" onclick="unlinkAdminDevice('${d.id}')">🔓 فك الجهاز</button>
+                        `;
+                    }
                     
                     const toggleBtn = isSuspended ? 
                         `<button class="btn btn-approve" onclick="toggleAdminStatus('${d.id}', 'active')">تفعيل</button>` : 
@@ -2499,13 +2577,14 @@
                     html += `<tr>
                             <td><b>${adm.name}</b></td>
                             <td>${adm.email}</td>
-                            <td>${roleText} (${assignedYearText})</td>
-                            <td>${createdDate}</td>
+                            <td>${roleText} <br> <small style="color:#64748b;">(${assignedYearText})</small></td>
+                            <td>${linkedText}</td>
                             <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
                             <td>
                                 <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
                                 ${toggleBtn}
                                 <button class="btn btn-delete" onclick="deleteDocItem('admins', '${d.id}')">حذف</button>
+                                ${deviceActions}
                             </td>
                         </tr>`;
                 });
