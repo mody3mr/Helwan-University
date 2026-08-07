@@ -4,143 +4,226 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جامعة حلوان - لوحة التحكم الإدارية الاحترافية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #f1f5f9; color: #1e293b; display: flex; min-height: 100vh; overflow-x: hidden; width: 100vw; }
-        
-        .sidebar {
-            width: 280px; background: #0f172a; color: white; display: flex;
-            flex-direction: column; justify-content: flex-start; padding: 20px 15px;
-            position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
+        /* --- CSS Variables for True Dark/Light Mode --- */
+        :root {
+            --bg-body: #f4f7fe;
+            --bg-sidebar: #0f172a;
+            --bg-sidebar-hover: #1e293b;
+            --text-sidebar: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-input: #ffffff;
+            --bg-hover: #f8fafc;
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.03);
+            --primary: #38bdf8;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .sidebar-brand { font-size: 20px; font-weight: 700; text-align: center; padding-bottom: 15px; border-bottom: 1px solid #1e293b; color: #38bdf8; }
-        .sidebar-menu { list-style: none; margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-        .sidebar-menu li { padding: 12px 15px; border-radius: 10px; background: #1e293b; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all 0.3s ease; }
-        .sidebar-menu li.active, .sidebar-menu li:hover { background: #38bdf8; color: #0f172a; transform: translateX(-5px); }
 
+        body.dark-mode {
+            --bg-body: #020617;
+            --bg-sidebar: #0f172a;
+            --bg-sidebar-hover: #1e293b;
+            --text-sidebar: #f8fafc;
+            --bg-card: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --bg-input: #020617;
+            --bg-hover: #1e293b;
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --primary: #38bdf8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; width: 100vw; transition: var(--transition); }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px; background: var(--bg-sidebar); color: var(--text-sidebar); display: flex;
+            flex-direction: column; justify-content: flex-start; padding: 25px 15px;
+            position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
+            border-left: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        .sidebar-brand { 
+            font-size: 22px; font-weight: 800; text-align: center; padding-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); color: var(--primary); 
+            letter-spacing: 1px;
+        }
+        .sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        .sidebar-menu li { 
+            padding: 14px 18px; border-radius: 12px; background: transparent; 
+            font-weight: 600; font-size: 14.5px; cursor: pointer; transition: var(--transition); 
+            color: #cbd5e1; display: flex; align-items: center; gap: 10px;
+        }
+        .sidebar-menu li.active, .sidebar-menu li:hover { 
+            background: var(--bg-sidebar-hover); color: var(--primary); transform: translateX(-5px); 
+        }
+
+        /* Main Content */
         .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 280px); height: 100vh; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 30px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%; }
-        .header-top h2 { color: #0f172a; font-size: 24px; font-weight: 700; }
         
+        /* Header */
+        .header-top { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; 
+            background: var(--bg-card); padding: 18px 30px; border-radius: 16px; 
+            box-shadow: var(--shadow-header); width: 100%; transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+        .header-top h2 { color: var(--text-main); font-size: 24px; font-weight: 800; }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+
+        /* Dark Mode Toggle Button */
+        .theme-toggle-btn {
+            background: var(--bg-body); border: 1px solid var(--border-color);
+            color: var(--text-main); font-size: 20px; width: 45px; height: 45px;
+            border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: var(--transition); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .theme-toggle-btn:hover { background: var(--bg-hover); transform: rotate(15deg); }
+
+        /* Profile Dropdown */
         .admin-menu-container { position: relative; cursor: pointer; }
-        .admin-profile { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 16px; border-radius: 30px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; font-size: 14px; }
-        .dropdown-menu { position: absolute; left: 0; top: 50px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 170px; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 1000; }
-        .dropdown-menu.show { display: flex; }
-        .dropdown-menu a { padding: 12px 18px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 600; transition: background 0.2s; display: block; }
-        .dropdown-menu a:hover { background: #f8fafc; }
+        .admin-profile { 
+            display: flex; align-items: center; gap: 10px; background: var(--bg-body); 
+            padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border-color); 
+            font-weight: 700; color: var(--text-main); font-size: 14.5px; transition: var(--transition);
+        }
+        .dropdown-menu { 
+            position: absolute; left: 0; top: 55px; background: var(--bg-card); 
+            border-radius: 14px; box-shadow: var(--shadow-card); width: 180px; 
+            display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--border-color); z-index: 1000; 
+        }
+        .dropdown-menu.show { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown-menu a { padding: 14px 20px; text-decoration: none; color: #ef4444; font-size: 14px; font-weight: 700; transition: var(--transition); display: block; }
+        .dropdown-menu a:hover { background: var(--bg-hover); }
 
-        .tab-section { display: none; width: 100%; }
+        .tab-section { display: none; width: 100%; animation: fadeTab 0.4s ease; }
         .tab-section.active { display: block; }
+        @keyframes fadeTab { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* Overview Cards Styles */
-        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: transform 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .stat-icon { font-size: 35px; margin-bottom: 15px; }
-        .stat-title { color: #64748b; font-size: 15px; font-weight: 600; margin-bottom: 10px; }
-        .stat-value { color: #0f172a; font-size: 36px; font-weight: 700; }
-        .stat-card.blue .stat-icon { color: #3b82f6; }
-        .stat-card.green .stat-icon { color: #22c55e; }
-        .stat-card.orange .stat-icon { color: #f59e0b; }
-        .stat-card.purple .stat-icon { color: #a855f7; }
+        /* Modern Overview Cards */
+        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-card { 
+            background: var(--bg-card); padding: 30px 25px; border-radius: 20px; 
+            box-shadow: var(--shadow-card); border: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center; 
+            transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .stat-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px -5px rgba(0,0,0,0.1); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%;
+        }
+        .stat-card.blue::before { background: #3b82f6; }
+        .stat-card.orange::before { background: #f59e0b; }
+        .stat-card.purple::before { background: #8b5cf6; }
+        .stat-card.green::before { background: #10b981; }
 
-        .card-box { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 30px; border: 1px solid #e2e8f0; width: 100%; }
-        .card-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; font-weight: 700; font-size: 18px; color: #0f172a; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .card-body { padding: 25px; }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; }
+        .stat-icon { 
+            width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px;
+        }
+        .stat-card.blue .stat-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .stat-card.orange .stat-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .stat-card.purple .stat-icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .stat-card.green .stat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .stat-title { color: var(--text-muted); font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+        .stat-value { color: var(--text-main); font-size: 40px; font-weight: 800; line-height: 1; }
+
+        /* Content Cards & Forms */
+        .card-box { background: var(--bg-card); border-radius: 20px; box-shadow: var(--shadow-card); overflow: hidden; margin-bottom: 35px; border: 1px solid var(--border-color); width: 100%; transition: var(--transition); }
+        .card-header { padding: 22px 30px; border-bottom: 1px solid var(--border-color); font-weight: 800; font-size: 18px; color: var(--text-main); background: transparent; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .card-body { padding: 30px; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; width: 100%; }
         .form-group { margin-bottom: 20px; }
         .form-group.full-width { grid-column: 1 / -1; }
-        .form-group label { display: block; margin-bottom: 8px; color: #334155; font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: all 0.3s; background: #fff; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
-        .form-group input[readonly] { background: #f1f5f9; cursor: not-allowed; }
+        .form-group label { display: block; margin-bottom: 10px; color: var(--text-main); font-weight: 700; font-size: 14.5px; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 12px; 
+            font-size: 14.5px; outline: none; transition: var(--transition); background: var(--bg-input); color: var(--text-main); 
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15); }
+        .form-group input[readonly] { background: var(--bg-hover); cursor: not-allowed; opacity: 0.7; }
 
-        .quiz-builder-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; }
-        .question-builder-item { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
-        .btn-add-q { background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 5px; }
-        .btn-add-q:hover { background: #1d4ed8; }
-        .btn-remove-q { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: left; }
+        /* Buttons */
+        .btn-submit { background: #2563eb; color: white; padding: 15px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: var(--transition); width: 100%; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-submit:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
 
-        .permissions-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 10px; }
-        .permissions-box label.main-lbl { font-weight: 700; color: #0f172a; margin-bottom: 15px; display: block; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
-        .perm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-        .perm-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #334155; cursor: pointer; }
-        .perm-item input { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
-
-        .btn-submit { background: #2563eb; color: white; padding: 14px 24px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; }
-        .btn-submit:hover { background: #1d4ed8; }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: right; }
-        table th, table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; word-break: break-word; }
-        table th { background: #f8fafc; color: #475569; font-weight: 700; }
-        
-        .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; margin: 2px; display: inline-block; }
-        .btn-approve { background: #22c55e; color: white; }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: var(--transition); margin: 2px; display: inline-block; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn-approve { background: #10b981; color: white; }
         .btn-reject { background: #ef4444; color: white; }
         .btn-delete { background: #ef4444; color: white; }
         .btn-edit { background: #3b82f6; color: white; }
         .btn-warning { background: #f59e0b; color: white; }
-        .no-data { text-align: center; color: #94a3b8; padding: 40px; font-size: 15px; }
 
-        #reportModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; }
-        .report-modal { background: white; width: 100%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        /* Tables */
+        .table-responsive { width: 100%; overflow-x: auto; padding: 0 10px 20px 10px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; }
+        table th, table td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); font-size: 14.5px; color: var(--text-main); }
+        table th { background: var(--bg-hover); color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 13px; }
+        table tbody tr { transition: var(--transition); }
+        table tbody tr:hover { background: var(--bg-hover); }
+        .no-data { text-align: center; color: var(--text-muted); padding: 40px; font-size: 15px; font-weight: 600; }
 
+        /* Modals & Overlays */
+        #reportModalOverlay, #customModalOverlay, #studentEditModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 99998; padding: 20px; }
+        .custom-modal, .report-modal { background: var(--bg-card); border: 1px solid var(--border-color); padding: 35px; border-radius: 24px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--text-main); }
+        .report-modal { max-width: 650px; text-align: right; }
+        @keyframes modalScale { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .custom-modal h3 { font-size: 22px; margin-bottom: 15px; font-weight: 800; }
+        .custom-modal p { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
+        .custom-modal-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .custom-modal-actions button { padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; border: none; flex: 1; min-width: 120px; transition: var(--transition); }
+        .btn-confirm-yes { background: #ef4444; color: white; }
+        .btn-confirm-yes:hover { background: #dc2626; transform: translateY(-2px); }
+        .btn-confirm-no { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-confirm-no:hover { background: var(--border-color); transform: translateY(-2px); }
+
+        /* Toasts */
         #toast-container { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
-        .toast { padding: 16px 22px; border-radius: 14px; color: white; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px); display: flex; align-items: center; justify-content: space-between; }
+        .toast { padding: 16px 22px; border-radius: 14px; color: white; font-size: 14.5px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(-20px); display: flex; align-items: center; justify-content: space-between; }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
         .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-        #customModalOverlay, #studentEditModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 99998; padding: 20px; }
-        .custom-modal { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s ease; }
-        @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .custom-modal h3 { color: #0f172a; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
-        .custom-modal p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
-        .custom-modal-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; flex: 1; min-width: 120px; }
-        .btn-confirm-yes { background: #ef4444; color: white; transition: background 0.2s; }
-        .btn-confirm-yes:hover { background: #dc2626; }
-        .btn-confirm-no { background: #f1f5f9; color: #475569; transition: background 0.2s; }
-        .btn-confirm-no:hover { background: #e2e8f0; }
+        /* Builders & Helpers */
+        .quiz-builder-box, .permissions-box { background: var(--bg-hover); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; margin-top: 15px; }
+        .question-builder-item { background: var(--bg-card); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; position: relative; }
+        .permissions-box label.main-lbl { font-weight: 800; color: var(--text-main); margin-bottom: 20px; display: block; font-size: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .perm-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-main); font-weight: 600; cursor: pointer; }
 
-        /* --- الميديا كويري للتجاوب مع الموبايل والتابلت --- */
-        .header-title-wrapper { display: flex; align-items: center; gap: 15px; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 9998; display: none; }
+        /* Responsive */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 6, 23, 0.6); z-index: 9998; display: none; backdrop-filter: blur(4px); }
         .sidebar-overlay.active { display: block; }
-
         @media (max-width: 992px) {
-            .sidebar {
-                position: fixed;
-                right: -300px;
-                z-index: 9999;
-                transition: right 0.3s ease-in-out;
-                width: 260px;
-                box-shadow: -5px 0 15px rgba(0,0,0,0.2);
-            }
+            .sidebar { position: fixed; right: -300px; z-index: 9999; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; box-shadow: -5px 0 25px rgba(0,0,0,0.2); }
             .sidebar.active-mobile { right: 0; }
-            .main-content { width: 100%; padding: 25px; }
+            .main-content { width: 100%; padding: 20px; }
             .mobile-menu-btn { display: block !important; }
         }
-
         @media (max-width: 768px) {
             .main-content { padding: 15px; }
-            .header-top { flex-direction: column; align-items: flex-start; padding: 15px; gap: 15px; }
-            .header-title-wrapper { width: 100%; }
-            .admin-menu-container { width: 100%; display: flex; justify-content: flex-end; }
-            .dropdown-menu { top: 40px; right: auto; left: 0; width: 200px; }
+            .header-top { flex-direction: column; align-items: flex-start; padding: 20px; gap: 20px; }
+            .header-title-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+            .header-actions { width: 100%; justify-content: space-between; flex-direction: row-reverse; }
+            .dropdown-menu { top: 50px; right: auto; left: 0; width: 100%; max-width: 250px; }
             .card-header { flex-direction: column; align-items: stretch !important; gap: 15px; }
             .card-header > div { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
-            .card-header input, .card-header select { width: 100% !important; margin-bottom: 5px; }
             .form-grid { grid-template-columns: 1fr; }
-            .perm-grid { grid-template-columns: 1fr; }
-            table th, table td { padding: 12px 10px; font-size: 13px; min-width: 120px; }
-            .btn { width: 100%; margin: 4px 0; text-align: center; }
-            .btn-submit { font-size: 14px; padding: 12px; }
+            .btn { width: 100%; margin: 5px 0; text-align: center; }
         }
     </style>
 </head>
@@ -153,9 +236,9 @@
 
     <!-- نافذة تعديل بيانات الطالب -->
     <div id="studentEditModalOverlay">
-        <div class="custom-modal" style="max-width: 500px; text-align: right;">
+        <div class="custom-modal">
             <h3 style="margin-bottom: 20px; text-align: center;">تعديل بيانات الطالب</h3>
-            <form id="studentEditForm">
+            <form id="studentEditForm" style="text-align: right;">
                 <input type="hidden" id="editStDocId">
                 <div class="form-group">
                     <label>الاسم الرباعي</label>
@@ -188,11 +271,9 @@
 
     <div id="reportModalOverlay">
         <div class="report-modal">
-            <h3 id="reportStudentName" style="color:#0f172a; margin-bottom:15px; font-size:20px;">تقرير أداء الطالب</h3>
-            
-            <input type="text" id="modalStudentSearch" placeholder="ابحث باسم الطالب أو الـ ID..." onkeyup="filterModalReport()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Cairo'; outline: none;">
-
-            <div id="reportModalBody" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; font-size: 14px; color: #334155;"></div>
+            <h3 id="reportStudentName" style="margin-bottom:20px;">تقرير أداء الطالب</h3>
+            <input type="text" id="modalStudentSearch" placeholder="ابحث باسم الطالب أو الـ ID..." onkeyup="filterModalReport()" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: 'Cairo'; outline: none;">
+            <div id="reportModalBody" style="max-height: 400px; overflow-y: auto; margin-bottom: 25px;"></div>
             <button class="btn-submit" onclick="document.getElementById('reportModalOverlay').style.display='none'">إغلاق التقرير</button>
         </div>
     </div>
@@ -200,7 +281,7 @@
     <div id="customModalOverlay">
         <div class="custom-modal">
             <h3>تأكيد الإجراء</h3>
-            <p>هل أنت متأكد من رغبتك في تنفيذ هذا الإجراء؟</p>
+            <p>هل أنت متأكد من رغبتك في تنفيذ هذا الإجراء؟ لا يمكن التراجع.</p>
             <div class="custom-modal-actions">
                 <button class="btn-confirm-yes" id="modalYesBtn">نعم، تأكيد</button>
                 <button class="btn-confirm-no" id="modalNoBtn">إلغاء</button>
@@ -212,9 +293,7 @@
         <div>
             <div class="sidebar-brand">جامعة حلوان</div>
             <ul class="sidebar-menu">
-                <!-- تاب نظرة عامة - تظهر للمدير فقط -->
                 <li id="menuOverview" style="display:none;" onclick="switchTab('overview')">📈 نظرة عامة (الرئيسية)</li>
-                
                 <li id="menuMaterials" onclick="switchTab('materials')">📚 إدارة المواد</li>
                 <li id="menuSections" onclick="switchTab('sections')">📂 إدارة الأقسام</li>
                 <li id="menuFiles" onclick="switchTab('files')">📑 إدارة المحتوى والملفات</li>
@@ -232,46 +311,61 @@
     <div class="main-content">
         <div class="header-top">
             <div class="header-title-wrapper">
-                <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none; font-size:24px; background:none; border:none; cursor:pointer; color:#0f172a;">☰</button>
+                <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none; font-size:26px; background:none; border:none; cursor:pointer; color:var(--text-main); margin-left: 15px;">☰</button>
                 <h2 id="pageTitle">إدارة المواد</h2>
             </div>
-            <div class="admin-menu-container" onclick="toggleAdminDropdown()">
-                <div class="admin-profile">
-                    <span id="adminNameDisplay">مسؤول النظام</span> ▾
-                </div>
-                <div class="dropdown-menu" id="adminDropdown">
-                    <a href="#" onclick="logoutAdmin()">تسجيل الخروج</a>
+            
+            <div class="header-actions">
+                <!-- زرار الدارك مود -->
+                <button id="darkModeToggle" class="theme-toggle-btn" aria-label="تبديل الوضع الليلي">🌙</button>
+                
+                <div class="admin-menu-container" onclick="toggleAdminDropdown()">
+                    <div class="admin-profile">
+                        <span id="adminNameDisplay">مسؤول النظام</span> ▾
+                    </div>
+                    <div class="dropdown-menu" id="adminDropdown">
+                        <a href="#" onclick="logoutAdmin()">تسجيل الخروج</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 0. نظرة عامة والإحصائيات (خاصة بالـ Manager فقط) -->
+        <!-- 0. نظرة عامة والإحصائيات -->
         <div id="sectionOverview" class="tab-section">
-            <h3 style="color:#0f172a; margin-bottom: 20px;">مرحباً بك في لوحة التحكم الإدارية</h3>
+            <h3 style="color:var(--text-main); margin-bottom: 25px; font-weight: 800; font-size: 22px;">مرحباً بك في لوحة التحكم الإدارية</h3>
             <div class="overview-grid">
                 <div class="stat-card blue">
-                    <div class="stat-icon">🎓</div>
+                    <div class="stat-header">
+                        <div class="stat-icon">🎓</div>
+                    </div>
                     <div class="stat-title">إجمالي الطلاب النشطين</div>
                     <div class="stat-value" id="statTotalStudents">-</div>
                 </div>
                 <div class="stat-card orange">
-                    <div class="stat-icon">⏳</div>
+                    <div class="stat-header">
+                        <div class="stat-icon">⏳</div>
+                    </div>
                     <div class="stat-title">طلبات اشتراك معلقة</div>
                     <div class="stat-value" id="statPendingStudents">-</div>
                 </div>
                 <div class="stat-card purple">
-                    <div class="stat-icon">📚</div>
+                    <div class="stat-header">
+                        <div class="stat-icon">📚</div>
+                    </div>
                     <div class="stat-title">إجمالي المواد الدراسية</div>
                     <div class="stat-value" id="statTotalMaterials">-</div>
                 </div>
                 <div class="stat-card green">
-                    <div class="stat-icon">✋</div>
+                    <div class="stat-header">
+                        <div class="stat-icon">✋</div>
+                    </div>
                     <div class="stat-title">جلسات حضور جارية الآن</div>
                     <div class="stat-value" id="statActiveSessions">-</div>
                 </div>
             </div>
-            <div class="card-box" style="padding: 30px; text-align: center;">
-                <p style="color: #64748b; font-size: 16px;">يمكنك التنقل بين الأقسام من القائمة الجانبية للتحكم الكامل في سير العملية التعليمية.</p>
+            <div class="card-box" style="padding: 40px; text-align: center;">
+                <h3 style="color: var(--text-main); font-weight: 800; margin-bottom: 10px;">تحكم كامل وذكي</h3>
+                <p style="color: var(--text-muted); font-size: 16px;">يمكنك التنقل بين الأقسام من القائمة الجانبية للتحكم الكامل في سير العملية التعليمية.</p>
             </div>
         </div>
 
@@ -456,7 +550,7 @@
                         </div>
 
                         <div id="quizBuilderContainer" style="display: none;" class="quiz-builder-box">
-                            <label style="font-weight: 700; color: #0f172a; margin-bottom: 12px; display: block;">أسئلة امتحان المهارة:</label>
+                            <label style="font-weight: 800; color: var(--text-main); margin-bottom: 15px; display: block;">أسئلة امتحان المهارة:</label>
                             <div id="questionsList"></div>
                             <button type="button" class="btn-add-q" onclick="addQuestionField()">+ إضافة سؤال جديد</button>
                         </div>
@@ -487,7 +581,7 @@
             </div>
         </div>
 
-        <!-- 4. إدارة الجداول (محاضرات / امتحانات) -->
+        <!-- 4. إدارة الجداول -->
         <div id="sectionSchedules" class="tab-section">
             <div class="card-box">
                 <div class="card-header">رفع ونشر الجداول للطلاب</div>
@@ -512,11 +606,11 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="schedTitle">عنوان الجدول (مثال: جدول التيرم الأول)</label>
+                                <label for="schedTitle">عنوان الجدول</label>
                                 <input type="text" id="schedTitle" required>
                             </div>
                             <div class="form-group">
-                                <label for="schedUrl">رابط ملف الجدول (صورة أو PDF على درايف)</label>
+                                <label for="schedUrl">رابط ملف الجدول</label>
                                 <input type="url" id="schedUrl" required>
                             </div>
                         </div>
@@ -546,7 +640,7 @@
             </div>
         </div>
 
-        <!-- 5. إدارة الحضور (فتح جلسة وتصدير ملف txt) -->
+        <!-- 5. إدارة الحضور -->
         <div id="sectionAttendance" class="tab-section">
             <div class="card-box" id="attCardBox">
                 <div class="card-header" id="attCardHeader">بدء تسجيل حضور لمحاضرة الآن ✋</div>
@@ -575,7 +669,7 @@
                                 <input type="text" id="attProf" placeholder="د. أحمد محمد" required>
                             </div>
                             <div class="form-group">
-                                <label for="attLateMins">حساب الطالب متأخر بعد كام دقيقة؟</label>
+                                <label for="attLateMins">حساب الطالب متأخر بعد (بالدقائق)</label>
                                 <input type="number" id="attLateMins" value="15" min="1" required>
                             </div>
                             <div class="form-group">
@@ -598,7 +692,7 @@
                                 <th>الفرقة</th>
                                 <th>وقت البدء</th>
                                 <th>حالة الجلسة</th>
-                                <th>الإجراءات (تصدير / تعديل / إنهاء)</th>
+                                <th>الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="attendanceSessionsTable">
@@ -609,21 +703,21 @@
             </div>
         </div>
 
-        <!-- 6. تقارير ونتائج الطلاب (امتحانات المهارة) -->
+        <!-- 6. تقارير ونتائج الطلاب -->
         <div id="sectionReports" class="tab-section">
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</span>
+                    <span>سجل نتائج وتدريبات الطلاب</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="reportSearchInput" placeholder="بحث باسم الطالب أو الـ ID..." onkeyup="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 100%; max-width: 220px;">
+                        <input type="text" id="reportSearchInput" placeholder="بحث بالاسم أو ID..." onkeyup="filterQuizResults()" style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 13px; min-width: 200px;">
                         
-                        <select id="scoreFilterSelect" onchange="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
+                        <select id="scoreFilterSelect" onchange="filterQuizResults()" style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 13px;">
                             <option value="all">جميع الدرجات</option>
                             <option value="highest">أعلى درجة أولاً</option>
                             <option value="lowest">أقل درجة أولاً</option>
                         </select>
-                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px; flex-grow: 1;" onclick="exportQuizResultsToExcel()">📥 تصدير لـ Excel</button>
-                        <button class="btn btn-edit" style="padding: 6px 14px; font-size:12.5px; flex-grow: 1;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
+                        <button class="btn btn-approve" style="padding: 8px 16px; font-size:13px;" onclick="exportQuizResultsToExcel()">📥 تصدير لـ Excel</button>
+                        <button class="btn btn-edit" style="padding: 8px 16px; font-size:13px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -649,14 +743,14 @@
 
         <!-- 7. إدارة الإشعارات -->
         <div id="sectionNotifs" class="tab-section">
-            <div class="card-box" id="notifCardBox" style="margin-bottom: 25px;">
+            <div class="card-box" id="notifCardBox" style="margin-bottom: 35px;">
                 <div class="card-header" id="notifCardHeader">إرسال إشعار مخصص للطلاب</div>
                 <div class="card-body">
                     <form id="customNotifForm">
                         <input type="hidden" id="notifEditId">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="notifTargetType">الفئة المستهدفة بالإشعار</label>
+                                <label for="notifTargetType">الفئة المستهدفة</label>
                                 <select id="notifTargetType" required onchange="toggleNotifTargetInput()">
                                     <option value="all">جميع فرق الجامعة</option>
                                     <option value="year">فرقة دراسية معينة</option>
@@ -673,12 +767,12 @@
                                 </select>
                             </div>
                             <div class="form-group" id="studentInputGroup" style="display: none;">
-                                <label for="notifStudentId">الرقم التعريفي للطالب (Student ID)</label>
+                                <label for="notifStudentId">الرقم التعريفي (Student ID)</label>
                                 <input type="text" id="notifStudentId" placeholder="مثال: HU-123456">
                             </div>
                             <div class="form-group full-width">
                                 <label for="notifTitle">عنوان الإشعار</label>
-                                <input type="text" id="notifTitle" placeholder="مثال: تنبيه هام بخصوص موعد الامتحانات" required>
+                                <input type="text" id="notifTitle" placeholder="تنبيه هام..." required>
                             </div>
                             <div class="form-group full-width">
                                 <label for="notifMessage">نص الرسالة</label>
@@ -692,7 +786,7 @@
 
             <div class="card-box">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <span>سجل جميع الإشعارات المرسلة</span>
+                    <span>سجل الإشعارات المرسلة</span>
                     <button class="btn btn-delete" onclick="clearAllNotifications()">🗑️ مسح الكل</button>
                 </div>
                 <div class="table-responsive">
@@ -700,7 +794,7 @@
                         <thead>
                             <tr>
                                 <th>العنوان</th>
-                                <th>الرسالة / التفاصيل</th>
+                                <th>الرسالة</th>
                                 <th>المستهدف</th>
                                 <th>التاريخ والوقت</th>
                                 <th>الإجراءات</th>
@@ -716,7 +810,7 @@
 
         <!-- 8. إدارة الطلاب -->
         <div id="sectionStudents" class="tab-section">
-            <div class="card-box" style="margin-bottom: 25px;">
+            <div class="card-box" style="margin-bottom: 35px;">
                 <div class="card-header">طلبات إنشاء الحسابات الجديدة (تحتاج مراجعة)</div>
                 <div class="table-responsive">
                     <table>
@@ -727,7 +821,7 @@
                                 <th>البريد الإلكتروني</th>
                                 <th>الهاتف</th>
                                 <th>الفرقة</th>
-                                <th>الإجراء الأول</th>
+                                <th>الإجراء</th>
                             </tr>
                         </thead>
                         <tbody id="pendingStudentsTable">
@@ -737,7 +831,7 @@
                 </div>
             </div>
 
-            <div class="card-box" style="margin-bottom: 25px;">
+            <div class="card-box" style="margin-bottom: 35px;">
                 <div class="card-header">طلبات تعديل البيانات الشخصية</div>
                 <div class="table-responsive">
                     <table>
@@ -762,15 +856,15 @@
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <span>قائمة جميع طلاب الجامعة والحظر والتعديل</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو الـ ID..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 100%; max-width: 220px;">
-                        <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
+                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو ID..." onkeyup="filterStudentsTable()" style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 13px; width: 100%; max-width: 220px;">
+                        <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 13px;">
                             <option value="all">جميع الفرق</option>
                             <option value="1">الفرقة الأولى</option>
                             <option value="2">الفرقة الثانية</option>
                             <option value="3">الفرقة الثالثة</option>
                             <option value="4">الفرقة الرابعة</option>
                         </select>
-                        <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
+                        <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 13px;">
                             <option value="all">جميع الحالات</option>
                             <option value="approved">النشطون</option>
                             <option value="banned">المحظورون</option>
@@ -787,7 +881,7 @@
                                 <th>البريد الإلكتروني</th>
                                 <th>رقم الهاتف</th>
                                 <th>الفرقة</th>
-                                <th>الحالة الحالية</th>
+                                <th>الحالة</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
@@ -801,7 +895,7 @@
 
         <!-- 9. الأعضاء الإداريين -->
         <div id="sectionAdmins" class="tab-section">
-            <div class="card-box" style="margin-bottom: 25px;">
+            <div class="card-box" style="margin-bottom: 35px;">
                 <div class="card-header" id="adminCardHeader">إنشاء حساب إداري جديد</div>
                 <div class="card-body">
                     <form id="adminCreateForm">
@@ -816,21 +910,21 @@
                                 <input type="email" id="admEmail" placeholder="admin@helwan.edu.eg" required>
                             </div>
                             <div class="form-group" id="admPassGroup">
-                                <label for="admPassword">كلمة المرور (6 أحرف/أرقام على الأقل)</label>
-                                <input type="password" id="admPassword" placeholder="كلمة المرور" required>
+                                <label for="admPassword">كلمة المرور</label>
+                                <input type="password" id="admPassword" placeholder="6 أحرف/أرقام على الأقل" required>
                             </div>
                             <div class="form-group">
                                 <label for="admRole">الصلاحية / الدور</label>
                                 <select id="admRole" required onchange="toggleRolePermissions()">
                                     <option value="manager">مدير عام (صلاحيات كاملة)</option>
-                                    <option value="supervisor">مشرف (صلاحيات فرقة محددة)</option>
+                                    <option value="supervisor">مشرف (صلاحيات مخصصة)</option>
                                 </select>
                             </div>
 
                             <div class="form-group" id="admYearGroup" style="display:none;">
                                 <label for="admAssignedYear">الفرقة المخصصة للنشر (للمشرف)</label>
                                 <select id="admAssignedYear">
-                                    <option value="all">جميع الفرق الدراسية</option>
+                                    <option value="all">جميع الفرق</option>
                                     <option value="1">الفرقة الأولى فقط</option>
                                     <option value="2">الفرقة الثانية فقط</option>
                                     <option value="3">الفرقة الثالثة فقط</option>
@@ -844,30 +938,30 @@
                                     <div class="perm-grid">
                                         <label class="perm-item"><input type="checkbox" name="perm" value="materials_manage"> 📚 إضافة وتعديل المواد</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="sections_manage"> 📂 إضافة وتعديل الأقسام</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 إدارة المحتوى والأسايمنت</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="files_manage"> 📑 المحتوى والأسايمنت</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="schedules_manage"> 📅 إدارة الجداول</label>
                                         <label class="perm-item"><input type="checkbox" name="perm" value="attendance_manage"> ✋ إدارة الحضور</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="notifs_manage"> 🔔 إرسال وتعديل الإشعارات</label>
-                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 قبول وحظر الطلاب</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="notifs_manage"> 🔔 إرسال الإشعارات</label>
+                                        <label class="perm-item"><input type="checkbox" name="perm" value="students_manage"> 👥 إدارة الطلاب</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:10px; margin-top: 10px;">
-                            <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top:0;">إنشاء الحساب الإداري بالـ Auth</button>
-                            <button type="button" class="btn-confirm-no" id="adminCancelBtn" onclick="resetAdminForm()" style="display:none; border-radius:10px; font-weight:600; font-size:16px; padding:14px 24px; border:none; cursor:pointer;">إلغاء التعديل</button>
+                        <div style="display:flex; gap:15px; margin-top: 20px;">
+                            <button type="submit" class="btn-submit" id="adminSubmitBtn" style="margin-top:0;">إنشاء الحساب الإداري</button>
+                            <button type="button" class="btn-confirm-no" id="adminCancelBtn" onclick="resetAdminForm()" style="display:none; border-radius:12px; font-weight:700; font-size:16px; padding:15px 28px; border:1px solid var(--border-color); cursor:pointer;">إلغاء التعديل</button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <div class="card-box">
-                <div class="card-header">قائمة الموظفين والأعضاء الإداريين</div>
+                <div class="card-header">قائمة الأعضاء الإداريين</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>اسم العضو</th>
+                                <th>الاسم</th>
                                 <th>البريد الإلكتروني</th>
                                 <th>الدور والفرقة</th>
                                 <th>حالة الجهاز</th>
@@ -894,7 +988,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>المسؤول (من قام بالإجراء)</th>
+                                <th>المسؤول</th>
                                 <th>نوع الإجراء</th>
                                 <th>التفاصيل</th>
                                 <th>التاريخ والوقت</th>
@@ -958,6 +1052,26 @@
                 if (!adminPerms.includes('attendance_manage')) { if(attendanceMenu) attendanceMenu.style.display = 'none'; }
             }
         }
+
+        // --- نظام الدارك مود ---
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+        
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.innerText = '☀️';
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.innerText = '☀️';
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                darkModeToggle.innerText = '🌙';
+            }
+        });
 
         function enforceAssignedYear() {
             if (currentAdminRole === 'supervisor' && assignedYear !== 'all') {
@@ -1046,10 +1160,8 @@
             if(yearGroup) yearGroup.style.display = (role === 'supervisor') ? 'block' : 'none';
         }
 
-        // --- جلب الإحصائيات العامة للمدير فقط ---
         async function fetchOverviewStats() {
             try {
-                // إجمالي الطلاب والطلبات المعلقة
                 const stuSnap = await getDocs(collection(db, "users"));
                 let activeStu = 0; let pendingStu = 0;
                 stuSnap.forEach(d => {
@@ -1057,10 +1169,7 @@
                     else if (d.data().status === 'pending') pendingStu++;
                 });
                 
-                // إجمالي المواد
                 const matSnap = await getDocs(collection(db, "materials"));
-                
-                // الجلسات النشطة
                 const sessSnap = await getDocs(query(collection(db, "attendanceSessions"), where("isActive", "==", true)));
                 
                 document.getElementById('statTotalStudents').innerText = activeStu;
@@ -1377,7 +1486,7 @@
                     const dateFormatted = s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-EG') : '';
                     html += `<tr>
                         <td>الفرقة ${s.academicYear}</td>
-                        <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeTxt}</span></td>
+                        <td><span style="background:var(--bg-hover); color:var(--primary); padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">${typeTxt}</span></td>
                         <td><b>${s.title}</b></td>
                         <td>${dateFormatted}</td>
                         <td><button class="btn btn-delete" onclick="deleteDocItem('schedules', '${d.id}')">حذف</button></td>
@@ -1491,7 +1600,7 @@
 
                 let html = '';
                 sessions.forEach(s => {
-                    let statusTxt = '<span style="color:green; font-weight:700;">🟢 جارية الآن</span>';
+                    let statusTxt = '<span style="color:#10b981; font-weight:700;">🟢 جارية الآن</span>';
                     if (!s.isActive) {
                         let endedTimeStr = s.endedAt ? new Date(s.endedAt).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) : '-';
                         let durationMinutes = s.endedAt && s.createdAt ? Math.round((new Date(s.endedAt) - new Date(s.createdAt)) / 60000) : 0;
@@ -1499,7 +1608,7 @@
                         let mins = durationMinutes % 60;
                         let durationFormatted = hours > 0 ? `${hours} ساعة و ${mins} دقيقة` : `${mins} دقيقة`;
                         
-                        statusTxt = `<span style="color:red; font-weight:700;">🔴 منتهية</span><br><small style="color:#64748b;">وقت الانتهاء: ${endedTimeStr} | المنقضي: ${durationFormatted}</small>`;
+                        statusTxt = `<span style="color:#ef4444; font-weight:700;">🔴 منتهية</span><br><small style="color:var(--text-muted);">وقت الانتهاء: ${endedTimeStr} | المنقضي: ${durationFormatted}</small>`;
                     }
                     
                     const dateFormatted = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '';
@@ -1653,7 +1762,6 @@
             } catch(e) { showToast('حدث خطأ', 'error'); }
         }
 
-
         window.clearAllNotifications = async function() {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
@@ -1719,27 +1827,27 @@
             filtered.forEach(r => {
                 const dateFormatted = r.createdAt ? new Date(r.createdAt).toLocaleString('ar-EG') : '';
                 
-                let statusBadge = `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600; font-size:12px;">مكتمل (محاولة 1)</span>`;
+                let statusBadge = `<span style="background:var(--bg-hover); color:var(--primary); padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">مكتمل (محاولة 1)</span>`;
                 let retakeBtnStyle = `background: #f59e0b; color: white;`;
-                let retakeBtnText = `السماح بإعادة الامتحان`;
+                let retakeBtnText = `السماح بالإعادة`;
 
                 if (r.canRetake) {
-                    statusBadge = `<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:6px; font-weight:600; font-size:12px;">مسموح له بالإعادة</span>`;
-                    retakeBtnStyle = `background: #22c55e; color: white;`;
-                    retakeBtnText = `تم السماح بالاعادة`;
+                    statusBadge = `<span style="background:rgba(245, 158, 11, 0.1); color:#f59e0b; padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">مسموح له بالإعادة</span>`;
+                    retakeBtnStyle = `background: #10b981; color: white;`;
+                    retakeBtnText = `تم السماح`;
                 }
 
                 html += `
                     <tr>
-                        <td><b>${r.studentName || 'غير معروف'}</b><br><small style="color:#64748b;">${r.studentId || '-'}</small></td>
+                        <td><b>${r.studentName || 'غير معروف'}</b><br><small style="color:var(--text-muted);">${r.studentId || '-'}</small></td>
                         <td><b>${r.materialTitle || 'غير محدد'}</b></td>
                         <td>${r.quizTitle || 'امتحان'}</td>
-                        <td><span style="color:#2563eb; font-weight:700;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
+                        <td><span style="color:var(--primary); font-weight:800;">${r.score} / ${r.total} (${r.percentage}%)</span></td>
                         <td>${statusBadge}</td>
                         <td>${dateFormatted}</td>
                         <td>
                             <button class="btn" style="${retakeBtnStyle}" onclick="allowQuizRetake('${r.id}')">${retakeBtnText}</button>
-                            <button class="btn btn-delete" onclick="deleteDocItem('quizResults', '${r.id}')">حذف الدرجة</button>
+                            <button class="btn btn-delete" onclick="deleteDocItem('quizResults', '${r.id}')">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -1782,7 +1890,7 @@
 
         window.openOverallStudentReport = async function() {
             const resultsSnap = await getDocs(collection(db, "quizResults"));
-            if(resultsSnap.empty) { alert('لا توجد نتائج مسجلة لعمل تقرير.'); return; }
+            if(resultsSnap.empty) { showToast('لا توجد نتائج مسجلة لعمل تقرير.', 'warning'); return; }
 
             let studentMap = {};
             resultsSnap.forEach(d => {
@@ -1796,15 +1904,15 @@
             });
 
             let reportHtml = `<table style="width:100%; border-collapse:collapse; text-align:right;" id="modalReportTable">
-                <thead><tr style="background:#f8fafc;"><th style="padding:10px; border-bottom:1px solid #cbd5e1;">اسم الطالب</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">الامتحانات</th><th style="padding:10px; border-bottom:1px solid #cbd5e1;">النسبة العامة</th></tr></thead><tbody>`;
+                <thead><tr style="background:var(--bg-hover);"><th style="padding:12px; border-bottom:1px solid var(--border-color); color:var(--text-muted);">اسم الطالب</th><th style="padding:12px; border-bottom:1px solid var(--border-color); color:var(--text-muted);">الامتحانات</th><th style="padding:12px; border-bottom:1px solid var(--border-color); color:var(--text-muted);">النسبة العامة</th></tr></thead><tbody>`;
 
             for(let id in studentMap) {
                 let st = studentMap[id];
                 let overallPercent = st.totalMax > 0 ? Math.round((st.totalScore / st.totalMax) * 100) : 0;
                 reportHtml += `<tr>
-                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;"><b>${st.name}</b><br><small>${id}</small></td>
-                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${st.examsCount} امتحان</td>
-                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;"><span style="color:#2563eb; font-weight:700;">${overallPercent}%</span></td>
+                    <td style="padding:12px; border-bottom:1px solid var(--border-color); color:var(--text-main);"><b>${st.name}</b><br><small style="color:var(--text-muted);">${id}</small></td>
+                    <td style="padding:12px; border-bottom:1px solid var(--border-color); color:var(--text-main);">${st.examsCount} امتحان</td>
+                    <td style="padding:12px; border-bottom:1px solid var(--border-color);"><span style="color:var(--primary); font-weight:800;">${overallPercent}%</span></td>
                 </tr>`;
             }
             reportHtml += `</tbody></table>`;
@@ -2169,7 +2277,7 @@
                     html += `<tr>
                         <td>${f.materialTitle} (${f.sectionName})</td>
                         <td><b>${f.title}</b></td>
-                        <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
+                        <td><span style="background:var(--bg-hover); color:var(--primary); padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">${typeLabel}</span></td>
                         <td>${deadlineText}</td>
                         <td>
                             <button class="btn btn-edit" onclick="editFileContent('${d.id}')">تعديل</button>
@@ -2435,7 +2543,7 @@
             let html = '';
             filtered.forEach(u => {
                 const statusText = u.status === 'approved' ? 'مقبول ونشط' : (u.status === 'banned' ? 'محظور' : 'قيد الانتظار');
-                const statusColor = u.status === 'approved' ? 'green' : (u.status === 'banned' ? 'red' : 'orange');
+                const statusColor = u.status === 'approved' ? '#10b981' : (u.status === 'banned' ? '#ef4444' : '#f59e0b');
                 const banBtnText = u.status === 'banned' ? 'إلغاء الحظر' : 'حظر الطالب';
                 const banBtnClass = u.status === 'banned' ? 'btn-approve' : 'btn-warning';
                 const newStatus = u.status === 'banned' ? 'approved' : 'banned';
@@ -2556,17 +2664,16 @@
                     
                     const isSuspended = adm.status === 'suspended';
                     const statusText = isSuspended ? 'موقوف' : 'نشط';
-                    const statusColor = isSuspended ? 'red' : 'green';
+                    const statusColor = isSuspended ? '#ef4444' : '#10b981';
 
-                    // --- حالة الجهاز والأزرار الجديدة ---
                     const deviceId = adm.deviceId;
-                    const linkedText = deviceId ? '<span style="color:#2563eb; font-size:13.5px; font-weight:700;">📱 مربوط بجهاز</span>' : '<span style="color:#94a3b8; font-size:13.5px; font-weight:700;">📱 غير مربوط</span>';
+                    const linkedText = deviceId ? '<span style="color:var(--primary); font-size:13px; font-weight:800;">📱 مربوط بجهاز</span>' : '<span style="color:var(--text-muted); font-size:13px; font-weight:700;">📱 غير مربوط</span>';
                     
                     let deviceActions = '';
                     if (adm.role !== 'manager' && deviceId) {
                         deviceActions = `
-                            <button class="btn" style="background:#0f172a; color:white; width: 100%; margin-top:5px;" onclick="banAdminDevice('${deviceId}', '${adm.name}')">🚫 حظر جهازه</button>
-                            <button class="btn" style="background:#64748b; color:white; width: 100%; margin-top:5px;" onclick="unlinkAdminDevice('${d.id}')">🔓 فك الجهاز</button>
+                            <button class="btn btn-delete" style="width: 100%; margin-top:5px; font-size: 11.5px;" onclick="banAdminDevice('${deviceId}', '${adm.name}')">🚫 حظر الجهاز</button>
+                            <button class="btn btn-edit" style="width: 100%; margin-top:5px; background:var(--text-muted); font-size: 11.5px;" onclick="unlinkAdminDevice('${d.id}')">🔓 فك الجهاز</button>
                         `;
                     }
                     
@@ -2577,9 +2684,9 @@
                     html += `<tr>
                             <td><b>${adm.name}</b></td>
                             <td>${adm.email}</td>
-                            <td>${roleText} <br> <small style="color:#64748b;">(${assignedYearText})</small></td>
+                            <td>${roleText} <br> <small style="color:var(--text-muted);">(${assignedYearText})</small></td>
                             <td>${linkedText}</td>
-                            <td><span style="color: ${statusColor}; font-weight:700;">${statusText}</span></td>
+                            <td><span style="color: ${statusColor}; font-weight:800;">${statusText}</span></td>
                             <td>
                                 <button class="btn btn-edit" onclick="editAdmin('${d.id}')">تعديل</button>
                                 ${toggleBtn}
@@ -2606,7 +2713,7 @@
                     const dateFormatted = l.timestamp ? new Date(l.timestamp).toLocaleString('ar-EG') : '';
                     html += `<tr>
                         <td><b>${l.performedBy}</b></td>
-                        <td><span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-weight:700;">${l.actionType}</span></td>
+                        <td><span style="background:var(--bg-hover); color:var(--primary); padding:4px 10px; border-radius:6px; font-weight:800; font-size: 13px;">${l.actionType}</span></td>
                         <td>${l.details}</td>
                         <td>${dateFormatted}</td>
                     </tr>`;
