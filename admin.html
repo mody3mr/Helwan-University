@@ -48,16 +48,25 @@
         .sidebar {
             width: 280px; background: var(--bg-sidebar); color: var(--text-sidebar); display: flex;
             flex-direction: column; justify-content: flex-start; padding: 25px 15px;
-            position: sticky; top: 0; height: 100vh; flex-shrink: 0; overflow: hidden;
+            position: sticky; top: 0; height: 100vh; flex-shrink: 0; 
+            overflow-y: auto; overflow-x: hidden; /* تم التعديل للسماح بالسكرول */
             border-left: 1px solid var(--border-color);
             transition: var(--transition);
         }
+        
+        /* شكل السكرول بار للقائمة الجانبية */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
         .sidebar-brand { 
             font-size: 22px; font-weight: 800; text-align: center; padding-bottom: 20px; 
             border-bottom: 1px solid var(--border-color); color: var(--primary); 
             letter-spacing: 1px;
         }
-        .sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        /* تم إضافة مساحة بالأسفل لمنع اختفاء آخر عنصر */
+        .sidebar-menu { list-style: none; margin-top: 25px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding-bottom: 40px; }
         .sidebar-menu li { 
             padding: 14px 18px; border-radius: 12px; background: transparent; 
             font-weight: 600; font-size: 14.5px; cursor: pointer; transition: var(--transition); 
