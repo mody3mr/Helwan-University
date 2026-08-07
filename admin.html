@@ -65,7 +65,7 @@
         table th, table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; word-break: break-word; }
         table th { background: #f8fafc; color: #475569; font-weight: 700; }
         
-        .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; margin: 2px; }
+        .btn { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12.5px; transition: all 0.2s; margin: 2px; display: inline-block; }
         .btn-approve { background: #22c55e; color: white; }
         .btn-reject { background: #ef4444; color: white; }
         .btn-delete { background: #ef4444; color: white; }
@@ -88,17 +88,55 @@
         @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .custom-modal h3 { color: #0f172a; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
         .custom-modal p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
-        .custom-modal-actions { display: flex; gap: 12px; justify-content: center; }
-        .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
+        .custom-modal-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .custom-modal-actions button { padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; flex: 1; min-width: 120px; }
         .btn-confirm-yes { background: #ef4444; color: white; transition: background 0.2s; }
         .btn-confirm-yes:hover { background: #dc2626; }
         .btn-confirm-no { background: #f1f5f9; color: #475569; transition: background 0.2s; }
         .btn-confirm-no:hover { background: #e2e8f0; }
+
+        /* --- الميديا كويري للتجاوب مع الموبايل والتابلت --- */
+        .header-title-wrapper { display: flex; align-items: center; gap: 15px; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 9998; display: none; }
+        .sidebar-overlay.active { display: block; }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                right: -300px;
+                z-index: 9999;
+                transition: right 0.3s ease-in-out;
+                width: 260px;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            }
+            .sidebar.active-mobile { right: 0; }
+            .main-content { width: 100%; padding: 25px; }
+            .mobile-menu-btn { display: block !important; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 15px; }
+            .header-top { flex-direction: column; align-items: flex-start; padding: 15px; gap: 15px; }
+            .header-title-wrapper { width: 100%; }
+            .admin-menu-container { width: 100%; display: flex; justify-content: flex-end; }
+            .dropdown-menu { top: 40px; right: auto; left: 0; width: 200px; }
+            .card-header { flex-direction: column; align-items: stretch !important; gap: 15px; }
+            .card-header > div { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
+            .card-header input, .card-header select { width: 100% !important; margin-bottom: 5px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .perm-grid { grid-template-columns: 1fr; }
+            table th, table td { padding: 12px 10px; font-size: 13px; min-width: 120px; }
+            .btn { width: 100%; margin: 4px 0; text-align: center; }
+            .btn-submit { font-size: 14px; padding: 12px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
 
     <div id="reportModalOverlay">
         <div class="report-modal">
@@ -142,7 +180,10 @@
 
     <div class="main-content">
         <div class="header-top">
-            <h2 id="pageTitle">إدارة المواد</h2>
+            <div class="header-title-wrapper">
+                <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none; font-size:24px; background:none; border:none; cursor:pointer; color:#0f172a;">☰</button>
+                <h2 id="pageTitle">إدارة المواد</h2>
+            </div>
             <div class="admin-menu-container" onclick="toggleAdminDropdown()">
                 <div class="admin-profile">
                     <span id="adminNameDisplay">مسؤول النظام</span> ▾
@@ -493,15 +534,15 @@
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <span>سجل نتائج وتدريبات الطلاب (امتحانات المهارة)</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="reportSearchInput" placeholder="بحث باسم الطالب أو الـ ID..." onkeyup="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        <input type="text" id="reportSearchInput" placeholder="بحث باسم الطالب أو الـ ID..." onkeyup="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 100%; max-width: 220px;">
                         
-                        <select id="scoreFilterSelect" onchange="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+                        <select id="scoreFilterSelect" onchange="filterQuizResults()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
                             <option value="all">جميع الدرجات</option>
                             <option value="highest">أعلى درجة أولاً</option>
                             <option value="lowest">أقل درجة أولاً</option>
                         </select>
-                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px;" onclick="exportQuizResultsToExcel()">📥 تصدير لـ Excel</button>
-                        <button class="btn btn-edit" style="padding: 6px 14px; font-size:12.5px;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
+                        <button class="btn btn-approve" style="padding: 6px 14px; font-size:12.5px; flex-grow: 1;" onclick="exportQuizResultsToExcel()">📥 تصدير لـ Excel</button>
+                        <button class="btn btn-edit" style="padding: 6px 14px; font-size:12.5px; flex-grow: 1;" onclick="openOverallStudentReport()">📊 تقرير الأداء الشامل</button>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -640,15 +681,15 @@
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <span>قائمة جميع طلاب الجامعة والحظر والتعديل</span>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو الـ ID..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 220px;">
-                        <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+                        <input type="text" id="studentSearchInput" placeholder="بحث بالاسم أو الـ ID..." onkeyup="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 100%; max-width: 220px;">
+                        <select id="studentYearFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
                             <option value="all">جميع الفرق</option>
                             <option value="1">الفرقة الأولى</option>
                             <option value="2">الفرقة الثانية</option>
                             <option value="3">الفرقة الثالثة</option>
                             <option value="4">الفرقة الرابعة</option>
                         </select>
-                        <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+                        <select id="studentStatusFilter" onchange="filterStudentsTable()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; flex-grow: 1;">
                             <option value="all">جميع الحالات</option>
                             <option value="approved">النشطون</option>
                             <option value="banned">المحظورون</option>
@@ -862,6 +903,12 @@
             } catch (e) { console.error("Logging error:", e); }
         }
 
+        // --- وظيفة تفعيل وإغلاق المنيو في الموبايل ---
+        window.toggleMobileMenu = function() {
+            document.querySelector('.sidebar').classList.toggle('active-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -980,6 +1027,13 @@
                 document.getElementById('menuAuditLogs').classList.add('active');
                 document.getElementById('pageTitle').innerText = 'سجل الأحداث والنشاطات';
                 fetchAuditLogsTable();
+            }
+            
+            // قفل المنيو أوتوماتيك لو كنا على الموبايل
+            if(window.innerWidth <= 992) {
+                document.querySelector('.sidebar').classList.remove('active-mobile');
+                const overlay = document.getElementById('sidebarOverlay');
+                if(overlay) overlay.classList.remove('active');
             }
         }
 
@@ -1159,7 +1213,6 @@
             list.appendChild(qDiv);
         }
 
-        // --- 8. إدارة الجداول (محاضرات / امتحانات) ---
         const scheduleForm = document.getElementById('scheduleForm');
         if (scheduleForm) {
             scheduleForm.addEventListener('submit', async function(e) {
@@ -1216,7 +1269,6 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ</td></tr>`; }
         }
 
-        // --- 9. إدارة الحضور (بالسحب التلقائي للـ GPS، إرسال إشعار بدء المحاضرة، وتعديل الجلسات) ---
         const attendanceForm = document.getElementById('attendanceForm');
         if (attendanceForm) {
             attendanceForm.addEventListener('submit', async function(e) {
@@ -1253,7 +1305,6 @@
                                     adminLat, adminLng, radiusMeters, isActive: true, createdBy: currentAdminName, createdAt: now.toISOString()
                                 });
 
-                                // إرسال إشعار فوري لجميع طلاب الفرقة أن المحاضرة بدأت
                                 await addDoc(collection(db, "notifications"), {
                                     title: "✋ محاضرة جديدة بدأت الآن!",
                                     message: `يرجى تسجيل الحضور لمادة ${materialTitle} مع الدكتور ${professorName}.`,
@@ -1369,7 +1420,6 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- تصدير كشف الحضور والغياب (TXT) متطابق مع بيانات Excel ومع ميعاد البدء والانتهاء وغياب الطلاب والمحاولات الفاشلة ---
         window.exportAttendanceTxt = async function(sessionId, matTitle, academicYear, startTime) {
             try {
                 const sessionSnap = await getDoc(doc(db, "attendanceSessions", sessionId));
@@ -1393,7 +1443,6 @@
                     else onTime.push(line);
                 });
 
-                // جلب محاولات التلاعب الفاشلة من الإشعارات الموجهة للأدمن للمادة دي
                 const notifQuery = query(collection(db, "notifications"), where("target_group", "==", "admin"));
                 const notifSnap = await getDocs(notifQuery);
                 let failedAttempts = [];
@@ -1404,7 +1453,6 @@
                     }
                 });
 
-                // جلب كل طلاب الفرقة النشطين لاستخراج الغياب
                 const studentsQuery = query(collection(db, "users"), where("academicYear", "==", String(academicYear)), where("status", "==", "approved"));
                 const studentsSnap = await getDocs(studentsQuery);
 
@@ -1460,7 +1508,6 @@
             } catch(e) { console.error(e); showToast('حدث خطأ أثناء استخراج الملف', 'error'); }
         }
 
-        // --- تصدير شيت Excel للحضور (نفس البيانات والاتساق) ---
         window.exportAttendanceExcel = async function(sessionId, matTitle) {
             try {
                 const recQuery = query(collection(db, "attendanceRecords"), where("sessionId", "==", sessionId));
@@ -1489,7 +1536,6 @@
         }
 
 
-        // --- مسح كل الإشعارات ---
         window.clearAllNotifications = async function() {
             showConfirmModal(async (confirmed) => {
                 if (confirmed) {
@@ -1503,7 +1549,6 @@
         }
 
 
-        // --- تقارير ونتائج الطلاب ---
         let allQuizResultsCache = [];
 
         async function fetchQuizResults() {
@@ -1694,7 +1739,6 @@
             });
         };
 
-        // --- 1. المواد ---
         document.getElementById('materialForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('matEditId').value;
@@ -1769,7 +1813,6 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 2. الأقسام ---
         document.getElementById('sectionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('secEditId').value;
@@ -1842,7 +1885,6 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="4" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 3. الملفات ونشر المحتوى والأسايمنت بالنص (وتعديلهم) ---
         window.editFileContent = async function(id) {
             const snap = await getDoc(doc(db, "materialContents", id));
             if(snap.exists()) {
@@ -2021,7 +2063,6 @@
             } catch(e) { tbody.innerHTML = `<tr><td colspan="5" class="no-data" style="color:red;">خطأ في التحميل</td></tr>`; }
         }
 
-        // --- 4. الإشعارات (تعديل + إضافة + ظهور لحظي) ---
         document.getElementById('customNotifForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('notifEditId').value;
@@ -2117,7 +2158,6 @@
             });
         };
 
-        // --- 5. إدارة الطلاب (مراجعة وقبول وتعديل) ---
         async function fetchPendingStudents() {
             const tbody = document.getElementById('pendingStudentsTable');
             try {
@@ -2164,8 +2204,8 @@
                     html += `<tr>
                         <td><b>${ed.student_id}</b></td>
                         <td>${ed.fullName}</td>
-                        <td>${ed.email}</td>
                         <td>${ed.phone || '-'}</td>
+                        <td>${ed.email}</td>
                         <td>الفرقة ${ed.academicYear}</td>
                         <td>
                             <button class="btn btn-approve" onclick="approveEdit('${d.id}')">موافقة</button>
@@ -2278,7 +2318,6 @@
             } catch(e) { showToast('خطأ', 'error'); }
         }
 
-        // --- 6. الأعضاء الإداريين (إنشاء وتفعيل/تعطيل بصلاحيات الـ Secondary Auth) ---
         document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('admName').value.trim();
@@ -2351,7 +2390,6 @@
             });
         }
 
-        // --- 7. سجل الأحداث والنشاطات ---
         function fetchAuditLogsTable() {
             const tbody = document.getElementById('auditLogsTable');
             onSnapshot(collection(db, "auditLogs"), (snapshot) => {
